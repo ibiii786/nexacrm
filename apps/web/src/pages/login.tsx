@@ -14,6 +14,7 @@ export default function LoginPage() {
   const location = useLocation();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [error, setError] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -31,7 +32,7 @@ export default function LoginPage() {
       const response = await api.post('/auth/login', data);
       const { user, accessToken } = response.data.data;
       
-      setAuth(user, accessToken);
+      setAuth(user, accessToken, rememberMe);
       navigate(from, { replace: true });
     } catch (err: any) {
       if (err.response?.data?.error?.message) {
@@ -65,7 +66,7 @@ export default function LoginPage() {
               id="email"
               type="email"
               {...register('email')}
-              className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary dark:text-white ${
+              className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 dark:text-white ${
                 errors.email ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-700'
               }`}
               placeholder="admin@company.com"
@@ -80,7 +81,7 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-slate-900 dark:text-slate-200" htmlFor="password">
                 Password
               </label>
-              <a href="#" className="text-xs text-primary hover:underline">
+              <a href="#" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
                 Forgot password?
               </a>
             </div>
@@ -88,7 +89,7 @@ export default function LoginPage() {
               id="password"
               type="password"
               {...register('password')}
-              className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary dark:text-white ${
+              className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 dark:text-white ${
                 errors.password ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-700'
               }`}
             />
@@ -97,10 +98,23 @@ export default function LoginPage() {
             )}
           </div>
 
+          <div className="flex items-center">
+            <input
+              id="remember-me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-900"
+            />
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-900 dark:text-slate-200">
+              Remember me
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
+            className="w-full flex justify-center rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-50"
           >
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>

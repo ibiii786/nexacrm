@@ -8,7 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   settings: Record<string, string> | null;
-  setAuth: (user: User, accessToken: string) => void;
+  setAuth: (user: User, accessToken: string, rememberMe?: boolean) => void;
   clearAuth: () => void;
   setLoading: (isLoading: boolean) => void;
   loadUser: () => Promise<void>;
@@ -22,27 +22,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: true,
   settings: null,
 
-  setAuth: (user, accessToken) =>
+  setAuth: (user, accessToken, rememberMe = true) => {
+    if (rememberMe) {
+      localStorage.setItem('token', accessToken);
+      sessionStorage.removeItem('token');
+    } else {
+      sessionStorage.setItem('token', accessToken);
+      localStorage.removeItem('token');
+    }
     set({
       user,
       accessToken,
       isAuthenticated: true,
       isLoading: false,
-    }),
+    });
+  },
 
-  clearAuth: () =>
+  clearAuth: () => {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     set({
       user: null,
       accessToken: null,
       isAuthenticated: false,
       isLoading: false,
       settings: null,
-    }),
+    });
+  },
 
   setLoading: (isLoading: boolean) => set({ isLoading }),
 
   loadUser: async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       try {
         const res = await api.get('/auth/me');
@@ -50,6 +61,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         get().fetchSettings();
       } catch (error) {
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false });
       }
     } else {
