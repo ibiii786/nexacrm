@@ -5,6 +5,8 @@ import Dashboard from './pages/dashboard';
 import UsersPage from './pages/admin/iam/UsersPage';
 import GroupsPage from './pages/admin/iam/GroupsPage';
 import PoliciesPage from './pages/admin/iam/PoliciesPage';
+import OrdersPage from './pages/orders/OrdersPage';
+import OrderDetailPage from './pages/orders/OrderDetailPage';
 
 function App() {
   return (
@@ -14,6 +16,10 @@ function App() {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* Orders Routes */}
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
         
         {/* Admin IAM Routes */}
         <Route path="/admin/users" element={<UsersPage />} />

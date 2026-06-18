@@ -73,10 +73,6 @@ export interface UserPolicyAssignment {
   policy: Policy;
 }
 
-export interface AssignPolicyInput {
-  policyId: string;
-  expiresAt?: string | null; // ISO datetime for temporary assignments
-}
 
 export interface EffectivePermissions {
   permissions: string[];

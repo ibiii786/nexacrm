@@ -77,19 +77,7 @@ export interface OrderAuditEntry {
   createdAt: string;
 }
 
-export interface BulkStatusChangeInput {
-  orderIds: string[];
-  statusId: string;
-}
 
-export interface BulkDeleteInput {
-  orderIds: string[];
-  confirmation: string; // Must be "DELETE"
-}
-
-export interface ParsePasteInput {
-  text: string;
-}
 
 export interface ParsePasteResult {
   mappedFields: Record<string, string>;

@@ -4,7 +4,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../lib/api';
 
 export function ProtectedRoute() {
-  const { isAuthenticated, isLoading, setAuth, setLoading, clearAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, setLoading, clearAuth } = useAuthStore();
   const location = useLocation();
 
   useEffect(() => {
