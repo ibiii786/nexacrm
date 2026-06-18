@@ -1,0 +1,112 @@
+import prisma from '../config/database';
+import { AuthService } from './auth.service';
+import * as argon2 from 'argon2';
+import { Role } from '@prisma/client';
+
+export class UsersService {
+  static async getUsers() {
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        _count: {
+          select: {
+            createdOrders: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  static async getUserById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+      }
+    });
+  }
+
+  static async createUser(data: { name: string; email: string; passwordPlain: string; role: Role; createdBy?: string }) {
+    const passwordHash = await argon2.hash(data.passwordPlain);
+    
+    return prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        passwordHash,
+        role: data.role,
+        createdBy: data.createdBy
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      }
+    });
+  }
+
+  static async updateUser(id: string, data: { name?: string; email?: string; role?: Role; passwordPlain?: string }) {
+    const updateData: any = { ...data };
+    
+    if (updateData.passwordPlain) {
+      updateData.passwordHash = await argon2.hash(updateData.passwordPlain);
+      delete updateData.passwordPlain;
+    }
+
+    return prisma.user.update({
+      where: { id },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      }
+    });
+  }
+
+  static async suspendUser(id: string) {
+    const user = await prisma.user.update({
+      where: { id },
+      data: { isActive: false },
+    });
+    
+    // Suspending immediately revokes sessions
+    await AuthService.revokeAllUserSessions(id);
+    return user;
+  }
+
+  static async unsuspendUser(id: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { isActive: true },
+    });
+  }
+
+  static async forceLogout(id: string) {
+    await AuthService.revokeAllUserSessions(id);
+  }
+
+  static async deleteUser(id: string) {
+    // Soft delete via Prisma $extends configuration
+    await prisma.user.delete({
+      where: { id }
+    });
+    // Immediately log out
+    await AuthService.revokeAllUserSessions(id);
+  }
+}

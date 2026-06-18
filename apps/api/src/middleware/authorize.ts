@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendError } from '../utils/responseHelpers';
 import { PermissionName } from '@nexacrm/shared';
-// We will import PermissionService here in Phase 3
-// import { PermissionsService } from '../services/permissions.service';
+import { PermissionsService } from '../services/permissions.service';
 
 /**
  * Authorization middleware factory.
@@ -22,23 +21,15 @@ export function authorize(requiredPermissions: PermissionName[]) {
         return next();
       }
 
-      // TODO (Phase 3): Resolve effective permissions from Redis/DB
-      // const effectivePermissions = await PermissionsService.getEffectivePermissions(user.id);
-      const effectivePermissions: string[] = []; // Placeholder until Phase 3
+      // Resolve effective permissions from Redis/DB
+      const effectivePermissions = await PermissionsService.getEffectivePermissions(user.id);
 
       const hasPermission = requiredPermissions.some(perm => 
         effectivePermissions.includes(perm)
       );
 
-      // Temporary bypass for Phase 2 until Phase 3 IAM is built
-      // We'll allow ADMINs to bypass for now so we can test routes
-      if (user.role === 'ADMIN') {
-         return next();
-      }
-
-      if (!hasPermission && user.role !== 'ADMIN') {
-        // Strict enforcement disabled temporarily for Phase 2
-        // return sendError(res, 'FORBIDDEN', 'Insufficient permissions', 403);
+      if (!hasPermission) {
+        return sendError(res, 'FORBIDDEN', 'Insufficient permissions to access this resource', 403);
       }
 
       next();
