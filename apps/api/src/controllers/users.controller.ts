@@ -15,7 +15,7 @@ export class UsersController {
 
   static async getUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await UsersService.getUserById(req.params.id);
+      const user = await UsersService.getUserById((req.params.id as string));
       if (!user) {
         return sendError(res, 'NOT_FOUND', 'User not found', 404);
       }
@@ -41,7 +41,7 @@ export class UsersController {
 
   static async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await UsersService.updateUser(req.params.id, req.body);
+      const user = await UsersService.updateUser((req.params.id as string), req.body);
       return sendSuccess(res, user);
     } catch (error: any) {
       if (error.code === 'P2025') {
@@ -57,11 +57,11 @@ export class UsersController {
   static async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
       // Prevent deleting self or SUPER_ADMIN (enforced implicitly via role, but good to check self)
-      if (req.params.id === (req as any).user.id) {
+      if ((req.params.id as string) === (req as any).user.id) {
         return sendError(res, 'BAD_REQUEST', 'Cannot delete your own account', 400);
       }
 
-      await UsersService.deleteUser(req.params.id);
+      await UsersService.deleteUser((req.params.id as string));
       return sendSuccess(res, { message: 'User deleted' });
     } catch (error: any) {
       if (error.code === 'P2025') {
@@ -73,10 +73,10 @@ export class UsersController {
 
   static async suspendUser(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.params.id === (req as any).user.id) {
+      if ((req.params.id as string) === (req as any).user.id) {
         return sendError(res, 'BAD_REQUEST', 'Cannot suspend your own account', 400);
       }
-      await UsersService.suspendUser(req.params.id);
+      await UsersService.suspendUser((req.params.id as string));
       return sendSuccess(res, { message: 'User suspended' });
     } catch (error) {
       next(error);
@@ -85,7 +85,7 @@ export class UsersController {
 
   static async unsuspendUser(req: Request, res: Response, next: NextFunction) {
     try {
-      await UsersService.unsuspendUser(req.params.id);
+      await UsersService.unsuspendUser((req.params.id as string));
       return sendSuccess(res, { message: 'User unsuspended' });
     } catch (error) {
       next(error);
@@ -94,7 +94,7 @@ export class UsersController {
 
   static async forceLogout(req: Request, res: Response, next: NextFunction) {
     try {
-      await UsersService.forceLogout(req.params.id);
+      await UsersService.forceLogout((req.params.id as string));
       return sendSuccess(res, { message: 'User forced logged out' });
     } catch (error) {
       next(error);
@@ -103,7 +103,7 @@ export class UsersController {
 
   static async getEffectivePermissions(req: Request, res: Response, next: NextFunction) {
     try {
-      const perms = await PermissionsService.getEffectivePermissions(req.params.id);
+      const perms = await PermissionsService.getEffectivePermissions((req.params.id as string));
       return sendSuccess(res, perms);
     } catch (error) {
       next(error);

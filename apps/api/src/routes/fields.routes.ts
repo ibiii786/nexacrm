@@ -11,33 +11,33 @@ router.use(authenticate);
 
 router.get(
   '/',
-  authorize([PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_MANAGE, PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_MANAGE]),
+  // Authenticated users can view
   FieldsController.getFields
 );
 
 router.get(
   '/:id',
-  authorize([PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_MANAGE, PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_MANAGE]),
+  // Authenticated users can view
   FieldsController.getField
 );
 
 router.post(
   '/',
-  authorize([PERMISSIONS.SETTINGS_MANAGE]),
+  authorize([PERMISSIONS.FIELDS_CREATE]),
   systemAuditLogger('Field'),
   FieldsController.createField
 );
 
 router.put(
   '/:id',
-  authorize([PERMISSIONS.SETTINGS_MANAGE]),
+  authorize([PERMISSIONS.FIELDS_CREATE]),
   systemAuditLogger('Field'),
   FieldsController.updateField
 );
 
 router.delete(
   '/:id',
-  authorize([PERMISSIONS.SETTINGS_MANAGE]),
+  authorize([PERMISSIONS.FIELDS_CREATE]),
   systemAuditLogger('Field'),
   FieldsController.deleteField
 );

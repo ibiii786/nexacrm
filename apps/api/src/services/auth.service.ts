@@ -12,10 +12,16 @@ export interface TokenPayload {
 }
 
 export class AuthService {
+  static async verifyPassword(userId: string, password: string): Promise<boolean> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return false;
+    return argon2.verify(user.passwordHash, password);
+  }
+
   // Generate Access Token (15m expiry)
   static generateAccessToken(userId: string, role: string): string {
-    return jwt.sign({ userId, role }, env.JWT_ACCESS_SECRET, {
-      expiresIn: env.JWT_ACCESS_EXPIRY,
+    return jwt.sign({ userId, role }, env.JWT_ACCESS_SECRET as string, {
+      expiresIn: env.JWT_ACCESS_EXPIRY as any,
     });
   }
 
@@ -24,8 +30,8 @@ export class AuthService {
     const tokenId = uuidv4();
     
     // Create token payload
-    const token = jwt.sign({ tokenId, familyId }, env.JWT_REFRESH_SECRET, {
-      expiresIn: env.JWT_REFRESH_EXPIRY,
+    const token = jwt.sign({ tokenId, familyId }, env.JWT_REFRESH_SECRET as string, {
+      expiresIn: env.JWT_REFRESH_EXPIRY as any,
     });
 
     // Hash the token for storage to prevent DB compromise from leaking active refresh tokens

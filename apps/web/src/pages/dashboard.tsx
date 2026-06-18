@@ -1,24 +1,55 @@
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { api } from '../lib/api';
-import { useNavigate, Link } from 'react-router-dom';
-import { Users, ShieldAlert, UsersRound, LogOut, Briefcase } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { 
+  Plus, 
+  ShoppingCart, Calendar, TrendingUp, UserCheck 
+} from 'lucide-react';
+import { KpiCard } from '../components/dashboard/KpiCard';
+import { SinceYouWereGoneBanner } from '../components/dashboard/SinceYouWereGoneBanner';
+import { NewEntriesWidget } from '../components/dashboard/NewEntriesWidget';
+import { OrdersByStatusChart } from '../components/dashboard/OrdersByStatusChart';
+import { OrdersTrendChart } from '../components/dashboard/OrdersTrendChart';
+import { AnnouncementsWidget } from '../components/dashboard/AnnouncementsWidget';
+import { TodayDeliveriesWidget } from '../components/dashboard/TodayDeliveriesWidget';
+import { MyRecentOrdersWidget } from '../components/dashboard/MyRecentOrdersWidget';
 
 export default function Dashboard() {
   const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
-  const navigate = useNavigate();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } finally {
-      clearAuth();
-      navigate('/login');
-    }
-  };
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+        const endpoint = isAdmin ? '/dashboard/admin' : '/dashboard/user';
+        const res = await api.get(endpoint);
+        setData(res.data.data);
+        
+        if (!isAdmin) {
+          // fetch announcements separately for users
+          const annRes = await api.get('/announcements?activeOnly=true');
+          setData((prev: any) => ({ ...prev, announcements: annRes.data.data }));
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, [user]);
+
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+
+  if (loading) {
+    return <div className="min-h-screen p-8 flex justify-center items-center"><p>Loading dashboard...</p></div>;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8 pb-20">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -26,48 +57,74 @@ export default function Dashboard() {
             <p className="text-slate-600 dark:text-slate-400 mt-1">Welcome back, {user?.name}</p>
           </div>
           
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <Link 
+              to="/orders"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
+            >
+              <Plus size={18} />
+              Quick Add Order
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Link to="/orders" className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow group">
-            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Briefcase size={24} />
-            </div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Orders</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Manage the entire production pipeline.</p>
-          </Link>
+        <SinceYouWereGoneBanner 
+          newOrdersCount={data?.newEntriesSinceLastLogin?.length || 0} 
+          isAdmin={isAdmin}
+        />
 
-          <Link to="/admin/users" className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow group">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Users size={24} />
+        {isAdmin ? (
+          <>
+            {/* Admin Dashboard */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <KpiCard title="Orders Today" value={data?.kpi?.ordersToday || 0} icon={ShoppingCart} />
+              <KpiCard title="Orders This Week" value={data?.kpi?.ordersThisWeek || 0} icon={TrendingUp} />
+              <KpiCard title="Orders This Month" value={data?.kpi?.ordersThisMonth || 0} icon={Calendar} 
+                trend={{ 
+                  value: Math.round(((data?.kpi?.ordersThisMonth || 0) / (data?.kpi?.ordersLastMonth || 1)) * 100 - 100), 
+                  label: 'vs last month', 
+                  isPositive: ((data?.kpi?.ordersThisMonth || 0) >= (data?.kpi?.ordersLastMonth || 0)) 
+                }} 
+              />
+              <KpiCard title="Active Users Today" value={data?.kpi?.activeUsersToday || 0} icon={UserCheck} />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Users</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Manage user accounts and access.</p>
-          </Link>
-          
-          <Link to="/admin/groups" className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow group">
-            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <UsersRound size={24} />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <NewEntriesWidget entries={data?.newEntriesSinceLastLogin || []} />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Groups</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Organize users into permission groups.</p>
-          </Link>
-          
-          <Link to="/admin/policies" className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow group">
-            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <ShieldAlert size={24} />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <OrdersByStatusChart data={data?.ordersByStatus || []} />
+              <OrdersTrendChart data={data?.ordersTrend || []} />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Policies</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Define granular IAM access policies.</p>
-          </Link>
-        </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <TodayDeliveriesWidget deliveries={data?.todayDeliveries || []} />
+              <div className="col-span-1 lg:col-span-2">
+                {/* We put announcements here for now since RecentActivity isn't ready */}
+                <AnnouncementsWidget announcements={data?.announcements || []} />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* User Dashboard */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+              <KpiCard title="My Orders Today" value={data?.kpi?.ordersToday || 0} icon={ShoppingCart} />
+              <KpiCard title="My Orders This Week" value={data?.kpi?.ordersThisWeek || 0} icon={TrendingUp} />
+              <KpiCard title="My Orders This Month" value={data?.kpi?.ordersThisMonth || 0} icon={Calendar} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <MyRecentOrdersWidget orders={data?.myRecentOrders || []} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TodayDeliveriesWidget deliveries={data?.todayDeliveries || []} />
+              <AnnouncementsWidget announcements={data?.announcements || []} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import prisma from '../config/database';
 import { OrderSequenceService } from './orderSequence.service';
 import { StatusesService } from './statuses.service';
 import { OrderAuditLogService } from './orderAuditLog.service';
+import { notificationsService } from './notifications.service';
 
 export class OrdersService {
   static async getOrders(params?: {
@@ -118,6 +119,18 @@ export class OrdersService {
         oldValue: existingOrder.status.name,
         newValue: newStatus?.name || data.statusId
       });
+
+      // Trigger Notification to the creator (if it wasn't the creator who updated it)
+      if (existingOrder.createdBy !== data.updatedBy) {
+        notificationsService.createNotification({
+          userId: existingOrder.createdBy,
+          type: 'ORDER_STATUS_CHANGED',
+          title: `Order ${existingOrder.orderNumber} status changed`,
+          body: `The status of your order ${existingOrder.orderNumber} was changed from ${existingOrder.status.name} to ${newStatus?.name || data.statusId}.`,
+          link: `/orders/${id}`,
+          sendEmailNotification: true, // As per blueprint
+        }).catch(err => console.error('Failed to create notification', err));
+      }
     }
 
     // Check delivery date

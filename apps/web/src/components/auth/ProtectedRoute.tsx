@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../lib/api';
+import { Layout } from '../layout/Layout';
 
 export function ProtectedRoute() {
   const { isAuthenticated, isLoading, setLoading, clearAuth } = useAuthStore();
@@ -58,5 +59,5 @@ export function ProtectedRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return <Outlet />;
+  return <Layout />;
 }

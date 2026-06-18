@@ -5,7 +5,15 @@ import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { validateBody } from '../middleware/validateBody';
 import { systemAuditLogger } from '../middleware/auditLogger';
-import { PERMISSIONS, userSchema } from '@nexacrm/shared';
+import { PERMISSIONS } from '@nexacrm/shared';
+import { z } from 'zod';
+
+const userSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2),
+  password: z.string().min(6),
+  role: z.enum(['SUPER_ADMIN', 'ADMIN', 'USER']),
+});
 
 const router = Router();
 

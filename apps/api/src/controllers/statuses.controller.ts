@@ -15,7 +15,7 @@ export class StatusesController {
 
   static async getStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const status = await StatusesService.getStatusById(req.params.id);
+      const status = await StatusesService.getStatusById((req.params.id as string));
       if (!status) return sendError(res, 'NOT_FOUND', 'Status not found', 404);
       return sendSuccess(res, status);
     } catch (error) {
@@ -50,7 +50,7 @@ export class StatusesController {
 
   static async updateStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const status = await StatusesService.updateStatus(req.params.id, req.body);
+      const status = await StatusesService.updateStatus((req.params.id as string), req.body);
       return sendSuccess(res, status);
     } catch (error: any) {
       if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Status not found', 404);
@@ -60,7 +60,7 @@ export class StatusesController {
 
   static async deleteStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      await StatusesService.deleteStatus(req.params.id);
+      await StatusesService.deleteStatus((req.params.id as string));
       return sendSuccess(res, { message: 'Status deleted' });
     } catch (error: any) {
       // Prisma throws P2003 if foreign key constraint fails (orders exist for this status)
@@ -74,7 +74,7 @@ export class StatusesController {
 
   static async getStatusFields(req: Request, res: Response, next: NextFunction) {
     try {
-      const fields = await StatusesService.getFieldsForStatus(req.params.id);
+      const fields = await StatusesService.getFieldsForStatus((req.params.id as string));
       return sendSuccess(res, fields);
     } catch (error) {
       next(error);

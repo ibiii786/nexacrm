@@ -12,6 +12,7 @@
   "dependencies": {
     "@nexacrm/shared": "*",
     "@prisma/client": "^6.2.1",
+    "@types/pdfkit": "^0.17.6",
     "argon2": "^0.41.1",
     "bull": "^4.16.4",
     "bullmq": "^5.79.0",
@@ -26,11 +27,12 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.16",
-    "pdfkit": "^0.15.1",
+    "pdfkit": "^0.15.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.0.5",
     "winston": "^3.17.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -14,7 +14,7 @@ export class PoliciesController {
 
   static async getPolicy(req: Request, res: Response, next: NextFunction) {
     try {
-      const policy = await PoliciesService.getPolicyById(req.params.id);
+      const policy = await PoliciesService.getPolicyById((req.params.id as string));
       if (!policy) {
         return sendError(res, 'NOT_FOUND', 'Policy not found', 404);
       }
@@ -50,7 +50,7 @@ export class PoliciesController {
 
   static async updatePolicy(req: Request, res: Response, next: NextFunction) {
     try {
-      const policy = await PoliciesService.updatePolicy(req.params.id, req.body);
+      const policy = await PoliciesService.updatePolicy((req.params.id as string), req.body);
       return sendSuccess(res, policy);
     } catch (error: any) {
       if (error.code === 'P2025') {
@@ -62,7 +62,7 @@ export class PoliciesController {
 
   static async deletePolicy(req: Request, res: Response, next: NextFunction) {
     try {
-      await PoliciesService.deletePolicy(req.params.id);
+      await PoliciesService.deletePolicy((req.params.id as string));
       return sendSuccess(res, { message: 'Policy deleted' });
     } catch (error: any) {
       if (error.code === 'P2025') {

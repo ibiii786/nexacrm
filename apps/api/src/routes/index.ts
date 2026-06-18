@@ -6,6 +6,13 @@ import groupsRoutes from './groups.routes';
 import ordersRoutes from './orders.routes';
 import statusesRoutes from './statuses.routes';
 import fieldsRoutes from './fields.routes';
+import notificationsRoutes from './notifications.routes';
+import announcementsRoutes from './announcements.routes';
+import dashboardRoutes from './dashboard.routes';
+import settingsRoutes from './settings.routes';
+import searchRoutes from './search.routes';
+import payrollRoutes from './payroll.routes';
+import fbRoutes from './fb.routes';
 
 const router = Router();
 
@@ -16,5 +23,12 @@ router.use('/groups', groupsRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/statuses', statusesRoutes);
 router.use('/fields', fieldsRoutes);
+router.use('/notifications', notificationsRoutes);
+router.use('/announcements', announcementsRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/settings', settingsRoutes);
+router.use('/search', searchRoutes);
+router.use('/payroll', payrollRoutes);
+router.use('/fb-accounts', fbRoutes);
 
 export default router;

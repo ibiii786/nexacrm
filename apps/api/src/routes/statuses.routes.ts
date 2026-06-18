@@ -11,39 +11,39 @@ router.use(authenticate);
 
 router.get(
   '/',
-  authorize([PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_MANAGE, PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_MANAGE]),
+  // Authenticated users can view
   StatusesController.getStatuses
 );
 
 router.get(
   '/:id',
-  authorize([PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_MANAGE, PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_MANAGE]),
+  // Authenticated users can view
   StatusesController.getStatus
 );
 
 router.get(
   '/:id/fields',
-  authorize([PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_MANAGE, PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_MANAGE]),
+  // Authenticated users can view
   StatusesController.getStatusFields
 );
 
 router.post(
   '/',
-  authorize([PERMISSIONS.SETTINGS_MANAGE]),
+  authorize([PERMISSIONS.STATUS_MANAGE]),
   systemAuditLogger('Status'),
   StatusesController.createStatus
 );
 
 router.put(
   '/:id',
-  authorize([PERMISSIONS.SETTINGS_MANAGE]),
+  authorize([PERMISSIONS.STATUS_MANAGE]),
   systemAuditLogger('Status'),
   StatusesController.updateStatus
 );
 
 router.delete(
   '/:id',
-  authorize([PERMISSIONS.SETTINGS_MANAGE]),
+  authorize([PERMISSIONS.STATUS_MANAGE]),
   systemAuditLogger('Status'),
   StatusesController.deleteStatus
 );

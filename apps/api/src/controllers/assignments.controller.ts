@@ -6,7 +6,7 @@ export class AssignmentsController {
   static async assignPolicy(req: Request, res: Response, next: NextFunction) {
     try {
       const { policyId, expiresAt } = req.body;
-      const { userId } = req.params;
+      const userId = req.params.userId as string;
       const grantedBy = (req as any).user.id;
 
       if (!policyId) {
@@ -28,7 +28,7 @@ export class AssignmentsController {
 
   static async revokeAssignment(req: Request, res: Response, next: NextFunction) {
     try {
-      const { assignmentId } = req.params;
+      const assignmentId = req.params.assignmentId as string;
       await AssignmentsService.revokePolicyAssignment(assignmentId);
       return sendSuccess(res, { message: 'Assignment revoked' });
     } catch (error: any) {
@@ -41,7 +41,7 @@ export class AssignmentsController {
 
   static async getUserAssignments(req: Request, res: Response, next: NextFunction) {
     try {
-      const assignments = await AssignmentsService.getUserAssignments(req.params.userId);
+      const assignments = await AssignmentsService.getUserAssignments(req.params.userId as string);
       return sendSuccess(res, assignments);
     } catch (error) {
       next(error);

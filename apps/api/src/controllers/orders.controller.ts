@@ -40,7 +40,7 @@ export class OrdersController {
 
   static async getOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const order = await OrdersService.getOrderById(req.params.id);
+      const order = await OrdersService.getOrderById((req.params.id as string));
       if (!order) return sendError(res, 'NOT_FOUND', 'Order not found', 404);
       return sendSuccess(res, order);
     } catch (error) {
@@ -77,7 +77,7 @@ export class OrdersController {
       const updatedBy = (req as any).user.id;
       const { statusId, deliveryDate, customFields, notes } = req.body;
 
-      const order = await OrdersService.updateOrder(req.params.id, {
+      const order = await OrdersService.updateOrder((req.params.id as string), {
         statusId,
         deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
         customFields,
@@ -95,7 +95,7 @@ export class OrdersController {
   static async deleteOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const deletedBy = (req as any).user.id;
-      await OrdersService.deleteOrder(req.params.id, deletedBy);
+      await OrdersService.deleteOrder((req.params.id as string), deletedBy);
       return sendSuccess(res, { message: 'Order deleted' });
     } catch (error) {
       next(error);
@@ -110,7 +110,7 @@ export class OrdersController {
       }
 
       const uploadedBy = (req as any).user.id;
-      const { id: orderId } = req.params;
+      const orderId = req.params.id as string;
 
       const attachment = await AttachmentsService.uploadAttachment({
         orderId,
@@ -129,7 +129,7 @@ export class OrdersController {
 
   static async deleteAttachment(req: Request, res: Response, next: NextFunction) {
     try {
-      await AttachmentsService.deleteAttachment(req.params.attachmentId);
+      await AttachmentsService.deleteAttachment((req.params.attachmentId as string));
       return sendSuccess(res, { message: 'Attachment deleted' });
     } catch (error: any) {
       if (error.message === 'Attachment not found') {

@@ -14,7 +14,7 @@ export class FieldsController {
 
   static async getField(req: Request, res: Response, next: NextFunction) {
     try {
-      const field = await FieldsService.getFieldById(req.params.id);
+      const field = await FieldsService.getFieldById((req.params.id as string));
       if (!field) return sendError(res, 'NOT_FOUND', 'Field not found', 404);
       return sendSuccess(res, field);
     } catch (error) {
@@ -51,7 +51,7 @@ export class FieldsController {
 
   static async updateField(req: Request, res: Response, next: NextFunction) {
     try {
-      const field = await FieldsService.updateField(req.params.id, req.body);
+      const field = await FieldsService.updateField((req.params.id as string), req.body);
       return sendSuccess(res, field);
     } catch (error: any) {
       if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Field not found', 404);
@@ -61,7 +61,7 @@ export class FieldsController {
 
   static async deleteField(req: Request, res: Response, next: NextFunction) {
     try {
-      await FieldsService.deleteField(req.params.id);
+      await FieldsService.deleteField((req.params.id as string));
       return sendSuccess(res, { message: 'Field deleted' });
     } catch (error: any) {
       if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Field not found', 404);

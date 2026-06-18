@@ -1,4 +1,4 @@
-import { Queue, Worker, QueueScheduler } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
 import { AssignmentsService } from '../services/assignments.service';
 import { env } from '../config/env';
 import IORedis from 'ioredis';
@@ -8,7 +8,7 @@ const connection = new IORedis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
 });
 
-export const assignmentsQueue = new Queue('assignments', { connection });
+export const assignmentsQueue = new Queue('assignments', { connection: connection as any });
 
 // Define the worker
 export const assignmentsWorker = new Worker('assignments', async (job) => {
@@ -16,7 +16,7 @@ export const assignmentsWorker = new Worker('assignments', async (job) => {
     const count = await AssignmentsService.cleanupExpiredAssignments();
     return { count };
   }
-}, { connection });
+}, { connection: connection as any });
 
 assignmentsWorker.on('completed', (job, returnvalue) => {
   if (returnvalue?.count > 0) {

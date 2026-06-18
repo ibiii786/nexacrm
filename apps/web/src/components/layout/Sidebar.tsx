@@ -1,0 +1,165 @@
+import { NavLink } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  ShoppingCart, 
+  Users, 
+  Settings, 
+  ShieldCheck,
+  Megaphone,
+  CreditCard, // For Payroll (Module 9)
+  Facebook,   // For FB Accounts (Module 10)
+  X
+} from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const user = useAuthStore((state) => state.user);
+  
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+
+  // Read module toggles from user context or system settings
+  // Since we haven't added these to the authStore explicitly yet, we can check a generic settings object or fetch them
+  // For now, let's assume they are stored in the user object or we can use the useAuthStore state if we add them.
+  // Actually, wait, let me add settings to authStore, or simply fetch them here.
+  // We can add them to authStore or a new settingsStore. Let's create a settings store or just use local state with useEffect for now if not available.
+  // Alternatively, the AuthStore can hold global settings. Let's assume authStore has them or we just read from API.
+  // We'll update the store later, for now let's just assume we'll fetch them or they are in the authStore.
+  const isPayrollEnabled = useAuthStore(state => state.settings?.isPayrollEnabled) === 'true';
+  const isFbAccountsEnabled = useAuthStore(state => state.settings?.isFbAccountsEnabled) === 'true';
+
+  const mainNavItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Orders', path: '/orders', icon: ShoppingCart },
+  ];
+
+  const adminNavItems = [
+    { name: 'Announcements', path: '/announcements', icon: Megaphone },
+  ];
+
+  const iamNavItems = [
+    { name: 'Users', path: '/admin/users', icon: Users },
+    { name: 'Groups', path: '/admin/groups', icon: Users }, // Replace with Group icon if desired
+    { name: 'Policies', path: '/admin/policies', icon: ShieldCheck },
+  ];
+
+  const optionalModules = [
+    ...(isPayrollEnabled ? [{ name: 'Payroll', path: '/payroll', icon: CreditCard }] : []),
+    ...(isFbAccountsEnabled ? [{ name: 'FB Accounts', path: '/fb-accounts', icon: Facebook }] : []),
+  ];
+
+  const NavItem = ({ item }: { item: any }) => (
+    <NavLink
+      to={item.path}
+      onClick={() => {
+        // close sidebar on mobile when navigating
+        if (window.innerWidth < 1024) onClose();
+      }}
+      className={({ isActive }) => 
+        `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+          isActive 
+            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 font-medium' 
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+        }`
+      }
+    >
+      <item.icon size={20} className="flex-shrink-0" />
+      <span className="truncate">{item.name}</span>
+    </NavLink>
+  );
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 
+        transition-transform duration-300 ease-in-out flex flex-col
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+        lg:translate-x-0 lg:static
+      `}>
+        {/* Logo/Header */}
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+            <ShieldCheck size={24} />
+            <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">NexaCRM</span>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 lg:hidden rounded-md"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+          
+          <div>
+            <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Core
+            </div>
+            <div className="space-y-1">
+              {mainNavItems.map(item => <NavItem key={item.name} item={item} />)}
+              {isAdmin && adminNavItems.map(item => <NavItem key={item.name} item={item} />)}
+            </div>
+          </div>
+
+          {isAdmin && (
+            <div>
+              <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Access Control
+              </div>
+              <div className="space-y-1">
+                {iamNavItems.map(item => <NavItem key={item.name} item={item} />)}
+              </div>
+            </div>
+          )}
+
+          {optionalModules.length > 0 && (
+            <div>
+              <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Modules
+              </div>
+              <div className="space-y-1">
+                {optionalModules.map(item => <NavItem key={item.name} item={item} />)}
+              </div>
+            </div>
+          )}
+
+        </nav>
+
+        {/* Bottom Section (Settings for Admin) */}
+        {isAdmin && (
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+            <NavLink
+              to="/settings"
+              onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+              className={({ isActive }) => 
+                `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  isActive 
+                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 font-medium' 
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+                }`
+              }
+            >
+              <Settings size={20} />
+              <span>Settings</span>
+            </NavLink>
+          </div>
+        )}
+      </aside>
+    </>
+  );
+}
