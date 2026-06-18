@@ -3,6 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
+import routes from './routes';
+import { requestLogger } from './middleware/requestLogger';
+import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
@@ -20,13 +23,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Request logging
+app.use(requestLogger);
+
 // Basic health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Placeholder for API routes (Phase 2+)
-// app.use('/api', routes);
+// API routes
+app.use('/api', routes);
 
 // 404 handler
 app.use((req, res) => {
@@ -38,5 +44,8 @@ app.use((req, res) => {
     },
   });
 });
+
+// Global error handler must be last
+app.use(errorHandler);
 
 export default app;

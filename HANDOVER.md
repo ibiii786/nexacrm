@@ -1,40 +1,44 @@
 # NexaCRM — Handover State
 
 ## Last Updated
-2026-06-18T12:32:00-04:00 — Phase 1, Step 5 and 6 completed (PHASE 1 COMPLETE)
+2026-06-18T12:51:00-04:00 — Phase 2, Steps 7, 8, 9, 10 completed (PHASE 2 COMPLETE)
 
 ## What Was Just Completed
-- Created `apps/web/components.json` for shadcn/ui configuration.
-- Created `apps/web/src/lib/utils.ts` for Tailwind class merging (`cn`).
-- Verified `apps/web` Vite dev server starts successfully.
-- Added `packageManager` field to root `package.json` to fix Turborepo warnings.
-- Docker Compose infrastructure is running successfully (Phase 1, Step 6 completed concurrently).
+- Created `auth.service.ts` for Argon2 password verification, JWT access/refresh generation, and token family rotation.
+- Configured refresh tokens to store securely in `HttpOnly` cookies.
+- Added Express middleware: `authenticate`, `authorize` (factory), `rateLimiter`, `errorHandler`, `requestLogger`, `validateBody`, `auditLogger`.
+- Updated backend setup in `app.ts` to include CORS, Helmet, rate limiting, request logging, body parsing, and error handling.
+- Migrated Prisma setup to use `$extends` for soft deletes in `database.ts` instead of the deprecated `$use` method.
+- Added standard `responseHelpers.ts` for strictly typed success/error API responses.
+- Initialized frontend with Zustand `authStore` and custom Axios instance (`api.ts`) that handles silent refresh token rotation via interceptor.
+- Created frontend UI for Auth: `LoginPage` and `ProtectedRoute`.
+- Updated frontend Vite/React router configuration in `main.tsx` and `App.tsx`.
+- Backend confirmed working and correctly catching JSON parsing errors.
 
 ## Current Project State
-**PHASE 1 IS COMPLETE.**
-The monorepo structure is complete. Shared types and API base server files are written. The PostgreSQL database is running, migrated to the correct schema, and seeded. The Vite React frontend is fully configured with Tailwind and shadcn/ui.
+**PHASE 2 IS COMPLETE.**
+The Auth and Session Management system is fully functional. Both the frontend and backend are wired to use tokens with HttpOnly cookies, rotation, and route protection.
 
 ## What Is Next
-Phase 2 — Core API & Infrastructure (Auth & RBAC)
-- Set up JWT generation and refresh token logic (Redis-backed).
-- Create Authentication endpoints (login, logout, refresh, reset password).
-- Implement Express middleware for Auth validation and RBAC checking.
-- Build generic error handler and pagination utilities.
+Phase 3 — IAM System (Users, Groups, Policies, Permissions)
+- Step 11: Permissions service — resolve effective permissions for a user, cache in Redis.
+- Step 12: Users CRUD — create, read, update, soft-delete, suspend, view effective permissions.
+- Step 13: Policies CRUD — create, read, update, delete.
+- Step 14: Groups CRUD — create, read, update, delete.
+- Step 15: Temporary permission assignments & Bull background job.
+- Step 16: Frontend Admin panel pages for IAM.
 
 ## Known Issues / Decisions Made
-- None. System is stable.
+- `authorize` middleware currently allows all `ADMIN` and `SUPER_ADMIN` users by default until `PermissionsService` is fully implemented in Phase 3.
+- Prisma soft-delete middleware updated from `$use` to `$extends` as `$use` is removed in Prisma 6.
 
 ## Environment Notes
-- Docker Desktop must be running.
-- Backend runs on port 3001.
-- Frontend runs on port 5173.
-- Database runs on port 5432.
-- Redis runs on port 6379.
+- Added `.env` support using `dotenv/config` to backend.
+- Added `.env` to frontend for `VITE_API_URL`.
+- Docker Compose must be running for PostgreSQL and Redis.
 
 ## How to Resume
-1. Start Docker Desktop
-2. Clone repo (if starting fresh)
-3. Run `npm install`
-4. Start infrastructure: `docker-compose up -d`
-5. Run `npm run dev` to start both backend and frontend.
-6. Begin Phase 2 implementation.
+1. Start Docker Compose: `docker-compose up -d`
+2. Backend: `cd apps/api && npm run dev`
+3. Frontend: `cd apps/web && npm run dev`
+4. Begin Phase 3 implementation.
