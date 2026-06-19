@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { Link } from 'react-router-dom';
-import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon, CalendarIcon } from 'lucide-react';
 import { OrdersTable } from './OrdersTable';
 import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
+import { OrdersKanban } from '../../components/orders/OrdersKanban';
+import { OrdersCalendar } from '../../components/orders/OrdersCalendar';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<'board' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('list');
   const [search, setSearch] = useState('');
   const [isParserOpen, setIsParserOpen] = useState(false);
 
@@ -90,14 +92,23 @@ export default function OrdersPage() {
             <button 
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              title="List View"
             >
               <ListIcon size={18} />
             </button>
             <button 
               onClick={() => setViewMode('board')}
               className={`p-1.5 rounded ${viewMode === 'board' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              title="Kanban View"
             >
               <KanbanIcon size={18} />
+            </button>
+            <button 
+              onClick={() => setViewMode('calendar')}
+              className={`p-1.5 rounded ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              title="Calendar View"
+            >
+              <CalendarIcon size={18} />
             </button>
           </div>
 
@@ -120,46 +131,14 @@ export default function OrdersPage() {
       </div>
 
       <div className="flex-1 min-h-0">
-        {viewMode === 'list' ? (
+        {viewMode === 'list' && (
           <OrdersTable orders={orders} />
-        ) : (
-          <div className="flex gap-6 h-full overflow-x-auto pb-4">
-            {boardColumns.map(column => (
-              <div key={column.id} className="w-80 shrink-0 flex flex-col bg-slate-50/50 dark:bg-slate-900/30 rounded-lg p-4 border border-slate-200 dark:border-slate-800">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: column.color }}></span>
-                    {column.name}
-                  </h3>
-                  <span className="text-xs font-medium bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">
-                    {column.orders.length}
-                  </span>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                  {column.orders.map((order: any) => (
-                    <Link 
-                      key={order.id} 
-                      to={`/orders/${order.id}`}
-                      className="block bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 hover:border-primary dark:hover:border-primary hover:shadow-md transition-all cursor-pointer"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-bold text-slate-900 dark:text-white text-sm">{order.orderNumber}</span>
-                        {order.deliveryDate && (
-                          <span className="text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded">
-                            Due {new Date(order.deliveryDate).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2">
-                        {order.notes || 'No notes provided'}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+        )}
+        {viewMode === 'board' && (
+          <OrdersKanban orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
+        )}
+        {viewMode === 'calendar' && (
+          <OrdersCalendar orders={orders} statuses={statuses} />
         )}
       </div>
 
