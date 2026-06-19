@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PoliciesService } from '../services/policies.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
+import { AuditService } from '../services/audit.service';
 
 export class PoliciesController {
   static async getPolicies(req: Request, res: Response, next: NextFunction) {
@@ -51,6 +52,9 @@ export class PoliciesController {
   static async updatePolicy(req: Request, res: Response, next: NextFunction) {
     try {
       const policy = await PoliciesService.updatePolicy((req.params.id as string), req.body);
+      
+      await AuditService.log('UPDATE_POLICY', 'Policy', policy.id, (req as any).user.id, { changes: req.body }, req);
+
       return sendSuccess(res, policy);
     } catch (error: any) {
       if (error.code === 'P2025') {

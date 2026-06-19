@@ -5,6 +5,7 @@ import {
   Users, 
   Settings, 
   ShieldCheck,
+  ShieldAlert,
   Megaphone,
   CreditCard, // For Payroll (Module 9)
   Facebook,   // For FB Accounts (Module 10)
@@ -45,6 +46,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Users', path: '/admin/users', icon: Users },
     { name: 'Groups', path: '/admin/groups', icon: Users }, // Replace with Group icon if desired
     { name: 'Policies', path: '/admin/policies', icon: ShieldCheck },
+    ...(user?.role === 'SUPER_ADMIN' ? [{ name: 'Audit Log', path: '/admin/audit-log', icon: ShieldAlert }] : []),
   ];
 
   const optionalModules = [

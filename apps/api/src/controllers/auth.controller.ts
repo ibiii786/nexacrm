@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
 import { env } from '../config/env';
+import { AuditService } from '../services/audit.service';
 
 export class AuthController {
   static async login(req: Request, res: Response, next: NextFunction) {
@@ -23,6 +24,9 @@ export class AuthController {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
+
+      // Log the login action
+      await AuditService.log('LOGIN', 'User', user.id, user.id, { userAgent }, req);
 
       return sendSuccess(res, { user, accessToken });
     } catch (error: any) {

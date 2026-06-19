@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { UsersService } from '../services/users.service';
 import { PermissionsService } from '../services/permissions.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
+import { AuditService } from '../services/audit.service';
 
 export class UsersController {
   static async getUsers(req: Request, res: Response, next: NextFunction) {
@@ -62,6 +63,9 @@ export class UsersController {
       }
 
       await UsersService.deleteUser((req.params.id as string));
+      
+      await AuditService.log('DELETE_USER', 'User', (req.params.id as string), (req as any).user.id, null, req);
+
       return sendSuccess(res, { message: 'User deleted' });
     } catch (error: any) {
       if (error.code === 'P2025') {

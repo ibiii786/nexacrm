@@ -13,6 +13,7 @@ import settingsRoutes from './settings.routes';
 import searchRoutes from './search.routes';
 import payrollRoutes from './payroll.routes';
 import fbRoutes from './fb.routes';
+import auditRoutes from './audit.routes';
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use('/settings', settingsRoutes);
 router.use('/search', searchRoutes);
 router.use('/payroll', payrollRoutes);
 router.use('/fb-accounts', fbRoutes);
+router.use('/audit', auditRoutes);
 
 export default router;

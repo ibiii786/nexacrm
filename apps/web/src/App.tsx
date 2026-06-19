@@ -15,6 +15,7 @@ import PayrollPeriodsPage from './pages/payroll/PayrollPeriodsPage';
 import AdvancesPage from './pages/payroll/AdvancesPage';
 import FbAccountsPage from './pages/fb-accounts/FbAccountsPage';
 import FbAccountDetail from './pages/fb-accounts/FbAccountDetail';
+import AuditLogPage from './pages/admin/AuditLogPage';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/admin/users" element={<UsersPage />} />
         <Route path="/admin/groups" element={<GroupsPage />} />
         <Route path="/admin/policies" element={<PoliciesPage />} />
+        <Route path="/admin/audit-log" element={<AuditLogPage />} />
 
         {/* User & System Settings */}
         <Route path="/settings" element={<SettingsPage />} />

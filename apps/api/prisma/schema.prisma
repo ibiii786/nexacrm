@@ -38,6 +38,7 @@ model User {
   createdOrders    Order[]   @relation("OrderCreator")
   uploadedFiles    Attachment[] @relation("AttachmentUploader")
   orderAudits      OrderAuditLog[]
+  auditLogs        AuditLog[]
   announcements    Announcement[]
   notifications    Notification[]
   updatedSettings  Setting[]
@@ -424,4 +425,19 @@ model FbAccountStatusLog {
   changer       User?     @relation(fields: [changedBy], references: [id])
 
   @@map("fb_account_status_log")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  action    String   @db.VarChar
+  entity    String   @db.VarChar
+  entityId  String?  @map("entity_id") @db.VarChar
+  actorId   String?  @map("actor_id") @db.Uuid
+  details   Json?
+  ipAddress String?  @map("ip_address") @db.VarChar
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  actor     User?    @relation(fields: [actorId], references: [id])
+
+  @@map("audit_logs")
 }
