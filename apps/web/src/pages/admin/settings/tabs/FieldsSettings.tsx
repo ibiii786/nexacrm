@@ -81,6 +81,7 @@ export function FieldsSettings() {
             <span className="text-sm text-slate-600 dark:text-slate-400">Show Archived</span>
           </label>
           <button 
+            data-testid="settings-add-field"
             onClick={openCreateModal}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors text-sm font-medium">
             Add Field
@@ -111,11 +112,11 @@ export function FieldsSettings() {
                   {field.isRequired ? 'Yes' : 'No'}
                 </td>
                 <td className="py-3 px-4 text-sm text-right">
-                  <button onClick={() => openEditModal(field)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
+                  <button onClick={() => openEditModal(field)} data-testid="settings-edit-field" className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
                   {field.isArchived ? (
                     <button onClick={() => restoreField(field.id)} className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">Restore</button>
                   ) : (
-                    <button onClick={() => confirmDelete(field.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Archive</button>
+                    <button onClick={() => confirmDelete(field.id)} data-testid="settings-archive-field" className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Archive</button>
                   )}
                 </td>
               </tr>

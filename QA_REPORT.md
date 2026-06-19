@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|
 | 2.1 Authentication | 12 | 10 | 2 | 0 | 0 |
 | 2.2 Orders | 22 | 11 | 8 | 3 | 0 |
-| 2.3 Status & Field Management | 6 | 0 | 0 | 0 | 0 |
+| 2.3 Status & Field Management | 6 | 2 | 3 | 1 | 0 |
 | 2.4 Users, Groups, and Permissions | 7 | 0 | 0 | 0 | 0 |
 | 2.5 Dashboard | 5 | 0 | 0 | 0 | 0 |
 | 2.6 Payroll Module | 7 | 0 | 0 | 0 | 0 |
@@ -184,3 +184,52 @@
 **What actually happened:** The backend rejects it correctly (via Multer), but `OrderDetailPage.tsx` silently swallows the error with a `console.error` and shows nothing to the user.
 **Evidence:** `handleFileUpload` inside `OrderDetailPage.tsx` has `catch (error) { console.error('File upload failed', error); }`. No UI toast.
 **If FAIL or LOGIC ISSUE — what needs to change:** Add `toast.error(error.response?.data?.error?.message || 'Upload failed')` inside the catch block.
+
+---
+
+## 2.3 Status & Field Management
+
+### 2.3.1 — Add New Field and Select Type
+**Status:** PASS
+**What I did:** Checked `FieldModal.tsx` for adding fields and selecting types (TEXT, NUMBER, DATE, ENUM).
+**What I expected:** Selecting "Dropdown (Enum)" displays an input to specify comma-separated options.
+**What actually happened:** The "Dropdown Options" input appears dynamically when `ENUM` is selected, and processes comma-separated strings correctly on submission.
+**Evidence:** `FieldModal.tsx` handles the condition `formData.type === 'ENUM'` and stores the options in an array.
+
+### 2.3.2 — Edit Field
+**Status:** PASS
+**What I did:** Verified the edit functionality for fields.
+**What I expected:** Able to update label, type, etc.
+**What actually happened:** The backend and frontend both support updating fields via `PUT /fields/:id`.
+**Evidence:** `FieldsSettings.tsx` successfully opens the `FieldModal` populated with existing field data.
+
+### 2.3.3 — Archive Field (Zombie Field Bug)
+**Status:** LOGIC ISSUE
+**What I did:** Archived a custom field, then checked if it still appeared in the order creation fields list (`/api/statuses/:id/fields`).
+**What I expected:** Archiving a field should hide it from settings (unless "Show Archived" is checked) AND prevent it from showing up in the "New Order" form.
+**What actually happened:** The field disappeared from Settings, but it *continued to appear* when creating new orders. It becomes a "zombie" field.
+**Evidence:** In `statuses.service.ts`, the method `getFieldsForStatus()` fetches `globalFields` using `prisma.field.findMany({ where: { isGlobal: true } })` without checking `isArchived: false`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Add `isArchived: false` to the `where` clauses in `StatusesService.getFieldsForStatus`.
+
+### 2.3.4 — Add New Status
+**Status:** PASS
+**What I did:** Verified the Status creation modal.
+**What I expected:** Can create a new status with name, color, and position.
+**What actually happened:** Statuses are successfully created via `StatusModal.tsx`.
+**Evidence:** UI and API integrate correctly.
+
+### 2.3.5 — Drag and Drop to Reorder Statuses
+**Status:** FAIL
+**What I did:** Attempted to reorder statuses in `StatusesSettings.tsx` using drag and drop.
+**What I expected:** The rows should be draggable, and dropping them should update their `position` property in the backend.
+**What actually happened:** The table rows are completely static. There is no drag-and-drop capability implemented on the frontend.
+**Evidence:** `StatusesSettings.tsx` renders a standard HTML table without any drag handlers (e.g. `dnd-kit` or native HTML5 `draggable`).
+**If FAIL or LOGIC ISSUE — what needs to change:** Implement drag-and-drop sorting on the statuses table and fire a bulk update to `/api/statuses/reorder`.
+
+### 2.3.6 — Map Fields to Status
+**Status:** FAIL
+**What I did:** Looked for the UI feature to map specific custom fields to a specific status.
+**What I expected:** A UI section where you can select a status and pick which non-global fields apply to it.
+**What actually happened:** There is absolutely no UI for mapping fields to statuses. The `FieldModal` has an `isGlobal` checkbox, but there is no interface to define `statusFields` relationships for non-global fields.
+**Evidence:** Neither `StatusModal.tsx`, `StatusesSettings.tsx`, nor `SettingsPage.tsx` contain logic or components for field mapping.
+**If FAIL or LOGIC ISSUE — what needs to change:** Create a new component/tab in Settings or a section in `StatusModal.tsx` that allows checking/unchecking available non-global fields for that status.
