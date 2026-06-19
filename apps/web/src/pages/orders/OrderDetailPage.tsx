@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { ArrowLeftIcon, CalendarIcon, UserIcon, ClockIcon, Paperclip, DownloadIcon, TrashIcon } from 'lucide-react';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 
 export default function OrderDetailPage() {
   const { id } = useParams();
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; attachmentId: string | null }>({ open: false, attachmentId: null });
 
   useEffect(() => {
     fetchOrder();
@@ -40,10 +42,15 @@ export default function OrderDetailPage() {
     }
   };
 
-  const deleteAttachment = async (attachmentId: string) => {
-    if (!confirm('Delete this file?')) return;
+  const confirmDeleteAttachment = (attachmentId: string) => {
+    setDeleteDialog({ open: true, attachmentId });
+  };
+
+  const deleteAttachment = async () => {
+    if (!deleteDialog.attachmentId) return;
     try {
-      await api.delete(`/orders/${id}/attachments/${attachmentId}`);
+      await api.delete(`/orders/${id}/attachments/${deleteDialog.attachmentId}`);
+      setDeleteDialog({ open: false, attachmentId: null });
       fetchOrder();
     } catch (error) {
       console.error(error);
@@ -169,7 +176,7 @@ export default function OrderDetailPage() {
                     <a href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/${file.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-primary">
                       <DownloadIcon size={16} />
                     </a>
-                    <button onClick={() => deleteAttachment(file.id)} className="text-slate-400 hover:text-red-500">
+                    <button onClick={() => confirmDeleteAttachment(file.id)} className="text-slate-400 hover:text-red-500">
                       <TrashIcon size={16} />
                     </button>
                   </div>
@@ -182,6 +189,16 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Delete Attachment"
+        description="Are you sure you want to delete this attachment? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={deleteAttachment}
+        isDestructive={true}
+      />
     </div>
   );
 }

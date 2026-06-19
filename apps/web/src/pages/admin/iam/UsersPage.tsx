@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { PlusIcon, ShieldCheckIcon, TrashIcon } from 'lucide-react';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 
 interface User {
   id: string;
@@ -14,6 +15,7 @@ interface User {
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
 
   useEffect(() => {
     fetchUsers();
@@ -30,10 +32,15 @@ export default function UsersPage() {
     }
   };
 
-  const deleteUser = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+  const confirmDelete = (id: string) => {
+    setDeleteDialog({ open: true, userId: id });
+  };
+
+  const deleteUser = async () => {
+    if (!deleteDialog.userId) return;
     try {
-      await api.delete(`/users/${id}`);
+      await api.delete(`/users/${deleteDialog.userId}`);
+      setDeleteDialog({ open: false, userId: null });
       fetchUsers();
     } catch (error) {
       console.error('Failed to delete user', error);
@@ -103,7 +110,7 @@ export default function UsersPage() {
                     <ShieldCheckIcon size={18} />
                   </button>
                   <button 
-                    onClick={() => deleteUser(user.id)}
+                    onClick={() => confirmDelete(user.id)}
                     className="text-red-500 hover:text-red-600 transition-colors"
                     title="Delete User"
                   >
@@ -122,6 +129,16 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Delete User"
+        description="Are you sure you want to permanently delete this user? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={deleteUser}
+        isDestructive={true}
+      />
     </div>
   );
 }

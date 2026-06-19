@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { Link } from 'react-router-dom';
 import { PlusIcon, SearchIcon, KanbanIcon, ListIcon } from 'lucide-react';
+import { OrdersTable } from './OrdersTable';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -82,54 +83,7 @@ export default function OrdersPage() {
 
       <div className="flex-1 min-h-0">
         {viewMode === 'list' ? (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden h-full flex flex-col">
-            <div className="overflow-auto flex-1">
-              <table className="w-full text-left text-sm relative">
-                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 sticky top-0 z-10">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Order #</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Delivery Date</th>
-                    <th className="px-6 py-4 font-medium">Created By</th>
-                    <th className="px-6 py-4 font-medium">Created At</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors group cursor-pointer">
-                      <td className="px-6 py-4 font-medium">
-                        <Link to={`/orders/${order.id}`} className="text-primary hover:underline">
-                          {order.orderNumber}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span 
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          style={{ backgroundColor: `${order.status?.color}20`, color: order.status?.color }}
-                        >
-                          {order.status?.name}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                        {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{order.creator?.name}</td>
-                      <td className="px-6 py-4 text-slate-500 text-xs">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                  {orders.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                        No orders found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <OrdersTable orders={orders} />
         ) : (
           <div className="flex gap-6 h-full overflow-x-auto pb-4">
             {boardColumns.map(column => (

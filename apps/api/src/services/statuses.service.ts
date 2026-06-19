@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import DOMPurify from 'isomorphic-dompurify';
 
 export class StatusesService {
   static async getStatuses(includeArchived = false) {
@@ -44,9 +45,9 @@ export class StatusesService {
 
       const status = await tx.status.create({
         data: {
-          name: data.name,
-          color: data.color,
-          icon: data.icon,
+          name: DOMPurify.sanitize(data.name),
+          color: DOMPurify.sanitize(data.color),
+          icon: data.icon ? DOMPurify.sanitize(data.icon) : undefined,
           isDefault: data.isDefault || false,
           position: data.position,
           createdBy: data.createdBy,
@@ -87,9 +88,9 @@ export class StatusesService {
       return tx.status.update({
         where: { id },
         data: {
-          name: data.name,
-          color: data.color,
-          icon: data.icon,
+          name: data.name ? DOMPurify.sanitize(data.name) : undefined,
+          color: data.color ? DOMPurify.sanitize(data.color) : undefined,
+          icon: data.icon ? DOMPurify.sanitize(data.icon) : undefined,
           isDefault: data.isDefault,
           isArchived: data.isArchived,
           position: data.position,

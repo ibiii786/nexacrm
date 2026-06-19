@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { PlusIcon, TrashIcon } from 'lucide-react';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 
 export default function PoliciesPage() {
   const [policies, setPolicies] = useState<any[]>([]);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; policyId: string | null }>({ open: false, policyId: null });
 
   useEffect(() => {
     fetchPolicies();
@@ -18,10 +20,15 @@ export default function PoliciesPage() {
     }
   };
 
-  const deletePolicy = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this policy?')) return;
+  const confirmDeletePolicy = (id: string) => {
+    setDeleteDialog({ open: true, policyId: id });
+  };
+
+  const deletePolicy = async () => {
+    if (!deleteDialog.policyId) return;
     try {
-      await api.delete(`/policies/${id}`);
+      await api.delete(`/policies/${deleteDialog.policyId}`);
+      setDeleteDialog({ open: false, policyId: null });
       fetchPolicies();
     } catch (error) {
       console.error(error);
@@ -59,7 +66,7 @@ export default function PoliciesPage() {
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{policy.permissions?.length || 0} attached</td>
                 <td className="px-6 py-4 text-right">
                   <button 
-                    onClick={() => deletePolicy(policy.id)}
+                    onClick={() => confirmDeletePolicy(policy.id)}
                     className="text-red-500 hover:text-red-600 transition-colors"
                   >
                     <TrashIcon size={18} />
@@ -67,9 +74,26 @@ export default function PoliciesPage() {
                 </td>
               </tr>
             ))}
+            {policies.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                  No policies found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Delete Policy"
+        description="Are you sure you want to permanently delete this policy? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={deletePolicy}
+        isDestructive={true}
+      />
     </div>
   );
 }

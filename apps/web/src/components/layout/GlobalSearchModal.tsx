@@ -22,6 +22,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeItemRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
@@ -34,6 +35,15 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       setSelectedIndex(0);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [selectedIndex]);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -161,6 +171,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             <div className="space-y-1">
               {results.map((result, index) => (
                 <button
+                  ref={selectedIndex === index ? activeItemRef : null}
                   key={`${result.type}-${result.id}`}
                   onClick={() => handleSelect(result)}
                   onMouseEnter={() => setSelectedIndex(index)}

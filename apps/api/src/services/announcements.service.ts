@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import DOMPurify from 'isomorphic-dompurify';
 
 export interface CreateAnnouncementInput {
   title: string;
@@ -38,7 +39,7 @@ export class AnnouncementsService {
     return prisma.announcement.create({
       data: {
         title: data.title,
-        content: data.content,
+        content: DOMPurify.sanitize(data.content),
         isActive: data.isActive ?? true,
         createdBy: userId,
       },
@@ -49,9 +50,14 @@ export class AnnouncementsService {
   }
 
   async updateAnnouncement(id: string, data: UpdateAnnouncementInput) {
+    const sanitizedData = { ...data };
+    if (sanitizedData.content) {
+      sanitizedData.content = DOMPurify.sanitize(sanitizedData.content);
+    }
+
     return prisma.announcement.update({
       where: { id },
-      data,
+      data: sanitizedData,
       include: {
         creator: { select: { id: true, name: true } },
       },

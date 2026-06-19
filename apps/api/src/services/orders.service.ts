@@ -3,6 +3,7 @@ import { OrderSequenceService } from './orderSequence.service';
 import { StatusesService } from './statuses.service';
 import { OrderAuditLogService } from './orderAuditLog.service';
 import { notificationsService } from './notifications.service';
+import DOMPurify from 'isomorphic-dompurify';
 
 export class OrdersService {
   static async getOrders(params?: {
@@ -59,8 +60,9 @@ export class OrdersService {
 
     for (const field of allowedFields) {
       if (data.customFields[field.name] !== undefined) {
-        // Basic type casting / validation could go here
-        validatedCustomFields[field.name] = data.customFields[field.name];
+        let val = data.customFields[field.name];
+        if (typeof val === 'string') val = DOMPurify.sanitize(val);
+        validatedCustomFields[field.name] = val;
       } else if (field.isRequired) {
         throw new Error(`Field ${field.name} is required for this status`);
       }
@@ -74,7 +76,7 @@ export class OrdersService {
         createdBy: data.createdBy,
         deliveryDate: data.deliveryDate,
         customFields: validatedCustomFields,
-        notes: data.notes,
+        notes: data.notes ? DOMPurify.sanitize(data.notes) : undefined,
       },
       include: {
         status: true
@@ -146,7 +148,7 @@ export class OrdersService {
 
     // Handle notes
     if (data.notes !== undefined) {
-      updateData.notes = data.notes;
+      updateData.notes = data.notes ? DOMPurify.sanitize(data.notes) : null;
     }
 
     // Validate and merge custom fields
@@ -159,7 +161,8 @@ export class OrdersService {
       for (const field of allowedFields) {
         if (data.customFields[field.name] !== undefined) {
           const oldVal = mergedFields[field.name];
-          const newVal = data.customFields[field.name];
+          let newVal = data.customFields[field.name];
+          if (typeof newVal === 'string') newVal = DOMPurify.sanitize(newVal);
           
           if (oldVal !== newVal) {
             mergedFields[field.name] = newVal;

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { PlusIcon, TrashIcon } from 'lucide-react';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<any[]>([]);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; groupId: string | null }>({ open: false, groupId: null });
 
   useEffect(() => {
     fetchGroups();
@@ -18,10 +20,15 @@ export default function GroupsPage() {
     }
   };
 
-  const deleteGroup = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this group?')) return;
+  const confirmDeleteGroup = (id: string) => {
+    setDeleteDialog({ open: true, groupId: id });
+  };
+
+  const deleteGroup = async () => {
+    if (!deleteDialog.groupId) return;
     try {
-      await api.delete(`/groups/${id}`);
+      await api.delete(`/groups/${deleteDialog.groupId}`);
+      setDeleteDialog({ open: false, groupId: null });
       fetchGroups();
     } catch (error) {
       console.error(error);
@@ -59,7 +66,7 @@ export default function GroupsPage() {
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{group._count?.members || 0}</td>
                 <td className="px-6 py-4 text-right">
                   <button 
-                    onClick={() => deleteGroup(group.id)}
+                    onClick={() => confirmDeleteGroup(group.id)}
                     className="text-red-500 hover:text-red-600 transition-colors"
                   >
                     <TrashIcon size={18} />
@@ -67,9 +74,26 @@ export default function GroupsPage() {
                 </td>
               </tr>
             ))}
+            {groups.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                  No groups found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Delete Group"
+        description="Are you sure you want to permanently delete this group? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={deleteGroup}
+        isDestructive={true}
+      />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import { OrdersTrendChart } from '../components/dashboard/OrdersTrendChart';
 import { AnnouncementsWidget } from '../components/dashboard/AnnouncementsWidget';
 import { TodayDeliveriesWidget } from '../components/dashboard/TodayDeliveriesWidget';
 import { MyRecentOrdersWidget } from '../components/dashboard/MyRecentOrdersWidget';
+import { Skeleton } from '../components/ui/skeleton';
 
 export default function Dashboard() {
   const user = useAuthStore((state) => state.user);
@@ -45,7 +46,30 @@ export default function Dashboard() {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   if (loading) {
-    return <div className="min-h-screen p-8 flex justify-center items-center"><p>Loading dashboard...</p></div>;
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8 pb-20">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-10 w-40" />
+          </div>
+          <Skeleton className="h-12 w-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Skeleton className="h-64 w-full lg:col-span-2" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
