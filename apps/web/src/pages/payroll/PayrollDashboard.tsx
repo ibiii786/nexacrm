@@ -71,9 +71,19 @@ export default function PayrollDashboard() {
         </div>
       )}
 
-      {/* Further charts or detailed views could go here */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm flex items-center justify-center min-h-[300px]">
-        <p className="text-slate-500">More detailed charts to be implemented here (e.g. Month-over-Month expenses).</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="/payroll/employees" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm hover:border-primary dark:hover:border-primary transition-all group">
+          <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary mb-2">Employees</h3>
+          <p className="text-slate-500 text-sm">Manage employee profiles and salaries.</p>
+        </a>
+        <a href="/payroll/periods" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm hover:border-primary dark:hover:border-primary transition-all group">
+          <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary mb-2">Payroll Periods</h3>
+          <p className="text-slate-500 text-sm">Generate payslips and process salaries.</p>
+        </a>
+        <a href="/payroll/advances" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm hover:border-primary dark:hover:border-primary transition-all group">
+          <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary mb-2">Advances</h3>
+          <p className="text-slate-500 text-sm">Manage salary advances and deductions.</p>
+        </a>
       </div>
     </div>
   );

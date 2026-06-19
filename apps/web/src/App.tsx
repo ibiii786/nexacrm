@@ -12,6 +12,7 @@ import ProfilePage from './pages/profile/ProfilePage';
 import PayrollDashboard from './pages/payroll/PayrollDashboard';
 import EmployeesPage from './pages/payroll/EmployeesPage';
 import PayrollPeriodsPage from './pages/payroll/PayrollPeriodsPage';
+import AdvancesPage from './pages/payroll/AdvancesPage';
 import FbAccountsPage from './pages/fb-accounts/FbAccountsPage';
 import FbAccountDetail from './pages/fb-accounts/FbAccountDetail';
 
@@ -36,11 +37,11 @@ function App() {
         {/* User & System Settings */}
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-          
         {/* Payroll Routes */}
         <Route path="/payroll" element={<PayrollDashboard />} />
         <Route path="/payroll/employees" element={<EmployeesPage />} />
         <Route path="/payroll/periods" element={<PayrollPeriodsPage />} />
+        <Route path="/payroll/advances" element={<AdvancesPage />} />
 
         {/* FB Accounts Routes */}
         <Route path="/fb-accounts" element={<FbAccountsPage />} />
