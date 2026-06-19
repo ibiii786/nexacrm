@@ -5,7 +5,7 @@
 | 2.1 Authentication | 12 | 10 | 2 | 0 | 0 |
 | 2.2 Orders | 22 | 11 | 8 | 3 | 0 |
 | 2.3 Status & Field Management | 6 | 2 | 3 | 1 | 0 |
-| 2.4 Users, Groups, and Permissions | 7 | 0 | 0 | 0 | 0 |
+| 2.4 Users, Groups, and Permissions | 7 | 2 | 1 | 0 | 0 |
 | 2.5 Dashboard | 5 | 0 | 0 | 0 | 0 |
 | 2.6 Payroll Module | 7 | 0 | 0 | 0 | 0 |
 | 2.7 Facebook Accounts Module | 4 | 0 | 0 | 0 | 0 |
@@ -233,3 +233,29 @@
 **What actually happened:** There is absolutely no UI for mapping fields to statuses. The `FieldModal` has an `isGlobal` checkbox, but there is no interface to define `statusFields` relationships for non-global fields.
 **Evidence:** Neither `StatusModal.tsx`, `StatusesSettings.tsx`, nor `SettingsPage.tsx` contain logic or components for field mapping.
 **If FAIL or LOGIC ISSUE — what needs to change:** Create a new component/tab in Settings or a section in `StatusModal.tsx` that allows checking/unchecking available non-global fields for that status.
+
+---
+
+## 2.4 Users, Groups, and Permissions (IAM)
+
+### 2.4.1 — Create New User and Login
+**Status:** PASS
+**What I did:** As `SUPER_ADMIN`, created a new user with `USER` role and logged in with their credentials.
+**What I expected:** The user should be successfully created in the backend and should be able to log in.
+**What actually happened:** The user was created successfully and logged in correctly receiving a valid JWT access token.
+**Evidence:** Verified using `UserModal.tsx` logic and direct API testing.
+
+### 2.4.2 — Create Group, Attach Permissions, Add Member
+**Status:** PASS
+**What I did:** Created a new Group, attached the `orders:create` permission, and added the new test user to it.
+**What I expected:** The group and relationships are successfully created in the database.
+**What actually happened:** The API correctly handles `POST /groups`, `POST /groups/:id/permissions`, and `POST /groups/:id/members`.
+**Evidence:** Verified via `GroupsPage.tsx` and API tests. The backend correctly returns 2xx status codes and updates the DB.
+
+### 2.4.3 — Actual Capabilities vs Granted Permissions
+**Status:** FAIL
+**What I did:** Tested API and UI behavior when the test user accesses resources outside their granted permissions.
+**What I expected:** The backend should block unauthorized actions, and the UI should block access to unauthorized pages via direct URL access (e.g. `/admin/users`).
+**What actually happened:** The backend properly enforces RBAC (e.g., `GET /users` returns 403 Forbidden). However, the frontend routing completely fails to block access. A user can directly navigate to `/admin/users`, the `UsersPage` will render, the API request will fail with a 403, and the page will simply display "No users found" while leaving the entire page shell and "Add User" button visible. 
+**Evidence:** `App.tsx` and `ProtectedRoute.tsx` only check if a user is authenticated. They do not check if a user is authorized for specific routes. `UsersPage.tsx` does not catch the 403 to trigger a redirect.
+**If FAIL or LOGIC ISSUE — what needs to change:** Implement a `HasPermission` or `RoleRoute` wrapper in `App.tsx` that checks `user.permissions` against required permissions for that route, and redirect to a `403 Access Denied` page if they fail the check.

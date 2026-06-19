@@ -205,6 +205,7 @@ export default function GroupsPage() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
+          data-testid="iam-create-group"
           className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
           <PlusIcon size={16} />
           <span>Create Group</span>

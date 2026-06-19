@@ -73,6 +73,7 @@ export default function UsersPage() {
         </div>
         <button 
           onClick={() => setIsUserModalOpen(true)}
+          data-testid="iam-add-user"
           className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
         >
           <PlusIcon size={16} />
