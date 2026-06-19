@@ -54,7 +54,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                   className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors group cursor-pointer"
                 >
                   <td className="px-6 py-4 font-medium">
-                    <Link to={`/orders/${order.id}`} className="text-primary hover:underline">
+                    <Link to={`/orders/${order.id}`} data-testid={`order-link-${order.orderNumber}`} className="text-primary hover:underline">
                       {order.orderNumber}
                     </Link>
                   </td>

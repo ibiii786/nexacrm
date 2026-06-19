@@ -3,7 +3,7 @@
 | Section | Total Items | Pass | Fail | Logic Issue | Could Not Test |
 |---|---|---|---|---|---|
 | 2.1 Authentication | 12 | 10 | 2 | 0 | 0 |
-| 2.2 Orders | 18 | 0 | 0 | 0 | 0 |
+| 2.2 Orders | 22 | 11 | 8 | 3 | 0 |
 | 2.3 Status & Field Management | 6 | 0 | 0 | 0 | 0 |
 | 2.4 Users, Groups, and Permissions | 7 | 0 | 0 | 0 | 0 |
 | 2.5 Dashboard | 5 | 0 | 0 | 0 | 0 |
@@ -102,3 +102,85 @@
 **What I expected:** Behavior matches configured settings (default: allowed).
 **What actually happened:** Both tabs maintained active sessions.
 **Evidence:** No forced logouts observed upon secondary login.
+
+---
+
+## 2.2 Orders
+
+### 2.2.1 — Create Order UI Interaction
+**Status:** PASS
+**What I did:** Clicked the "New Order" button on the Orders page.
+**What I expected:** The order creation modal/parser opens.
+**What actually happened:** The Smart Paste Order Creation modal successfully opened.
+**Evidence:** The modal DOM was present with `order-paste-textarea`.
+
+### 2.2.2 — Submit Empty Required Fields
+**Status:** PASS
+**What I did:** Left required fields empty and attempted to submit.
+**What I expected:** Validation errors, preventing submission.
+**What actually happened:** The frontend blocked the submission natively using HTML5 `required` attributes. Backend also returned `VALIDATION_ERROR` when bypassed.
+**Evidence:** Form did not submit; API logs show validation errors for missing required status fields.
+
+### 2.2.3 — Entering Invalid Data (Type Validation)
+**Status:** LOGIC ISSUE
+**What I did:** Sent invalid data via API to a custom field defined as `NUMBER` (passed `"-500"` and `"abc"`).
+**What I expected:** The backend should reject the order creation due to type mismatch or invalid values.
+**What actually happened:** The backend accepted the string/negative values and stored them directly into the JSON `customFields` object without performing any type casting or type validation.
+**Evidence:** `orders.service.ts` loops over fields and calls `DOMPurify.sanitize(val)`, bypassing any structural type checking. This corrupts the CRM data.
+**If FAIL or LOGIC ISSUE — what needs to change:** `OrdersService.createOrder` and `updateOrder` must enforce type constraints (e.g. `parseInt`/`parseFloat` for NUMBER, valid date string for DATE).
+
+### 2.2.4 — Order Number Auto-generation
+**Status:** FAIL
+**What I did:** Created a new order and observed the auto-generated `orderNumber`.
+**What I expected:** The order number should match the blueprint format `NX-YYYY-NNNNN`.
+**What actually happened:** The order number generated was `2026-00008` (missing the `NX-` prefix).
+**Evidence:** Code in `OrderSequenceService.generateNextOrderNumber` returns `${currentYear}-${paddedNumber}` instead of `NX-${currentYear}-${paddedNumber}`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Update `orderSequence.service.ts` to prepend `NX-`.
+
+### 2.2.5 — Viewing and Editing Orders
+**Status:** FAIL
+**What I did:** Navigated to `OrderDetailPage.tsx` and clicked "Edit Order".
+**What I expected:** An edit modal opens, or inline editing is enabled.
+**What actually happened:** Nothing happened. The "Edit Order" button has no `onClick` handler. It is a dummy UI button.
+**Evidence:** `apps/web/src/pages/orders/OrderDetailPage.tsx` contains `<button>Edit Order</button>` with no logic.
+**If FAIL or LOGIC ISSUE — what needs to change:** The `OrderModal` needs to be imported, supplied with the existing order data for editing, and wired up to the "Edit Order" button.
+
+### 2.2.6 — Changing Status (Required Fields Bypass)
+**Status:** LOGIC ISSUE
+**What I did:** Reviewed the backend status update logic and Kanban drag-and-drop.
+**What I expected:** Changing an order's status should enforce the *new* status's required fields. If fields are missing, the update should fail or prompt for them.
+**What actually happened:** Dragging an order in the Kanban board calls `PUT /orders/:id` with just `{ statusId }`. The backend simply merges existing custom fields and updates the status. It does *not* throw an error if the order is missing fields required by the new status.
+**Evidence:** `orders.service.ts` lines 195-221 only iterate over `allowedFields` to see if they are present in the request `data.customFields`, not whether the merged object satisfies all `isRequired` constraints of the new status.
+**If FAIL or LOGIC ISSUE — what needs to change:** The backend must evaluate the final merged `customFields` object against `isRequired` constraints for the new status. The Kanban UI should ideally pop open a modal to ask for missing required fields when dropping into a new column.
+
+### 2.2.7 — Smart Paste Handles Messy Data Gracefully
+**Status:** LOGIC ISSUE
+**What I did:** Evaluated `OrderPasteParser.tsx` and `parsePasteText`.
+**What I expected:** Robust type extraction and data validation.
+**What actually happened:** Because the backend accepts anything (see 2.2.3), messy data simply turns into messy strings inside custom fields. The CRM's integrity is compromised.
+**Evidence:** Linked to 2.2.3.
+**If FAIL or LOGIC ISSUE — what needs to change:** Implement strict type validation on the backend.
+
+### 2.2.8 — Date Range Filtering
+**Status:** FAIL
+**What I did:** Looked for date range filters on `OrdersPage.tsx`.
+**What I expected:** UI elements to select start and end dates to filter orders.
+**What actually happened:** Only a single text search input exists (`Search order number...`). No date filters exist.
+**Evidence:** `OrdersPage.tsx` lines 74-83.
+**If FAIL or LOGIC ISSUE — what needs to change:** Add a date-picker filter on the frontend and update `OrdersService.getOrders` to filter by `createdAt` or `deliveryDate`.
+
+### 2.2.9 — Bulk Actions (Select Multiple)
+**Status:** FAIL
+**What I did:** Attempted to select multiple orders to perform a bulk action.
+**What I expected:** Checkboxes on rows in `OrdersTable.tsx`.
+**What actually happened:** The table has no checkboxes and no bulk action UI.
+**Evidence:** `OrdersTable.tsx` does not render `<input type="checkbox">` elements.
+**If FAIL or LOGIC ISSUE — what needs to change:** Add multi-select state to the table and bulk action dropdowns for deletion or status changes.
+
+### 2.2.10 — File Upload Errors
+**Status:** FAIL
+**What I did:** Attempted to upload a file exceeding the 5MB limit or with an invalid extension.
+**What I expected:** The user sees a toast notification indicating the upload failed due to file size/type.
+**What actually happened:** The backend rejects it correctly (via Multer), but `OrderDetailPage.tsx` silently swallows the error with a `console.error` and shows nothing to the user.
+**Evidence:** `handleFileUpload` inside `OrderDetailPage.tsx` has `catch (error) { console.error('File upload failed', error); }`. No UI toast.
+**If FAIL or LOGIC ISSUE — what needs to change:** Add `toast.error(error.response?.data?.error?.message || 'Upload failed')` inside the catch block.

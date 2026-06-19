@@ -62,7 +62,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <Link to="/orders" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary mb-6 transition-colors">
+      <Link to="/orders" data-testid="order-detail-back-link" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary mb-6 transition-colors">
         <ArrowLeftIcon size={16} /> Back to Orders
       </Link>
 
@@ -92,7 +92,7 @@ export default function OrderDetailPage() {
         </div>
         
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium">
+          <button data-testid="order-detail-edit-button" className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium">
             Edit Order
           </button>
         </div>
@@ -160,7 +160,7 @@ export default function OrderDetailPage() {
               </h3>
               <label className="text-xs text-primary cursor-pointer hover:underline font-medium">
                 Upload
-                <input type="file" className="hidden" onChange={handleFileUpload} />
+                <input type="file" data-testid="order-detail-upload-input" className="hidden" onChange={handleFileUpload} />
               </label>
             </div>
             
@@ -173,10 +173,10 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="flex gap-2">
                     {/* @ts-ignore */}
-                    <a href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/${file.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-primary">
+                    <a href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/${file.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" data-testid="order-detail-download-attachment" className="text-slate-400 hover:text-primary">
                       <DownloadIcon size={16} />
                     </a>
-                    <button onClick={() => confirmDeleteAttachment(file.id)} className="text-slate-400 hover:text-red-500">
+                    <button onClick={() => confirmDeleteAttachment(file.id)} data-testid="order-detail-delete-attachment" className="text-slate-400 hover:text-red-500">
                       <TrashIcon size={16} />
                     </button>
                   </div>

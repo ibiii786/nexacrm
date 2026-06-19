@@ -75,6 +75,7 @@ export default function OrdersPage() {
             <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text"
+              data-testid="orders-search-input"
               placeholder="Search order number..."
               className="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
               value={search}
@@ -84,6 +85,7 @@ export default function OrdersPage() {
 
           <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-md">
             <button 
+              data-testid="orders-view-list"
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               title="List View"
@@ -91,6 +93,7 @@ export default function OrdersPage() {
               <ListIcon size={18} />
             </button>
             <button 
+              data-testid="orders-view-kanban"
               onClick={() => setViewMode('board')}
               className={`p-1.5 rounded ${viewMode === 'board' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               title="Kanban View"
@@ -98,6 +101,7 @@ export default function OrdersPage() {
               <KanbanIcon size={18} />
             </button>
             <button 
+              data-testid="orders-view-calendar"
               onClick={() => setViewMode('calendar')}
               className={`p-1.5 rounded ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               title="Calendar View"
@@ -107,6 +111,7 @@ export default function OrdersPage() {
           </div>
 
           <button 
+            data-testid="orders-export-button"
             onClick={handleExport}
             className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-medium"
           >
@@ -115,6 +120,7 @@ export default function OrdersPage() {
           </button>
 
           <button 
+            data-testid="orders-new-order-button"
             onClick={() => setIsParserOpen(true)}
             className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors shadow-sm font-medium"
           >

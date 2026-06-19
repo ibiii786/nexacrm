@@ -176,6 +176,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
                 Paste Raw Text (WhatsApp / FB)
               </label>
               <textarea
+                data-testid="order-paste-textarea"
                 value={rawText}
                 onChange={e => setRawText(e.target.value)}
                 placeholder="Name: John Smith\nPhone: 416-555-0123\nProduct: Mattress"
@@ -184,6 +185,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
             </div>
             <button
               type="button"
+              data-testid="order-parse-button"
               onClick={handleParse}
               disabled={isParsing || !rawText.trim()}
               className="bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
@@ -230,6 +232,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status *</label>
                 <select
+                  data-testid="order-status-select"
                   value={statusId}
                   onChange={e => setStatusId(e.target.value)}
                   className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
@@ -246,6 +249,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Delivery Date</label>
                 <input
                   type="date"
+                  data-testid="order-delivery-date"
                   value={deliveryDate}
                   onChange={e => setDeliveryDate(e.target.value)}
                   className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
@@ -260,6 +264,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
                   </label>
                   <input
                     type="text"
+                    data-testid={`order-custom-field-${field.id}`}
                     value={customFields[field.id] || ''}
                     onChange={e => setCustomFields({ ...customFields, [field.id]: e.target.value })}
                     required={field.isRequired}
@@ -290,6 +295,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
           </button>
           <button
             type="submit"
+            data-testid="order-submit-button"
             form="order-form"
             disabled={isSubmitting || !statusId}
             className="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
