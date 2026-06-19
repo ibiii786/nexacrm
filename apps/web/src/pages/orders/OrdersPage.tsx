@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import { Link } from 'react-router-dom';
+
 import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon, CalendarIcon } from 'lucide-react';
 import { OrdersTable } from './OrdersTable';
 import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
@@ -36,7 +36,6 @@ export default function OrdersPage() {
     // In a real app, you might want to use a token if needed, but since it's a direct download URL,
     // often cookies are used or a short-lived token. For now, we will just open the URL.
     // If auth is via Bearer token, we need to fetch it as a blob and download.
-    const exportUrl = `${api.defaults.baseURL}/orders/export/excel?${params.toString()}`;
     
     api.get(`/orders/export/excel?${params.toString()}`, { responseType: 'blob' })
       .then(response => {
@@ -62,11 +61,6 @@ export default function OrdersPage() {
     }
   };
 
-  // Group orders by status for board view
-  const boardColumns = statuses.map(status => ({
-    ...status,
-    orders: orders.filter(o => o.statusId === status.id)
-  }));
 
   return (
     <div className="p-8 max-w-[1600px] mx-auto h-[calc(100vh-64px)] flex flex-col">

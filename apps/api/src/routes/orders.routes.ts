@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { OrdersController, upload } from '../controllers/orders.controller';
+import { OrdersController } from '../controllers/orders.controller';
+import { UploadService } from '../services/upload.service';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { systemAuditLogger } from '../middleware/auditLogger';
@@ -56,7 +57,7 @@ router.delete(
 router.post(
   '/:id/attachments',
   authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),
-  upload.single('file'),
+  UploadService.single('file'),
   systemAuditLogger('Attachment'),
   OrdersController.uploadAttachment
 );

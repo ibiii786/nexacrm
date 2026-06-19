@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../../../lib/api';
+import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { ShieldAlert, Search } from 'lucide-react';

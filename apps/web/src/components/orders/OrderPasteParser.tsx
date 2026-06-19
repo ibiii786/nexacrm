@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../../lib/api';
+import { api } from '../../lib/api';
 import { XIcon, FileTextIcon, CheckIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react';
 
 interface OrderPasteParserProps {
@@ -40,8 +40,8 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
     // When status changes, figure out which fields are allowed
     if (statusId) {
       api.get(`/statuses/${statusId}/fields`)
-        .then(res => setStatusFields(res.data.data))
-        .catch(err => console.error('Failed to load status fields', err));
+        .then((res: any) => setStatusFields(res.data.data))
+        .catch((err: any) => console.error('Failed to load status fields', err));
     } else {
       setStatusFields([]);
     }

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/login';
 import Dashboard from './pages/dashboard';
 import UsersPage from './pages/admin/iam/UsersPage';
@@ -18,6 +19,9 @@ import FbAccountDetail from './pages/fb-accounts/FbAccountDetail';
 import AuditLogPage from './pages/admin/AuditLogPage';
 
 function App() {
+  const isPayrollEnabled = useAuthStore(state => state.settings?.isPayrollEnabled) === 'true';
+  const isFbAccountsEnabled = useAuthStore(state => state.settings?.isFbAccountsEnabled) === 'true';
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
@@ -40,14 +44,22 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         {/* Payroll Routes */}
-        <Route path="/payroll" element={<PayrollDashboard />} />
-        <Route path="/payroll/employees" element={<EmployeesPage />} />
-        <Route path="/payroll/periods" element={<PayrollPeriodsPage />} />
-        <Route path="/payroll/advances" element={<AdvancesPage />} />
+        {isPayrollEnabled && (
+          <>
+            <Route path="/payroll" element={<PayrollDashboard />} />
+            <Route path="/payroll/employees" element={<EmployeesPage />} />
+            <Route path="/payroll/periods" element={<PayrollPeriodsPage />} />
+            <Route path="/payroll/advances" element={<AdvancesPage />} />
+          </>
+        )}
 
         {/* FB Accounts Routes */}
-        <Route path="/fb-accounts" element={<FbAccountsPage />} />
-        <Route path="/fb-accounts/:id" element={<FbAccountDetail />} />
+        {isFbAccountsEnabled && (
+          <>
+            <Route path="/fb-accounts" element={<FbAccountsPage />} />
+            <Route path="/fb-accounts/:id" element={<FbAccountDetail />} />
+          </>
+        )}
 
         {/* Default redirect for authenticated users */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
