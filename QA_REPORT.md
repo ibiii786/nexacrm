@@ -6,8 +6,8 @@
 | 2.2 Orders | 22 | 11 | 8 | 3 | 0 |
 | 2.3 Status & Field Management | 6 | 2 | 3 | 1 | 0 |
 | 2.4 Users, Groups, and Permissions | 7 | 2 | 1 | 0 | 0 |
-| 2.5 Dashboard | 5 | 4 | 0 | 0 | 0 |
-| 2.6 Payroll Module | 7 | 0 | 0 | 0 | 0 |
+| 2.5 Dashboard | 5 | 4 | 1 | 0 | 0 |
+| 2.6 Payroll Module | 7 | 1 | 3 | 0 | 0 |
 | 2.7 Facebook Accounts Module | 4 | 0 | 0 | 0 | 0 |
 | 2.8 Notifications & Announcements | 5 | 0 | 0 | 0 | 0 |
 | 2.9 Settings | 4 | 0 | 0 | 0 | 0 |
@@ -291,3 +291,46 @@
 **What I expected:** Information like `topPerformer`, `activeUsersToday`, and system-wide aggregated data should be completely absent from the JSON payload.
 **What actually happened:** The endpoint returned only the user's specific KPI data, their recent orders, and today's deliveries. No admin-only data was included in the response.
 **Evidence:** Inspected the JSON payload of the user dashboard API endpoint.
+
+### 2.5.5 — Quick Add Order Flow
+**Status:** FAIL
+**What I did:** Verified the link behavior of the "Quick Add Order" button on the dashboard.
+**What I expected:** Clicking it should navigate to the orders page and automatically open the `OrderPasteParser` modal.
+**What actually happened:** The button is a simple `<Link to="/orders">`. The `OrdersPage` does not read URL search params (like `?new=true`) or state to automatically open the modal. Therefore, clicking the button only takes the user to the generic orders list.
+**Evidence:** `dashboard.tsx` line 87: `<Link to="/orders">`. `OrdersPage.tsx` does not check search parameters to set `isParserOpen` to `true`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Modify the button in `dashboard.tsx` to `<Link to="/orders?new=true">`. In `OrdersPage.tsx`, read the URL search param on mount, and if `new=true`, automatically set `isParserOpen(true)`.
+
+---
+
+## 2.6 Payroll Module
+
+### 2.6.1 — Default Module State
+**Status:** PASS
+**What I did:** Checked the default settings configuration in the codebase.
+**What I expected:** The payroll module should be disabled by default.
+**What actually happened:** `MODULE_PAYROLL_ENABLED` defaults to `'false'` in `DEFAULT_SETTINGS`.
+**Evidence:** Verified in `packages/shared/src/schemas/settings.schema.ts`.
+
+### 2.6.2 — Toggle Payroll as Admin
+**Status:** FAIL
+**What I did:** Attempted to toggle Payroll ON as the `ADMIN` test user.
+**What I expected:** The toggle should succeed and the sidebar should update dynamically without a restart.
+**What actually happened:** The toggle failed with a `403 Forbidden` error because the `ADMIN` role is not granted the `SETTINGS_ACCESS` permission by default. If toggled as `SUPER_ADMIN`, the UI sidebar updates correctly without a refresh (via Zustand state), but the test explicitly asks to do this as `ADMIN`.
+**Evidence:** The `PUT /settings` endpoint is protected by `authorize([PERMISSIONS.SETTINGS_ACCESS])`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Either update the test protocol to specify `SUPER_ADMIN`, or grant the `SETTINGS_ACCESS` permission to the `ADMIN` role by default in the database seed.
+
+### 2.6.3 — Create an Employee UI
+**Status:** FAIL
+**What I did:** Investigated the Employees UI page to create a new employee.
+**What I expected:** An actionable "Add Employee" button that opens a modal to create an employee record.
+**What actually happened:** The "Add Employee" button in `EmployeesPage.tsx` is an empty shell. It has no `onClick` handler and there is no UI component built to create an employee.
+**Evidence:** `EmployeesPage.tsx` line 32: `<button className="...">Add Employee</button>`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Implement a `CreateEmployeeModal.tsx` and link it to the "Add Employee" button.
+
+### 2.6.4 — Create Payroll Period & Math Verification
+**Status:** FAIL
+**What I did:** Investigated the Payroll Periods UI page to generate a payroll period. I also tested the calculation logic directly via the API.
+**What I expected:** A UI to generate payroll that accurately calculates Net Salary = Gross - Deductions.
+**What actually happened:** The "Generate Payroll" button in `PayrollPeriodsPage.tsx` is an empty shell with no `onClick` handler. Therefore, payroll periods cannot be generated from the UI. *However*, when testing the `/api/payroll/periods` endpoint directly with Gross = $5000 and Deductions = $1000, the API returned exactly $4000. So the backend math is correct, but the UI is missing.
+**Evidence:** `PayrollPeriodsPage.tsx` line 71: `<button className="...">Generate Payroll</button>`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Implement a `PayrollPeriodModal.tsx` to handle the generation of payroll periods from the frontend.
