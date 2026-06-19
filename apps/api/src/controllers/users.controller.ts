@@ -29,8 +29,9 @@ export class UsersController {
   static async createUser(req: Request, res: Response, next: NextFunction) {
     try {
       const createdBy = (req as any).user.id;
-      // Assume body is validated by zod schema middleware before reaching here
-      const user = await UsersService.createUser({ ...req.body, createdBy });
+      // Map 'password' from request body to 'passwordPlain' expected by service
+      const { password, ...rest } = req.body;
+      const user = await UsersService.createUser({ ...rest, passwordPlain: password, createdBy });
       return sendSuccess(res, user, undefined, 201);
     } catch (error: any) {
       if (error.code === 'P2002') {
@@ -109,6 +110,53 @@ export class UsersController {
     try {
       const perms = await PermissionsService.getEffectivePermissions((req.params.id as string));
       return sendSuccess(res, perms);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async grantPermission(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { permissionId, expiresAt } = req.body;
+      const grantedBy = (req as any).user.id;
+      const result = await UsersService.grantPermission(req.params.id as string, permissionId, grantedBy, expiresAt);
+      return sendSuccess(res, result);
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        return sendError(res, 'CONFLICT', 'Permission already granted', 409);
+      }
+      next(error);
+    }
+  }
+  static async revokePermission(req: Request, res: Response, next: NextFunction) {
+    try {
+      await UsersService.revokePermission(req.params.id as string, req.params.permissionId as string);
+      return sendSuccess(res, null);
+    } catch (error) {
+      next(error);
+    }
+  }
+  static async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requestingUser = (req as any).user;
+      const targetId = req.params.id as string;
+      // Only allow users to change their own password, or admins to change anyone's
+      if (requestingUser.id !== targetId && requestingUser.role === 'USER') {
+        return sendError(res, 'FORBIDDEN', 'You can only change your own password', 403);
+      }
+      const { currentPassword, newPassword } = req.body;
+      if (!newPassword || newPassword.length < 8) {
+        return sendError(res, 'VALIDATION_ERROR', 'New password must be at least 8 characters', 400);
+      }
+      // If changing own password, verify current password first
+      if (requestingUser.id === targetId) {
+        const valid = await UsersService.verifyPassword(targetId, currentPassword);
+        if (!valid) {
+          return sendError(res, 'INVALID_CREDENTIALS', 'Current password is incorrect', 401);
+        }
+      }
+      await UsersService.changePassword(targetId, newPassword);
+      return sendSuccess(res, { message: 'Password updated successfully' });
     } catch (error) {
       next(error);
     }

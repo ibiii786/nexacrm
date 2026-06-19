@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../../../../lib/api';
 import toast from 'react-hot-toast';
 import { Switch } from '../../../../components/ui/switch'; // Assuming shadcn switch
+import { useAuthStore } from '../../../../stores/authStore';
 
 export function ModuleToggles() {
   const [loading, setLoading] = useState(true);
@@ -9,9 +10,10 @@ export function ModuleToggles() {
     isPayrollEnabled: false,
     isFbAccountsEnabled: false,
   });
+  const fetchSettings = useAuthStore(state => state.fetchSettings);
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const loadSettings = async () => {
       try {
         const res = await api.get('/settings');
         setModules({
@@ -24,7 +26,7 @@ export function ModuleToggles() {
         setLoading(false);
       }
     };
-    fetchSettings();
+    loadSettings();
   }, []);
 
   const handleToggle = async (key: string, checked: boolean) => {
@@ -34,7 +36,7 @@ export function ModuleToggles() {
     try {
       await api.put('/settings', { [key]: checked.toString() });
       toast.success('Module setting updated. You may need to refresh to see sidebar changes.');
-      // Ideally, trigger a context refresh here or reload
+      await fetchSettings(); // This updates the global store instantly
     } catch (error) {
       setModules(previousState);
       toast.error('Failed to update module setting');

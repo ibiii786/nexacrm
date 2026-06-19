@@ -7,16 +7,16 @@ export class AssignmentsService {
   /**
    * Assign a policy to a user, optionally temporarily
    */
-  static async assignPolicyToUser(
+  static async assignPermissionToUser(
     userId: string,
-    policyId: string,
+    permissionId: string,
     grantedBy: string,
     expiresAt?: Date
   ) {
-    const res = await prisma.userPolicy.create({
+    const res = await prisma.userPermission.create({
       data: {
         userId,
-        policyId,
+        permissionId,
         grantedBy,
         expiresAt,
         isActive: true,
@@ -31,14 +31,14 @@ export class AssignmentsService {
   /**
    * Revoke a policy assignment manually
    */
-  static async revokePolicyAssignment(id: string) {
-    const assignment = await prisma.userPolicy.findUnique({
+  static async revokePermissionAssignment(id: string) {
+    const assignment = await prisma.userPermission.findUnique({
       where: { id }
     });
 
     if (!assignment) return null;
 
-    const res = await prisma.userPolicy.delete({
+    const res = await prisma.userPermission.delete({
       where: { id }
     });
 
@@ -48,13 +48,13 @@ export class AssignmentsService {
   }
 
   /**
-   * Gets all direct policy assignments for a user
+   * Gets all direct permission assignments for a user
    */
   static async getUserAssignments(userId: string) {
-    return prisma.userPolicy.findMany({
+    return prisma.userPermission.findMany({
       where: { userId },
       include: {
-        policy: {
+        permission: {
           select: { name: true, description: true }
         },
         grantor: {
@@ -69,7 +69,7 @@ export class AssignmentsService {
    * Called by a Bull background job to clean up expired permissions
    */
   static async cleanupExpiredAssignments() {
-    const expired = await prisma.userPolicy.findMany({
+    const expired = await prisma.userPermission.findMany({
       where: {
         isActive: true,
         expiresAt: { lte: new Date() }
@@ -80,7 +80,7 @@ export class AssignmentsService {
 
     // We mark them as inactive (or we could delete them)
     // The blueprint says "revoke expired assignments", marking inactive is good for audit history
-    await prisma.userPolicy.updateMany({
+    await prisma.userPermission.updateMany({
       where: {
         id: { in: expired.map(e => e.id) }
       },
@@ -103,7 +103,7 @@ export class AssignmentsService {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    const expiring = await prisma.userPolicy.findMany({
+    const expiring = await prisma.userPermission.findMany({
       where: {
         isActive: true,
         expiresAt: {
@@ -112,7 +112,7 @@ export class AssignmentsService {
         }
       },
       include: {
-        policy: true
+        permission: true
       }
     });
 
@@ -123,7 +123,7 @@ export class AssignmentsService {
           userId: e.userId,
           type: 'PERMISSION_EXPIRING',
           title: `Permission Expiring Soon`,
-          body: `Your access to the policy "${e.policy.name}" will expire on ${e.expiresAt?.toLocaleDateString()}.`,
+          body: `Your access to the permission "${e.permission.name}" will expire on ${e.expiresAt?.toLocaleDateString()}.`,
           link: `/profile`,
           sendEmailNotification: true,
         }).catch(err => console.error(err));

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { env } from '../src/config/env';
 import {
   ALL_PERMISSIONS,
@@ -47,6 +47,22 @@ async function main() {
     console.log('SUPER_ADMIN already exists.');
   }
 
+  // Add a standard USER for testing
+  let testUser = await prisma.user.findUnique({ where: { email: 'user@nexacrm.com' } });
+  if (!testUser) {
+    const userPass = await argon2.hash('UserPassword123!');
+    testUser = await prisma.user.create({
+      data: {
+        email: 'user@nexacrm.com',
+        name: 'Standard User',
+        passwordHash: userPass,
+        role: 'USER',
+        isActive: true,
+      },
+    });
+    console.log('Created standard test user.');
+  }
+
   // 3. Permissions (idempotent upsert)
   console.log('Seeding permissions...');
   for (const permName of ALL_PERMISSIONS) {
@@ -66,13 +82,14 @@ async function main() {
         module: moduleName,
       },
       create: {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         name: permName,
         description: PERMISSION_DESCRIPTIONS[permName],
         module: moduleName,
       },
     });
   }
+
 
   // 4. Default Statuses (idempotent)
   console.log('Seeding default statuses...');

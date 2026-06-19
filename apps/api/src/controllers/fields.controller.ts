@@ -5,7 +5,8 @@ import { sendSuccess, sendError } from '../utils/responseHelpers';
 export class FieldsController {
   static async getFields(req: Request, res: Response, next: NextFunction) {
     try {
-      const fields = await FieldsService.getFields();
+      const includeArchived = req.query.includeArchived === 'true';
+      const fields = await FieldsService.getFields(includeArchived);
       return sendSuccess(res, fields);
     } catch (error) {
       next(error);

@@ -93,8 +93,9 @@ export class OrdersService {
     const validatedCustomFields: any = {};
 
     for (const field of allowedFields) {
-      if (data.customFields[field.name] !== undefined) {
-        let val = data.customFields[field.name];
+      const value = data.customFields[field.id] !== undefined ? data.customFields[field.id] : data.customFields[field.name];
+      if (value !== undefined) {
+        let val = value;
         if (typeof val === 'string') val = DOMPurify.sanitize(val);
         validatedCustomFields[field.name] = val;
       } else if (field.isRequired) {
@@ -198,9 +199,10 @@ export class OrdersService {
       const mergedFields = { ...((existingOrder.customFields as any) || {}) };
       
       for (const field of allowedFields) {
-        if (data.customFields[field.name] !== undefined) {
+        const value = data.customFields[field.id] !== undefined ? data.customFields[field.id] : data.customFields[field.name];
+        if (value !== undefined) {
           const oldVal = mergedFields[field.name];
-          let newVal = data.customFields[field.name];
+          let newVal = value;
           if (typeof newVal === 'string') newVal = DOMPurify.sanitize(newVal);
           
           if (oldVal !== newVal) {

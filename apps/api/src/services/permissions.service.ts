@@ -6,8 +6,8 @@ export class PermissionsService {
 
   /**
    * Resolves the effective permissions for a user by combining:
-   * 1. Permissions from policies directly assigned to the user
-   * 2. Permissions from policies assigned to groups the user belongs to
+   * 1. Permissions directly assigned to the user (UserPermission)
+   * 2. Permissions assigned to groups the user belongs to (GroupPermission)
    * Caches the result in Redis.
    */
   static async getEffectivePermissions(userId: string): Promise<string[]> {
@@ -21,8 +21,8 @@ export class PermissionsService {
 
     // 2. Not in cache, compute from DB
     
-    // Get direct policies
-    const directPolicies = await prisma.userPolicy.findMany({
+    // Get direct permissions
+    const directPermissions = await prisma.userPermission.findMany({
       where: {
         userId,
         isActive: true,
@@ -32,31 +32,19 @@ export class PermissionsService {
         ]
       },
       include: {
-        policy: {
-          include: {
-            permissions: {
-              include: { permission: true }
-            }
-          }
-        }
+        permission: true
       }
     });
 
-    // Get group policies
+    // Get group permissions
     const groupMemberships = await prisma.groupMember.findMany({
       where: { userId },
       include: {
         group: {
           include: {
-            policies: {
+            permissions: {
               include: {
-                policy: {
-                  include: {
-                    permissions: {
-                      include: { permission: true }
-                    }
-                  }
-                }
+                permission: true
               }
             }
           }
@@ -68,18 +56,14 @@ export class PermissionsService {
     const permissionSet = new Set<string>();
 
     // Add direct permissions
-    for (const userPolicy of directPolicies) {
-      for (const pp of userPolicy.policy.permissions) {
-        permissionSet.add(pp.permission.name);
-      }
+    for (const up of directPermissions) {
+      permissionSet.add(up.permission.name);
     }
 
     // Add group permissions
     for (const membership of groupMemberships) {
-      for (const gp of membership.group.policies) {
-        for (const pp of gp.policy.permissions) {
-          permissionSet.add(pp.permission.name);
-        }
+      for (const gp of membership.group.permissions) {
+        permissionSet.add(gp.permission.name);
       }
     }
 
@@ -114,22 +98,22 @@ export class PermissionsService {
   }
 
   /**
-   * Invalidates permission cache for all users attached to a policy (directly or via group)
+   * Invalidates permission cache for all users attached to a permission (directly or via group)
    */
-  static async invalidatePolicyCache(policyId: string): Promise<void> {
-    // Users with direct policy
-    const directUsers = await prisma.userPolicy.findMany({
-      where: { policyId },
+  static async invalidatePermissionCache(permissionId: string): Promise<void> {
+    // Users with direct permission
+    const directUsers = await prisma.userPermission.findMany({
+      where: { permissionId },
       select: { userId: true }
     });
 
-    // Users with policy via group
-    const groupPolicies = await prisma.groupPolicy.findMany({
-      where: { policyId },
+    // Users with permission via group
+    const groupPermissions = await prisma.groupPermission.findMany({
+      where: { permissionId },
       select: { groupId: true }
     });
     
-    const groupIds = groupPolicies.map(gp => gp.groupId);
+    const groupIds = groupPermissions.map(gp => gp.groupId);
     
     let groupUsers: { userId: string }[] = [];
     if (groupIds.length > 0) {
@@ -149,5 +133,14 @@ export class PermissionsService {
       const keys = Array.from(userIds).map(id => `user:${id}:permissions`);
       await redis.del(...keys);
     }
+  }
+
+  static async getPermissions() {
+    return prisma.permission.findMany({
+      orderBy: [
+        { module: 'asc' },
+        { name: 'asc' }
+      ]
+    });
   }
 }

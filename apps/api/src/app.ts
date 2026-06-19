@@ -28,7 +28,17 @@ app.use(helmet({
 }));
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow any localhost port in development, otherwise check FRONTEND_URL
+      if (!origin) return callback(null, true);
+      if (env.NODE_ENV === 'development' && /^https?:\/\/localhost:\d+$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (origin === env.FRONTEND_URL) {
+        return callback(null, true);
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );

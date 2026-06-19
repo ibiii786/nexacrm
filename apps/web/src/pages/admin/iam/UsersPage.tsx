@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
-import { PlusIcon, ShieldCheckIcon, TrashIcon } from 'lucide-react';
+import { PlusIcon, TrashIcon, BanIcon, ShieldPlusIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
+import { UserModal } from './UserModal';
+import { UserPermissionsModal } from './UserPermissionsModal';
 
 interface User {
   id: string;
@@ -16,6 +19,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [permissionsModal, setPermissionsModal] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
 
   useEffect(() => {
     fetchUsers();
@@ -50,9 +55,10 @@ export default function UsersPage() {
   const suspendUser = async (id: string, isActive: boolean) => {
     try {
       await api.post(`/users/${id}/${isActive ? 'suspend' : 'unsuspend'}`);
+      toast.success(isActive ? 'User suspended' : 'User unsuspended');
       fetchUsers();
-    } catch (error) {
-      console.error('Failed to toggle user suspension', error);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || 'Failed to update user status');
     }
   };
 
@@ -65,7 +71,10 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">User Management</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Manage users, roles, and access.</p>
         </div>
-        <button className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+        <button 
+          onClick={() => setIsUserModalOpen(true)}
+          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+        >
           <PlusIcon size={16} />
           <span>Add User</span>
         </button>
@@ -104,10 +113,17 @@ export default function UsersPage() {
                 <td className="px-6 py-4 text-right space-x-3">
                   <button 
                     onClick={() => suspendUser(user.id, user.isActive)}
-                    className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                    className={`transition-colors ${user.isActive ? 'text-amber-500 hover:text-amber-600' : 'text-green-500 hover:text-green-600'}`}
                     title={user.isActive ? 'Suspend User' : 'Unsuspend User'}
                   >
-                    <ShieldCheckIcon size={18} />
+                    <BanIcon size={18} />
+                  </button>
+                  <button 
+                    onClick={() => setPermissionsModal({ open: true, userId: user.id })}
+                    className="text-blue-500 hover:text-blue-700 transition-colors"
+                    title="Manage Permissions"
+                  >
+                    <ShieldPlusIcon size={18} />
                   </button>
                   <button 
                     onClick={() => confirmDelete(user.id)}
@@ -131,13 +147,23 @@ export default function UsersPage() {
       </div>
 
       <ConfirmDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        isOpen={deleteDialog.open}
         title="Delete User"
-        description="Are you sure you want to permanently delete this user? This action cannot be undone."
-        confirmText="Delete"
+        message="Are you sure you want to delete this user? This action cannot be undone."
         onConfirm={deleteUser}
-        isDestructive={true}
+        onCancel={() => setDeleteDialog({ open: false, userId: null })}
+      />
+
+      <UserModal 
+        isOpen={isUserModalOpen} 
+        onClose={() => setIsUserModalOpen(false)} 
+        onSuccess={fetchUsers} 
+      />
+
+      <UserPermissionsModal
+        isOpen={permissionsModal.open}
+        onClose={() => setPermissionsModal({ open: false, userId: null })}
+        userId={permissionsModal.userId}
       />
     </div>
   );

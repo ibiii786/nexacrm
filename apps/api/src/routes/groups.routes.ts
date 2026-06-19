@@ -58,19 +58,19 @@ router.delete(
   GroupsController.removeMember
 );
 
-// Policies
+// Permissions
 router.post(
-  '/:id/policies',
+  '/:id/permissions',
   authorize([PERMISSIONS.USERS_MANAGE]),
-  systemAuditLogger('GroupPolicy'),
-  GroupsController.attachPolicy
+  systemAuditLogger('GroupPermission'),
+  GroupsController.attachPermission
 );
 
 router.delete(
-  '/:id/policies/:policyId',
+  '/:id/permissions/:permissionId',
   authorize([PERMISSIONS.USERS_MANAGE]),
-  systemAuditLogger('GroupPolicy'),
-  GroupsController.detachPolicy
+  systemAuditLogger('GroupPermission'),
+  GroupsController.detachPermission
 );
 
 export default router;

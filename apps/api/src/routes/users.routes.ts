@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UsersController } from '../controllers/users.controller';
-import { AssignmentsController } from '../controllers/assignments.controller';
+
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { validateBody } from '../middleware/validateBody';
@@ -37,7 +37,14 @@ router.get(
 
 router.get(
   '/:id',
-  authorize([PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE]),
+  // Allow self-access (user viewing own profile) or admins
+  (req, res, next) => {
+    const requestingUserId = (req as any).user?.id;
+    if (requestingUserId && requestingUserId === req.params.id) {
+      return next(); // Self-access allowed
+    }
+    return authorize([PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE])(req, res, next);
+  },
   UsersController.getUser
 );
 
@@ -84,25 +91,26 @@ router.get(
   UsersController.getEffectivePermissions
 );
 
-// Assignments (Temporary & Permanent User Policies)
-router.get(
-  '/:userId/policies',
-  authorize([PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE]),
-  AssignmentsController.getUserAssignments
-);
-
+// Assignments (Temporary & Permanent User Permissions)
 router.post(
-  '/:userId/policies',
+  '/:id/permissions',
   authorize([PERMISSIONS.USERS_MANAGE]),
-  systemAuditLogger('UserPolicy'),
-  AssignmentsController.assignPolicy
+  systemAuditLogger('UserPermission'),
+  UsersController.grantPermission
 );
 
 router.delete(
-  '/:userId/policies/:assignmentId',
+  '/:id/permissions/:permissionId',
   authorize([PERMISSIONS.USERS_MANAGE]),
-  systemAuditLogger('UserPolicy'),
-  AssignmentsController.revokeAssignment
+  systemAuditLogger('UserPermission'),
+  UsersController.revokePermission
+);
+
+// Change password (self or admin)
+router.put(
+  '/:id/password',
+  systemAuditLogger('PasswordChange'),
+  UsersController.changePassword
 );
 
 export default router;

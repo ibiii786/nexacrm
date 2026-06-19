@@ -10,10 +10,16 @@ const router = Router();
 
 router.use(authenticate);
 
+// Smart Paste Parser — MUST be registered before /:id to avoid being matched as an ID
+router.post(
+  '/parse-paste',
+  authorize([PERMISSIONS.ORDERS_CREATE]),
+  OrdersController.parsePaste
+);
+
 // Orders CRUD
 router.get(
   '/',
-  // Any authenticated user can view orders
   OrdersController.getOrders
 );
 
@@ -22,23 +28,15 @@ router.get(
   OrdersController.exportOrdersExcel
 );
 
-router.get(
-  '/:id',
-  // Any authenticated user can view an order
-  OrdersController.getOrder
-);
-
 router.post(
   '/',
   authorize([PERMISSIONS.ORDERS_CREATE]),
   OrdersController.createOrder
 );
 
-// Smart Paste Parser — must be before /:id routes
-router.post(
-  '/parse-paste',
-  authorize([PERMISSIONS.ORDERS_CREATE]),
-  OrdersController.parsePaste
+router.get(
+  '/:id',
+  OrdersController.getOrder
 );
 
 router.put(

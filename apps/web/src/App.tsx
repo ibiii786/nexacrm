@@ -1,11 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/login';
 import Dashboard from './pages/dashboard';
 import UsersPage from './pages/admin/iam/UsersPage';
 import GroupsPage from './pages/admin/iam/GroupsPage';
-import PoliciesPage from './pages/admin/iam/PoliciesPage';
+import PermissionsPage from './pages/admin/iam/PermissionsPage';
+import MyPermissions from './pages/portal/MyPermissions';
 import OrdersPage from './pages/orders/OrdersPage';
 import OrderDetailPage from './pages/orders/OrderDetailPage';
 import SettingsPage from './pages/admin/settings/SettingsPage';
@@ -17,10 +19,49 @@ import AdvancesPage from './pages/payroll/AdvancesPage';
 import FbAccountsPage from './pages/fb-accounts/FbAccountsPage';
 import FbAccountDetail from './pages/fb-accounts/FbAccountDetail';
 import AuditLogPage from './pages/admin/AuditLogPage';
+import AnnouncementsPage from './pages/admin/AnnouncementsPage';
 
 function App() {
   const isPayrollEnabled = useAuthStore(state => state.settings?.isPayrollEnabled) === 'true';
   const isFbAccountsEnabled = useAuthStore(state => state.settings?.isFbAccountsEnabled) === 'true';
+  const theme = useAuthStore(state => state.settings?.theme) || 'light';
+  const sessionTimeoutMinutes = parseInt(useAuthStore(state => state.settings?.sessionTimeoutMinutes) || '30', 10);
+  const clearAuth = useAuthStore(state => state.clearAuth);
+  
+  // Apply theme on load or change
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  // Handle Session Timeout (Idle detection)
+  const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const resetTimer = () => {
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+      // Timeout in milliseconds
+      logoutTimerRef.current = setTimeout(() => {
+        clearAuth();
+        window.location.href = '/login?timeout=true';
+      }, sessionTimeoutMinutes * 60 * 1000);
+    };
+
+    // Attach event listeners for user activity
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => document.addEventListener(event, resetTimer));
+    
+    // Initial setup
+    resetTimer();
+
+    return () => {
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+      events.forEach(event => document.removeEventListener(event, resetTimer));
+    };
+  }, [sessionTimeoutMinutes, clearAuth]);
 
   return (
     <Routes>
@@ -37,12 +78,14 @@ function App() {
         {/* Admin IAM Routes */}
         <Route path="/admin/users" element={<UsersPage />} />
         <Route path="/admin/groups" element={<GroupsPage />} />
-        <Route path="/admin/policies" element={<PoliciesPage />} />
+        <Route path="/admin/permissions" element={<PermissionsPage />} />
         <Route path="/admin/audit-log" element={<AuditLogPage />} />
+        <Route path="/announcements" element={<AnnouncementsPage />} />
 
         {/* User & System Settings */}
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/my-permissions" element={<MyPermissions />} />
         {/* Payroll Routes */}
         {isPayrollEnabled && (
           <>

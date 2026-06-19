@@ -46,9 +46,8 @@ model User {
   
   // IAM
   groupMemberships GroupMember[]
-  userPolicies     UserPolicy[] @relation("UserPolicyAssignee")
-  grantedPolicies  UserPolicy[] @relation("UserPolicyGrantor")
-  createdPolicies  Policy[]     @relation("PolicyCreator")
+  userPermissions  UserPermission[] @relation("UserPermissionAssignee")
+  grantedPermissions UserPermission[] @relation("UserPermissionGrantor")
   createdGroups    Group[]      @relation("GroupCreator")
   addedGroupMembers GroupMember[] @relation("GroupMemberAdder")
 
@@ -85,36 +84,13 @@ model Permission {
   description  String?
   module       String?   @db.VarChar
 
-  policies     PolicyPermission[]
+  userPermissions UserPermission[]
+  groupPermissions GroupPermission[]
 
   @@map("permissions")
 }
 
-model Policy {
-  id           String    @id @default(uuid()) @db.Uuid
-  name         String    @db.VarChar
-  description  String?
-  createdBy    String?   @map("created_by") @db.Uuid
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
-  creator      User?     @relation("PolicyCreator", fields: [createdBy], references: [id])
-  permissions  PolicyPermission[]
-  groups       GroupPolicy[]
-  users        UserPolicy[]
-
-  @@map("policies")
-}
-
-model PolicyPermission {
-  policyId     String    @map("policy_id") @db.Uuid
-  permissionId String    @map("permission_id") @db.Uuid
-
-  policy       Policy    @relation(fields: [policyId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([policyId, permissionId])
-  @@map("policy_permissions")
-}
 
 model Group {
   id           String    @id @default(uuid()) @db.Uuid
@@ -125,7 +101,7 @@ model Group {
 
   creator      User?     @relation("GroupCreator", fields: [createdBy], references: [id])
   members      GroupMember[]
-  policies     GroupPolicy[]
+  permissions  GroupPermission[]
 
   @@map("groups")
 }
@@ -144,32 +120,32 @@ model GroupMember {
   @@map("group_members")
 }
 
-model GroupPolicy {
+model GroupPermission {
   groupId      String    @map("group_id") @db.Uuid
-  policyId     String    @map("policy_id") @db.Uuid
+  permissionId String    @map("permission_id") @db.Uuid
   addedAt      DateTime  @default(now()) @map("added_at") @db.Timestamptz
 
   group        Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  policy       Policy    @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  @@id([groupId, policyId])
-  @@map("group_policies")
+  @@id([groupId, permissionId])
+  @@map("group_permissions")
 }
 
-model UserPolicy {
+model UserPermission {
   id           String    @id @default(uuid()) @db.Uuid
   userId       String    @map("user_id") @db.Uuid
-  policyId     String    @map("policy_id") @db.Uuid
+  permissionId String    @map("permission_id") @db.Uuid
   grantedBy    String?   @map("granted_by") @db.Uuid
   grantedAt    DateTime  @default(now()) @map("granted_at") @db.Timestamptz
   expiresAt    DateTime? @map("expires_at") @db.Timestamptz
   isActive     Boolean   @default(true) @map("is_active")
 
-  user         User      @relation("UserPolicyAssignee", fields: [userId], references: [id], onDelete: Cascade)
-  policy       Policy    @relation(fields: [policyId], references: [id], onDelete: Cascade)
-  grantor      User?     @relation("UserPolicyGrantor", fields: [grantedBy], references: [id])
+  user         User      @relation("UserPermissionAssignee", fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  grantor      User?     @relation("UserPermissionGrantor", fields: [grantedBy], references: [id])
 
-  @@map("user_policies")
+  @@map("user_permissions")
 }
 
 model Status {
@@ -199,6 +175,7 @@ model Field {
   isRequired   Boolean   @default(false) @map("is_required")
   isVisible    Boolean   @default(true) @map("is_visible")
   isGlobal     Boolean   @default(true) @map("is_global")
+  isArchived   Boolean   @default(false) @map("is_archived")
   options      Json?     @db.JsonB
   position     Int
   addedBy      String?   @map("added_by") @db.Uuid

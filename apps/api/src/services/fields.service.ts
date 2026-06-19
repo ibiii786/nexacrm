@@ -1,8 +1,9 @@
 import prisma from '../config/database';
 
 export class FieldsService {
-  static async getFields() {
+  static async getFields(includeArchived: boolean = false) {
     return prisma.field.findMany({
+      where: includeArchived ? undefined : { isArchived: false },
       orderBy: { position: 'asc' }
     });
   }
@@ -46,6 +47,7 @@ export class FieldsService {
     isRequired?: boolean;
     isVisible?: boolean;
     isGlobal?: boolean;
+    isArchived?: boolean;
     options?: any;
     position?: number;
   }) {
@@ -56,8 +58,10 @@ export class FieldsService {
   }
 
   static async deleteField(id: string) {
-    return prisma.field.delete({
-      where: { id }
+    // Soft delete by marking as archived
+    return prisma.field.update({
+      where: { id },
+      data: { isArchived: true }
     });
   }
 }

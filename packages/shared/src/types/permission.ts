@@ -7,25 +7,15 @@ export interface Permission {
   module: string;
 }
 
-export interface Policy {
+export interface UserPermission {
   id: string;
-  name: string;
-  description: string | null;
-  createdBy: string;
-  createdAt: string;
-  permissions: Permission[];
-}
-
-export interface PolicyCreateInput {
-  name: string;
-  description?: string;
-  permissionIds: string[];
-}
-
-export interface PolicyUpdateInput {
-  name?: string;
-  description?: string;
-  permissionIds?: string[];
+  userId: string;
+  permissionId: string;
+  grantedBy: string;
+  grantedAt: string;
+  expiresAt: string | null;
+  isActive: boolean;
+  permission: Permission;
 }
 
 export interface Group {
@@ -35,7 +25,7 @@ export interface Group {
   createdBy: string;
   createdAt: string;
   memberCount: number;
-  policyCount: number;
+  permissionCount: number;
 }
 
 export interface GroupCreateInput {
@@ -55,32 +45,20 @@ export interface GroupWithDetails extends Group {
     email: string;
     addedAt: string;
   }>;
-  policies: Array<{
+  permissions: Array<{
     id: string;
     name: string;
     addedAt: string;
   }>;
 }
 
-export interface UserPolicyAssignment {
+export interface UserPermissionAssignment {
   id: string;
   userId: string;
-  policyId: string;
+  permissionId: string;
   grantedBy: string;
   grantedAt: string;
   expiresAt: string | null;
   isActive: boolean;
-  policy: Policy;
-}
-
-
-export interface EffectivePermissions {
-  permissions: string[];
-  sources: Array<{
-    source: 'individual' | 'group';
-    sourceName: string;
-    policyName: string;
-    permissions: string[];
-    expiresAt: string | null;
-  }>;
+  permission: Permission;
 }

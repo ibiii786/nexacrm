@@ -38,6 +38,11 @@ export class UsersService {
         isActive: true,
         lastLogin: true,
         createdAt: true,
+        userPermissions: {
+          include: {
+            permission: true
+          }
+        }
       }
     });
   }
@@ -130,5 +135,41 @@ export class UsersService {
     });
     // Immediately log out
     await AuthService.revokeAllUserSessions(id);
+  }
+
+  static async grantPermission(userId: string, permissionId: string, grantedBy: string, expiresAt?: string) {
+    const userPermission = await prisma.userPermission.create({
+      data: {
+        userId,
+        permissionId,
+        grantedBy,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      }
+    });
+    await PermissionsService.invalidateUserCache(userId);
+    return userPermission;
+  }
+
+  static async revokePermission(userId: string, permissionId: string) {
+    await prisma.userPermission.deleteMany({
+      where: {
+        userId,
+        permissionId
+      }
+    });
+    await PermissionsService.invalidateUserCache(userId);
+  }
+  static async verifyPassword(id: string, password: string): Promise<boolean> {
+    const user = await prisma.user.findUnique({ where: { id }, select: { passwordHash: true } });
+    if (!user) return false;
+    return argon2.verify(user.passwordHash, password);
+  }
+
+  static async changePassword(id: string, newPassword: string) {
+    const passwordHash = await argon2.hash(newPassword);
+    return prisma.user.update({
+      where: { id },
+      data: { passwordHash }
+    });
   }
 }

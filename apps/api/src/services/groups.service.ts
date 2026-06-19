@@ -8,7 +8,7 @@ export class GroupsService {
         _count: {
           select: {
             members: true,
-            policies: true,
+            permissions: true,
           }
         }
       },
@@ -27,9 +27,9 @@ export class GroupsService {
             }
           }
         },
-        policies: {
+        permissions: {
           include: {
-            policy: {
+            permission: {
               select: { id: true, name: true }
             }
           }
@@ -89,25 +89,25 @@ export class GroupsService {
     return res;
   }
 
-  // Policies
-  static async attachPolicy(groupId: string, policyId: string) {
-    const res = await prisma.groupPolicy.create({
+  // Permissions
+  static async attachPermission(groupId: string, permissionId: string) {
+    const res = await prisma.groupPermission.create({
       data: {
         groupId,
-        policyId
+        permissionId
       }
     });
-    // Policy added to group affects all members
+    // Permission added to group affects all members
     await PermissionsService.invalidateGroupCache(groupId);
     return res;
   }
 
-  static async detachPolicy(groupId: string, policyId: string) {
-    const res = await prisma.groupPolicy.delete({
+  static async detachPermission(groupId: string, permissionId: string) {
+    const res = await prisma.groupPermission.delete({
       where: {
-        groupId_policyId: {
+        groupId_permissionId: {
           groupId,
-          policyId
+          permissionId
         }
       }
     });

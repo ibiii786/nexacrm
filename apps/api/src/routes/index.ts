@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
 import usersRoutes from './users.routes';
-import policiesRoutes from './policies.routes';
+import permissionsRoutes from './permissions.routes';
 import groupsRoutes from './groups.routes';
 import ordersRoutes from './orders.routes';
 import statusesRoutes from './statuses.routes';
@@ -19,7 +19,7 @@ const router = Router();
 
 router.use('/auth', authRoutes);
 router.use('/users', usersRoutes);
-router.use('/policies', policiesRoutes);
+router.use('/permissions', permissionsRoutes);
 router.use('/groups', groupsRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/statuses', statusesRoutes);

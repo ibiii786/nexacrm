@@ -90,27 +90,27 @@ export class GroupsController {
     }
   }
 
-  // Policies
-  static async attachPolicy(req: Request, res: Response, next: NextFunction) {
+  // Permissions
+  static async attachPermission(req: Request, res: Response, next: NextFunction) {
     try {
-      const { policyId } = req.body;
-      if (!policyId) return sendError(res, 'VALIDATION_ERROR', 'policyId is required');
+      const { permissionId } = req.body;
+      if (!permissionId) return sendError(res, 'VALIDATION_ERROR', 'permissionId is required');
 
-      await GroupsService.attachPolicy((req.params.id as string), policyId);
-      return sendSuccess(res, { message: 'Policy attached to group' }, undefined, 201);
+      await GroupsService.attachPermission((req.params.id as string), permissionId);
+      return sendSuccess(res, { message: 'Permission attached to group' }, undefined, 201);
     } catch (error: any) {
-      if (error.code === 'P2002') return sendError(res, 'CONFLICT', 'Policy already attached', 409);
-      if (error.code === 'P2025' || error.code === 'P2003') return sendError(res, 'NOT_FOUND', 'Group or Policy not found', 404);
+      if (error.code === 'P2002') return sendError(res, 'CONFLICT', 'Permission already attached', 409);
+      if (error.code === 'P2025' || error.code === 'P2003') return sendError(res, 'NOT_FOUND', 'Group or Permission not found', 404);
       next(error);
     }
   }
 
-  static async detachPolicy(req: Request, res: Response, next: NextFunction) {
+  static async detachPermission(req: Request, res: Response, next: NextFunction) {
     try {
-      await GroupsService.detachPolicy((req.params.id as string), (req.params.policyId as string));
-      return sendSuccess(res, { message: 'Policy detached' });
+      await GroupsService.detachPermission((req.params.id as string), (req.params.permissionId as string));
+      return sendSuccess(res, { message: 'Permission detached' });
     } catch (error: any) {
-      if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Policy not attached to group', 404);
+      if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Permission not attached to group', 404);
       next(error);
     }
   }

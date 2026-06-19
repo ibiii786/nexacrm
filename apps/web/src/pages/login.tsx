@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { loginSchema } from '@nexacrm/shared';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { Eye, EyeOff } from 'lucide-react';
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -85,14 +87,23 @@ export default function LoginPage() {
                 Forgot password?
               </a>
             </div>
-            <input
-              id="password"
-              type="password"
-              {...register('password')}
-              className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 dark:text-white ${
-                errors.password ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-700'
-              }`}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                {...register('password')}
+                className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 dark:text-white ${
+                  errors.password ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-700'
+                }`}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
             )}

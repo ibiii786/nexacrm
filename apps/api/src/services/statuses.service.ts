@@ -108,10 +108,9 @@ export class StatusesService {
   }
 
   static async deleteStatus(id: string) {
-    // Instead of actual delete, we can let Prisma do it if no orders are attached.
-    // If orders are attached, this will fail due to foreign key constraints, which is desired.
-    return prisma.status.delete({
-      where: { id }
+    return prisma.status.update({
+      where: { id },
+      data: { isArchived: true }
     });
   }
 
