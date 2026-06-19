@@ -1,6 +1,6 @@
 import * as argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { env } from '../config/env';
 import prisma from '../config/database';
 import redis from '../config/redis';
@@ -27,7 +27,7 @@ export class AuthService {
 
   // Generate Refresh Token (7d expiry)
   static async generateRefreshToken(userId: string, familyId: string, ipAddress?: string, userAgent?: string) {
-    const tokenId = uuidv4();
+    const tokenId = crypto.randomUUID();
     
     // Create token payload
     const token = jwt.sign({ tokenId, familyId }, env.JWT_REFRESH_SECRET as string, {
@@ -103,7 +103,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const familyId = uuidv4();
+    const familyId = crypto.randomUUID();
     const accessToken = this.generateAccessToken(user.id, user.role);
     const refreshToken = await this.generateRefreshToken(user.id, familyId, ipAddress, userAgent);
 
