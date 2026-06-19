@@ -63,6 +63,22 @@ async function main() {
     console.log('Created standard test user.');
   }
 
+  // Add an ADMIN for testing
+  let adminUser = await prisma.user.findUnique({ where: { email: 'manager@nexacrm.com' } });
+  if (!adminUser) {
+    const adminPass = await argon2.hash('AdminPassword123!');
+    adminUser = await prisma.user.create({
+      data: {
+        email: 'manager@nexacrm.com',
+        name: 'Admin User',
+        passwordHash: adminPass,
+        role: 'ADMIN',
+        isActive: true,
+      },
+    });
+    console.log('Created admin test user.');
+  }
+
   // 3. Permissions (idempotent upsert)
   console.log('Seeding permissions...');
   for (const permName of ALL_PERMISSIONS) {

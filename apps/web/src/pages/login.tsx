@@ -54,7 +54,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">
+          <div data-testid="login-error-message" className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">
             {error}
           </div>
         )}
@@ -67,6 +67,7 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              data-testid="login-email-input"
               {...register('email')}
               className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 dark:text-white ${
                 errors.email ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-700'
@@ -83,7 +84,7 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-slate-900 dark:text-slate-200" htmlFor="password">
                 Password
               </label>
-              <a href="#" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+              <a href="#" data-testid="login-forgot-password-link" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
                 Forgot password?
               </a>
             </div>
@@ -91,6 +92,7 @@ export default function LoginPage() {
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
+                data-testid="login-password-input"
                 {...register('password')}
                 className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 dark:text-white ${
                   errors.password ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-700'
@@ -98,6 +100,7 @@ export default function LoginPage() {
               />
               <button
                 type="button"
+                data-testid="login-show-password-button"
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-500"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -113,6 +116,7 @@ export default function LoginPage() {
             <input
               id="remember-me"
               type="checkbox"
+              data-testid="login-remember-me-checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-900"
@@ -124,6 +128,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            data-testid="login-submit-button"
             disabled={isSubmitting}
             className="w-full flex justify-center rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-50"
           >
