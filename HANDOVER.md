@@ -6,16 +6,16 @@
 ## What Was Just Completed
 - 2.1 — Edit Window Enforcement: Added `enforceEditWindow` to `orders.service.ts` and updated tests.
 - 2.2 — Smart Paste Parser: Created backend utility, route, controller, and frontend `OrderPasteParser.tsx` modal.
+- 2.3 & 3.5 — Excel Export & PDF Refactor: Implemented `export.service.ts` using `exceljs` and `pdfkit`. Refactored `payroll.controller.ts` and `orders.controller.ts`. Added frontend UI.
 
 ## Current Project State
 - Monorepo structure exists and builds (with 34 tsc errors in apps/api)
 - Auth system works (login, refresh, logout)
 - IAM system exists (users, groups, policies, permissions)
-- Orders CRUD exists. Edit window enforcement and Smart Paste Parser are complete.
+- Orders CRUD exists. Edit window enforcement, Smart Paste Parser, and Excel exports are complete.
 - Missing Kanban view, Calendar view.
 - Dashboard exists for both roles but "Since You Were Gone" is unverified
 - Settings, Notifications, Announcements, Payroll, FB Accounts modules exist
-- Excel export is NOT implemented despite exceljs being a dependency
 - System-wide audit log is NOT implemented (only order-level)
 - Payroll Advances sub-module is NOT implemented
 - File upload has no size/type restrictions
@@ -24,7 +24,7 @@
 - 34 TypeScript errors in apps/api on `tsc --noEmit`
 
 ## What Is Next
-Section 2.3 — Excel Export (Server-side using exceljs for orders and payroll summary).
+Section 2.4 — CI/CD Deploy Gate Fix (Merge CI and Deploy into a single main.yml workflow).
 
 ## Known Issues / Decisions Made
 - Prior "Phase 9 Final" commit was premature — project was not complete
