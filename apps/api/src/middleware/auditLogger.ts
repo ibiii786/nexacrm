@@ -33,15 +33,14 @@ export function systemAuditLogger(entityType: string) {
           // Attempt to extract entity ID from route params or response
           const entityId = req.params.id || responseBody?.data?.id || null;
 
-          await prisma.systemAuditLog.create({
+          await prisma.auditLog.create({
             data: {
-              userId: user?.id || null,
+              actorId: user?.id || null,
               action: req.method,
-              entityType,
+              entity: entityType,
               entityId,
-              diff: req.body, // The payload that was sent
+              details: { diff: req.body, userAgent }, // The payload that was sent
               ipAddress,
-              userAgent,
             },
           });
         } catch (error) {
