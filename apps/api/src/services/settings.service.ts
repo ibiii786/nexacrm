@@ -16,6 +16,11 @@ export class SettingsService {
       isPayrollEnabled: 'false',
       isFbAccountsEnabled: 'false',
       theme: 'light',
+      emailNotifyOrderStatusChanged: 'true',
+      emailNotifyOrderAssigned: 'true',
+      emailNotifyAccountModified: 'true',
+      emailNotifyAnnouncementPosted: 'true',
+      emailNotifyPermissionExpiring: 'true',
     };
 
     const settingsMap = settings.reduce((acc: any, curr: any) => {

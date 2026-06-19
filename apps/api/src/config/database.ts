@@ -17,31 +17,31 @@ export const prisma = basePrisma.$extends({
   query: {
     $allModels: {
       async findMany({ model, operation, args, query }) {
-        if (['Order', 'User'].includes(model)) {
+        if (['Order', 'User', 'Status'].includes(model)) {
           (args as any).where = { ...(args.where as any), deletedAt: (args.where as any)?.deletedAt ?? null };
         }
         return query(args);
       },
       async findFirst({ model, operation, args, query }) {
-        if (['Order', 'User'].includes(model)) {
+        if (['Order', 'User', 'Status'].includes(model)) {
           (args as any).where = { ...(args.where as any), deletedAt: (args.where as any)?.deletedAt ?? null };
         }
         return query(args);
       },
       async findUnique({ model, operation, args, query }) {
-        if (['Order', 'User'].includes(model)) {
+        if (['Order', 'User', 'Status'].includes(model)) {
           (args as any).where = { ...(args.where as any), deletedAt: (args.where as any)?.deletedAt ?? null };
         }
         return query(args);
       },
       async count({ model, operation, args, query }) {
-        if (['Order', 'User'].includes(model)) {
+        if (['Order', 'User', 'Status'].includes(model)) {
           (args as any).where = { ...(args.where as any), deletedAt: (args.where as any)?.deletedAt ?? null };
         }
         return query(args);
       },
       async delete({ model, operation, args, query }) {
-        if (['Order', 'User'].includes(model)) {
+        if (['Order', 'User', 'Status'].includes(model)) {
           return (basePrisma as any)[model.toLowerCase()].update({
             ...args,
             data: { deletedAt: new Date() },
@@ -50,7 +50,7 @@ export const prisma = basePrisma.$extends({
         return query(args);
       },
       async deleteMany({ model, operation, args, query }) {
-        if (['Order', 'User'].includes(model)) {
+        if (['Order', 'User', 'Status'].includes(model)) {
           return (basePrisma as any)[model.toLowerCase()].updateMany({
             ...args,
             data: { deletedAt: new Date() },

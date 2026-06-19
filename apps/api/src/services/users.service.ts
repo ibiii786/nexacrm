@@ -2,6 +2,9 @@ import prisma from '../config/database';
 import { AuthService } from './auth.service';
 import * as argon2 from 'argon2';
 import { Role } from '@prisma/client';
+import { PermissionsService } from './permissions.service';
+import { settingsService } from './settings.service';
+import { notificationsService } from './notifications.service';
 
 export class UsersService {
   static async getUsers() {
@@ -67,7 +70,11 @@ export class UsersService {
       delete updateData.passwordPlain;
     }
 
-    return prisma.user.update({
+    if (updateData.role) {
+      await PermissionsService.invalidateUserCache(id);
+    }
+
+    const user = await prisma.user.update({
       where: { id },
       data: updateData,
       select: {
@@ -75,8 +82,23 @@ export class UsersService {
         email: true,
         name: true,
         role: true,
+        isActive: true,
       }
     });
+
+    const sendEmail = (await settingsService.getSettingByKey('emailNotifyAccountModified', 'true')) === 'true';
+    if (sendEmail) {
+      notificationsService.createNotification({
+        userId: id,
+        type: 'ACCOUNT_MODIFIED',
+        title: `Your account was updated`,
+        body: `Your account details or role have been updated by an administrator.`,
+        link: `/profile`,
+        sendEmailNotification: true,
+      }).catch(e => console.error(e));
+    }
+
+    return user;
   }
 
   static async suspendUser(id: string) {

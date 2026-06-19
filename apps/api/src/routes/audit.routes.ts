@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { AuditService } from '../services/audit.service';
-import { authenticate, authorize } from '../middleware/auth';
+import { authenticate } from '../middleware/authenticate';
 import { sendSuccess } from '../utils/responseHelpers';
 
 const router = Router();
 
 router.use(authenticate);
 // Require SUPER_ADMIN role for system audit logs
-router.use(authorize(['*'])); // Only super admin has * by default, or we can check role directly
+// Handled inside the route handler
 
 router.get('/', async (req, res, next) => {
   try {

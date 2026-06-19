@@ -1,5 +1,7 @@
 import prisma from '../config/database';
 import DOMPurify from 'isomorphic-dompurify';
+import { settingsService } from './settings.service';
+import { notificationsService } from './notifications.service';
 
 export interface CreateAnnouncementInput {
   title: string;
@@ -36,7 +38,7 @@ export class AnnouncementsService {
   }
 
   async createAnnouncement(data: CreateAnnouncementInput, userId: string) {
-    return prisma.announcement.create({
+    const announcement = await prisma.announcement.create({
       data: {
         title: data.title,
         content: DOMPurify.sanitize(data.content),
@@ -47,6 +49,23 @@ export class AnnouncementsService {
         creator: { select: { id: true, name: true } },
       },
     });
+
+    const sendEmail = (await settingsService.getSettingByKey('emailNotifyAnnouncementPosted', 'true')) === 'true';
+    if (sendEmail) {
+      const users = await prisma.user.findMany({ select: { id: true } });
+      for (const u of users) {
+        notificationsService.createNotification({
+          userId: u.id,
+          type: 'ANNOUNCEMENT_POSTED',
+          title: `New Announcement: ${data.title}`,
+          body: `A new announcement has been posted: ${data.title}`,
+          link: `/announcements`,
+          sendEmailNotification: true,
+        }).catch(e => console.error(e));
+      }
+    }
+    
+    return announcement;
   }
 
   async updateAnnouncement(id: string, data: UpdateAnnouncementInput) {

@@ -182,6 +182,7 @@ model Status {
   position     Int
   createdBy    String?   @map("created_by") @db.Uuid
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
 
   creator      User?     @relation("StatusCreator", fields: [createdBy], references: [id])
   orders       Order[]

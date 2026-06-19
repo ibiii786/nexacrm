@@ -1,5 +1,7 @@
 import prisma from '../config/database';
 import { PermissionsService } from './permissions.service';
+import { settingsService } from './settings.service';
+import { notificationsService } from './notifications.service';
 
 export class AssignmentsService {
   /**
@@ -94,5 +96,40 @@ export class AssignmentsService {
     }
 
     return expired.length;
+  }
+
+  static async notifyExpiringAssignments() {
+    // Find assignments expiring in the next 24 hours
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const expiring = await prisma.userPolicy.findMany({
+      where: {
+        isActive: true,
+        expiresAt: {
+          gt: new Date(),
+          lte: tomorrow
+        }
+      },
+      include: {
+        policy: true
+      }
+    });
+
+    const sendEmail = (await settingsService.getSettingByKey('emailNotifyPermissionExpiring', 'true')) === 'true';
+    if (sendEmail) {
+      for (const e of expiring) {
+        notificationsService.createNotification({
+          userId: e.userId,
+          type: 'PERMISSION_EXPIRING',
+          title: `Permission Expiring Soon`,
+          body: `Your access to the policy "${e.policy.name}" will expire on ${e.expiresAt?.toLocaleDateString()}.`,
+          link: `/profile`,
+          sendEmailNotification: true,
+        }).catch(err => console.error(err));
+      }
+    }
+    
+    return expiring.length;
   }
 }
