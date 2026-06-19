@@ -8,7 +8,7 @@
 | 2.4 Users, Groups, and Permissions | 7 | 2 | 1 | 0 | 0 |
 | 2.5 Dashboard | 5 | 4 | 1 | 0 | 0 |
 | 2.6 Payroll Module | 7 | 1 | 3 | 0 | 0 |
-| 2.7 Facebook Accounts Module | 4 | 0 | 0 | 0 | 0 |
+| 2.7 Facebook Accounts Module | 4 | 2 | 2 | 0 | 0 |
 | 2.8 Notifications & Announcements | 5 | 0 | 0 | 0 | 0 |
 | 2.9 Settings | 4 | 0 | 0 | 0 | 0 |
 | 2.10 Global Search | 3 | 0 | 0 | 0 | 0 |
@@ -334,3 +334,37 @@
 **What actually happened:** The "Generate Payroll" button in `PayrollPeriodsPage.tsx` is an empty shell with no `onClick` handler. Therefore, payroll periods cannot be generated from the UI. *However*, when testing the `/api/payroll/periods` endpoint directly with Gross = $5000 and Deductions = $1000, the API returned exactly $4000. So the backend math is correct, but the UI is missing.
 **Evidence:** `PayrollPeriodsPage.tsx` line 71: `<button className="...">Generate Payroll</button>`.
 **If FAIL or LOGIC ISSUE — what needs to change:** Implement a `PayrollPeriodModal.tsx` to handle the generation of payroll periods from the frontend.
+
+---
+
+## 2.7 Facebook Accounts Module
+
+### 2.7.1 — Default Module State
+**Status:** PASS
+**What I did:** Checked the default settings configuration in the codebase.
+**What I expected:** The Facebook Accounts module should be disabled by default.
+**What actually happened:** `MODULE_FB_ACCOUNTS_ENABLED` defaults to `'false'` in `DEFAULT_SETTINGS`.
+**Evidence:** Verified in `packages/shared/src/schemas/settings.schema.ts`. Note: The same issue from 2.6.2 applies here; `ADMIN` cannot toggle it without `SETTINGS_ACCESS` permission.
+
+### 2.7.2 — Create an FB Account UI (No Password Field)
+**Status:** FAIL
+**What I did:** Investigated the UI to create a Facebook account.
+**What I expected:** A working form with NO actual password field, just metadata and a vault note.
+**What actually happened:** The "Add Account" button on `FbAccountsPage.tsx` is an empty shell with no `onClick` handler. The form does not exist. (Note: The database schema correctly avoids storing a raw password field, but the UI is incomplete).
+**Evidence:** `FbAccountsPage.tsx` line 33: `<button className="...">Add Account</button>`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Implement an `FbAccountModal.tsx` form.
+
+### 2.7.3 — Encrypted Vault Note
+**Status:** PASS
+**What I did:** Created a test account with a vault note via the API, checked the standard API response, and tested the `FbAccountDetail.tsx` reveal functionality.
+**What I expected:** The note should never be in plain text by default, stripped from network requests, and require a password to view in the UI.
+**What actually happened:** The backend encrypts the note and actively strips it from standard `GET /fb-accounts` API responses. The UI accurately prompts for the user's password, hits the `POST /fb-accounts/:id/reveal` endpoint, validates the user's credentials, and then returns the decrypted note.
+**Evidence:** `fb.controller.ts` actively removes `vaultNoteEncrypted` from standard responses. `FbAccountDetail.tsx` lines 32-50 handle the secure decryption flow.
+
+### 2.7.4 — Status Update History Log
+**Status:** FAIL
+**What I did:** Attempted to change an account's status via the UI, and verified the backend logic.
+**What I expected:** The UI should have a status dropdown, and updating it should generate a status history log.
+**What actually happened:** The UI in `FbAccountDetail.tsx` only displays the status history; it has no mechanism or button to actually update the status. (Note: The backend API `PUT /fb-accounts/:id` correctly handles status changes and reliably generates an `FbAccountStatusLog` with `oldStatus` and `newStatus`).
+**Evidence:** `FbAccountDetail.tsx` has no status update controls.
+**If FAIL or LOGIC ISSUE — what needs to change:** Add a "Change Status" button/modal to `FbAccountDetail.tsx`.
