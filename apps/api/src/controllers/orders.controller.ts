@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { OrdersService } from '../services/orders.service';
+import { OrdersService, EditWindowExpiredError } from '../services/orders.service';
 import { AttachmentsService } from '../services/attachments.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
 import multer from 'multer';
@@ -74,7 +74,7 @@ export class OrdersController {
 
   static async updateOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const updatedBy = (req as any).user.id;
+      const user = (req as any).user;
       const { statusId, deliveryDate, customFields, notes } = req.body;
 
       const order = await OrdersService.updateOrder((req.params.id as string), {
@@ -82,11 +82,15 @@ export class OrdersController {
         deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
         customFields,
         notes,
-        updatedBy
+        updatedBy: user.id,
+        userRole: user.role,
       });
 
       return sendSuccess(res, order);
     } catch (error: any) {
+      if (error instanceof EditWindowExpiredError) {
+        return sendError(res, 'EDIT_WINDOW_EXPIRED', error.message, 403);
+      }
       if (error.message === 'Order not found') return sendError(res, 'NOT_FOUND', error.message, 404);
       next(error);
     }
@@ -94,10 +98,14 @@ export class OrdersController {
 
   static async deleteOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const deletedBy = (req as any).user.id;
-      await OrdersService.deleteOrder((req.params.id as string), deletedBy);
+      const user = (req as any).user;
+      await OrdersService.deleteOrder((req.params.id as string), user.id, user.role);
       return sendSuccess(res, { message: 'Order deleted' });
-    } catch (error) {
+    } catch (error: any) {
+      if (error instanceof EditWindowExpiredError) {
+        return sendError(res, 'EDIT_WINDOW_EXPIRED', error.message, 403);
+      }
+      if (error.message === 'Order not found') return sendError(res, 'NOT_FOUND', error.message, 404);
       next(error);
     }
   }

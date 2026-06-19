@@ -3,7 +3,41 @@ import { OrderSequenceService } from './orderSequence.service';
 import { StatusesService } from './statuses.service';
 import { OrderAuditLogService } from './orderAuditLog.service';
 import { notificationsService } from './notifications.service';
+import { settingsService } from './settings.service';
 import DOMPurify from 'isomorphic-dompurify';
+
+/**
+ * Custom error class for edit window expiration.
+ * Allows controllers to distinguish this from generic errors.
+ */
+export class EditWindowExpiredError extends Error {
+  constructor() {
+    super('The edit window for this order has expired. Only Admins can edit orders after the edit window.');
+    this.name = 'EditWindowExpiredError';
+  }
+}
+
+/**
+ * Checks whether the edit window has expired for an order.
+ * If expired AND user is not ADMIN/SUPER_ADMIN, throws EditWindowExpiredError.
+ * Blueprint Section 12 point 4: order.createdAt + editWindowMinutes. If now() > that, reject for non-admins.
+ */
+async function enforceEditWindow(orderCreatedAt: Date, userRole: string): Promise<void> {
+  if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
+    return; // Admins bypass edit window
+  }
+
+  const editWindowMinutes = parseInt(
+    await settingsService.getSettingByKey('editWindowMinutes', '30'),
+    10
+  );
+
+  const windowEnd = new Date(orderCreatedAt.getTime() + editWindowMinutes * 60 * 1000);
+
+  if (new Date() > windowEnd) {
+    throw new EditWindowExpiredError();
+  }
+}
 
 export class OrdersService {
   static async getOrders(params?: {
@@ -100,6 +134,7 @@ export class OrdersService {
     customFields?: any;
     notes?: string;
     updatedBy: string;
+    userRole: string;
   }) {
     const existingOrder = await prisma.order.findUnique({
       where: { id },
@@ -107,6 +142,9 @@ export class OrdersService {
     });
 
     if (!existingOrder) throw new Error('Order not found');
+
+    // Enforce edit window — reject if expired for non-admin users
+    await enforceEditWindow(existingOrder.createdAt, data.userRole);
 
     const updateData: any = {};
     const auditLogs: any[] = [];
@@ -205,7 +243,14 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  static async deleteOrder(id: string, deletedBy: string) {
+  static async deleteOrder(id: string, deletedBy: string, userRole: string) {
+    // Fetch order to check edit window
+    const order = await prisma.order.findUnique({ where: { id } });
+    if (!order) throw new Error('Order not found');
+
+    // Enforce edit window — reject if expired for non-admin users
+    await enforceEditWindow(order.createdAt, userRole);
+
     // Soft delete is handled by Prisma $extends configuration
     await prisma.order.delete({
       where: { id }
