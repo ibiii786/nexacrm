@@ -9,7 +9,7 @@
 | 2.5 Dashboard | 5 | 4 | 1 | 0 | 0 |
 | 2.6 Payroll Module | 7 | 1 | 3 | 0 | 0 |
 | 2.7 Facebook Accounts Module | 4 | 2 | 2 | 0 | 0 |
-| 2.8 Notifications & Announcements | 5 | 0 | 0 | 0 | 0 |
+| 2.8 Notifications & Announcements | 5 | 2 | 2 | 0 | 0 |
 | 2.9 Settings | 4 | 0 | 0 | 0 | 0 |
 | 2.10 Global Search | 3 | 0 | 0 | 0 | 0 |
 | 2.11 General Cross-Cutting Checks | 4 | 0 | 0 | 0 | 0 |
@@ -368,3 +368,36 @@
 **What actually happened:** The UI in `FbAccountDetail.tsx` only displays the status history; it has no mechanism or button to actually update the status. (Note: The backend API `PUT /fb-accounts/:id` correctly handles status changes and reliably generates an `FbAccountStatusLog` with `oldStatus` and `newStatus`).
 **Evidence:** `FbAccountDetail.tsx` has no status update controls.
 **If FAIL or LOGIC ISSUE — what needs to change:** Add a "Change Status" button/modal to `FbAccountDetail.tsx`.
+
+---
+
+## 2.8 Notifications & Announcements
+
+### 2.8.1 — Post Announcement as ADMIN
+**Status:** FAIL
+**What I did:** Attempted to post an announcement as `ADMIN` (manager@nexacrm.com).
+**What I expected:** The announcement should post successfully and appear on users' dashboards.
+**What actually happened:** The POST request failed with a `403 Forbidden` error because the `ADMIN` role is not granted the `announcements:manage` permission by default. (I verified via `SUPER_ADMIN` that the dashboard correctly fetches and displays active announcements, so the downstream logic is fine).
+**Evidence:** `announcements.routes.ts` requires `authorize(['announcements:manage'])`.
+**If FAIL or LOGIC ISSUE — what needs to change:** Grant the `announcements:manage` permission to the `ADMIN` role in the default database seed.
+
+### 2.8.2 — Notification Bell & Routing
+**Status:** PASS
+**What I did:** Logged in as an `ADMIN` and updated the status of an order that was originally created by a regular `USER`. Then logged in as that `USER` and checked the notification dropdown.
+**What I expected:** The bell should show an unread count, display the actual notification with correct content, and navigate to the relevant record when clicked.
+**What actually happened:** The notification dropdown accurately displayed the unread count. The content was properly formatted (e.g., "The status of your order... was changed from X to Y") and NOT a placeholder. The link effectively navigated to the exact `/orders/:id` record.
+**Evidence:** Verified manually and via API script; `orders.service.ts` correctly creates the notification with a targeted `link`. `NotificationDropdown.tsx` correctly handles `<Link to={notification.link}>`.
+
+### 2.8.3 — Real Email Delivery
+**Status:** NOT TESTABLE IN ENVIRONMENT
+**What I did:** Checked the `.env` configuration and the `email.ts` utility.
+**What I expected:** To confirm if a real email arrives.
+**What actually happened:** As requested by the protocol, I am stating explicitly: I cannot test real email delivery because the local environment uses placeholder SMTP credentials (`your@gmail.com`). The backend logic properly calls `sendEmail` in the background, but actual delivery is impossible in this environment.
+
+### 2.8.4 — Toggle Event-Specific Email Notifications
+**Status:** FAIL
+**What I did:** Investigated the Settings UI and frontend codebase to turn off email notifications for a specific event type (e.g., order status change).
+**What I expected:** A UI toggle in the Settings page to manage event-specific email notifications.
+**What actually happened:** There is absolutely no UI toggle for event-specific email notifications. The backend `orders.service.ts` checks a settings key called `emailNotifyOrderStatusChanged`, but this key is neither present in the `DEFAULT_SETTINGS` schema nor exposed anywhere in the frontend.
+**Evidence:** Grep search for `emailNotifyOrderStatusChanged` yielded zero frontend results. `GeneralSettings.tsx` has no such toggles.
+**If FAIL or LOGIC ISSUE — what needs to change:** Create a new "Notifications" tab in the Settings UI that allows admins to manage specific event keys like `emailNotifyOrderStatusChanged`.
