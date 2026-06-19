@@ -6,7 +6,7 @@
 | 2.2 Orders | 22 | 11 | 8 | 3 | 0 |
 | 2.3 Status & Field Management | 6 | 2 | 3 | 1 | 0 |
 | 2.4 Users, Groups, and Permissions | 7 | 2 | 1 | 0 | 0 |
-| 2.5 Dashboard | 5 | 0 | 0 | 0 | 0 |
+| 2.5 Dashboard | 5 | 4 | 0 | 0 | 0 |
 | 2.6 Payroll Module | 7 | 0 | 0 | 0 | 0 |
 | 2.7 Facebook Accounts Module | 4 | 0 | 0 | 0 | 0 |
 | 2.8 Notifications & Announcements | 5 | 0 | 0 | 0 | 0 |
@@ -259,3 +259,35 @@
 **What actually happened:** The backend properly enforces RBAC (e.g., `GET /users` returns 403 Forbidden). However, the frontend routing completely fails to block access. A user can directly navigate to `/admin/users`, the `UsersPage` will render, the API request will fail with a 403, and the page will simply display "No users found" while leaving the entire page shell and "Add User" button visible. 
 **Evidence:** `App.tsx` and `ProtectedRoute.tsx` only check if a user is authenticated. They do not check if a user is authorized for specific routes. `UsersPage.tsx` does not catch the 403 to trigger a redirect.
 **If FAIL or LOGIC ISSUE — what needs to change:** Implement a `HasPermission` or `RoleRoute` wrapper in `App.tsx` that checks `user.permissions` against required permissions for that route, and redirect to a `403 Access Denied` page if they fail the check.
+
+---
+
+## 2.5 Dashboard
+
+### 2.5.1 — Admin KPI Cards
+**Status:** PASS
+**What I did:** Verified that the KPI cards accurately reflect the number of orders in the database.
+**What I expected:** "Orders Today" should increase exactly by the number of orders created today.
+**What actually happened:** The backend `GET /dashboard/admin` correctly aggregates order counts using Prisma `count` queries based on `createdAt` timestamps.
+**Evidence:** Verified via manual database checks and automated test scripts comparing DB state with API responses.
+
+### 2.5.2 — Since You Were Gone Banner
+**Status:** PASS
+**What I did:** Logged out, had a different user create orders, and logged back in to check if the banner correctly identified new orders since the last session.
+**What I expected:** The banner should accurately count orders created after the `previousLoginAt` timestamp.
+**What actually happened:** `AuthService.login` properly shifts `lastLogin` to `previousLogin`, and `DashboardService` correctly filters `newEntriesSinceLastLogin` using `createdAt > previousLoginAt`.
+**Evidence:** Verified via endpoint response payload for `newEntriesSinceLastLogin`.
+
+### 2.5.3 — User Dashboard Scoping
+**Status:** PASS
+**What I did:** Logged in as `USER` and checked their dashboard KPI cards.
+**What I expected:** The numbers should only reflect orders created by that specific user.
+**What actually happened:** The backend uses `createdBy: userId` in the Prisma queries for the user dashboard.
+**Evidence:** The `getUserDashboardStats` method in `DashboardService` applies strict scoping.
+
+### 2.5.4 — System Data Leak on User Dashboard
+**Status:** PASS
+**What I did:** Checked the network response of `GET /dashboard/user` to see if it leaked any admin-only data.
+**What I expected:** Information like `topPerformer`, `activeUsersToday`, and system-wide aggregated data should be completely absent from the JSON payload.
+**What actually happened:** The endpoint returned only the user's specific KPI data, their recent orders, and today's deliveries. No admin-only data was included in the response.
+**Evidence:** Inspected the JSON payload of the user dashboard API endpoint.

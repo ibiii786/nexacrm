@@ -25,7 +25,7 @@ export function KpiCard({ title, value, description, icon: Icon, trend }: KpiCar
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
+        <div data-testid={`kpi-${title.replace(/\s+/g, '-').toLowerCase()}`} className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
         {(description || trend) && (
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
             {trend && (
