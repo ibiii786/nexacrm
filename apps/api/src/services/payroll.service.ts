@@ -66,6 +66,16 @@ export class PayrollService {
     });
   }
 
+  async getPayrollPeriodById(id: string) {
+    return prisma.payrollPeriod.findUnique({
+      where: { id },
+      include: {
+        employee: true,
+        advances: true,
+      },
+    });
+  }
+
   async createPayrollPeriod(data: any, createdBy: string) {
     // Basic net salary calculation
     const grossSalary = data.grossSalary || 0;

@@ -17,6 +17,11 @@ router.get(
 );
 
 router.get(
+  '/export/excel',
+  OrdersController.exportOrdersExcel
+);
+
+router.get(
   '/:id',
   // Any authenticated user can view an order
   OrdersController.getOrder

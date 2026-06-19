@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { payrollService } from '../services/payroll.service';
-import PDFDocument from 'pdfkit';
-import * as xlsx from 'xlsx';
+import { sendSuccess, sendError } from '../utils/responseHelpers';
+import { ExportService } from '../services/export.service';
 
 export class PayrollController {
   
@@ -163,45 +163,16 @@ export class PayrollController {
     try {
       const periodId = req.params.id as string;
       // Fetch period with employee
-      const periods = await payrollService.getPayrollPeriods();
-      const period = periods.find(p => p.id === periodId);
-
+      const period = await payrollService.getPayrollPeriodById(periodId);
       if (!period) {
-        return res.status(404).json({ success: false, message: 'Payroll period not found' });
+        return sendError(res, 'NOT_FOUND', 'Payroll period not found', 404);
       }
 
-      const doc = new PDFDocument({ margin: 50 });
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=salary_slip_${period.employee.name.replace(/\s+/g, '_')}_${periodId}.pdf`);
-      doc.pipe(res);
+      res.setHeader('Content-Disposition', `attachment; filename="salary_slip_${period.employee.name.replace(/\s+/g, '_')}_${periodId}.pdf"`);
 
-      // Simple PDF layout
-      doc.fontSize(20).text('Salary Slip', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(14).text(`NexaCRM`, { align: 'center' });
-      doc.moveDown(2);
-
-      doc.fontSize(12).text(`Employee: ${period.employee.name}`);
-      doc.text(`Role: ${period.employee.role || 'N/A'}`);
-      doc.text(`Period Start: ${period.periodStart.toISOString().split('T')[0]}`);
-      doc.text(`Period End: ${period.periodEnd.toISOString().split('T')[0]}`);
-      doc.text(`Status: ${period.status}`);
-      doc.moveDown();
-
-      doc.text(`Gross Salary: $${Number(period.grossSalary || 0).toFixed(2)}`);
-      
-      const deductions = period.deductions as Record<string, any>;
-      if (deductions && Object.keys(deductions).length > 0) {
-        doc.text(`Deductions:`);
-        for (const [key, val] of Object.entries(deductions)) {
-          doc.text(`  - ${key}: $${Number(val).toFixed(2)}`);
-        }
-      }
-
-      doc.moveDown();
-      doc.fontSize(14).text(`Net Salary: $${Number(period.netSalary || 0).toFixed(2)}`, { underline: true });
-
-      doc.end();
+      const stream = await ExportService.generateSalarySlipPdf(period);
+      stream.pipe(res);
     } catch (error) {
       next(error);
     }
@@ -211,25 +182,11 @@ export class PayrollController {
     try {
       const periods = await payrollService.getPayrollPeriods(); // Could add month filter
       
-      const data = periods.map(p => ({
-        Employee: p.employee.name,
-        Role: p.employee.role,
-        PeriodStart: p.periodStart.toISOString().split('T')[0],
-        PeriodEnd: p.periodEnd.toISOString().split('T')[0],
-        GrossSalary: Number(p.grossSalary || 0),
-        NetSalary: Number(p.netSalary || 0),
-        Status: p.status,
-      }));
-
-      const ws = xlsx.utils.json_to_sheet(data);
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, "Payroll Summary");
-      
-      const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
-      
       res.setHeader('Content-Disposition', 'attachment; filename="payroll_summary.xlsx"');
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.send(buffer);
+      
+      const stream = await ExportService.generatePayrollSummaryExcel(periods);
+      stream.pipe(res);
     } catch (error) {
       next(error);
     }

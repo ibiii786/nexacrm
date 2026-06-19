@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { Link } from 'react-router-dom';
-import { PlusIcon, SearchIcon, KanbanIcon, ListIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon } from 'lucide-react';
 import { OrdersTable } from './OrdersTable';
 import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
 
@@ -24,6 +24,31 @@ export default function OrdersPage() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleExport = () => {
+    // Generate URL and trigger download
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    
+    // In a real app, you might want to use a token if needed, but since it's a direct download URL,
+    // often cookies are used or a short-lived token. For now, we will just open the URL.
+    // If auth is via Bearer token, we need to fetch it as a blob and download.
+    const exportUrl = `${api.defaults.baseURL}/orders/export/excel?${params.toString()}`;
+    
+    api.get(`/orders/export/excel?${params.toString()}`, { responseType: 'blob' })
+      .then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'orders_export.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      })
+      .catch(error => {
+        console.error('Export failed:', error);
+      });
   };
 
   const fetchStatuses = async () => {
@@ -75,6 +100,14 @@ export default function OrdersPage() {
               <KanbanIcon size={18} />
             </button>
           </div>
+
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-medium"
+          >
+            <DownloadIcon size={16} />
+            <span>Export</span>
+          </button>
 
           <button 
             onClick={() => setIsParserOpen(true)}

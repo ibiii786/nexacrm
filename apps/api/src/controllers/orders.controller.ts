@@ -3,6 +3,7 @@ import { OrdersService, EditWindowExpiredError } from '../services/orders.servic
 import { AttachmentsService } from '../services/attachments.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
 import { parsePasteText } from '../utils/pasteParser';
+import { ExportService } from '../services/export.service';
 import prisma from '../config/database';
 import multer from 'multer';
 import path from 'path';
@@ -35,6 +36,24 @@ export class OrdersController {
         search: search as string,
       });
       return sendSuccess(res, orders);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async exportOrdersExcel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { statusId, search } = req.query;
+      const orders = await OrdersService.getOrders({
+        statusId: statusId as string,
+        search: search as string,
+      });
+
+      res.setHeader('Content-Disposition', 'attachment; filename="orders_export.xlsx"');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+      const stream = await ExportService.generateOrdersExcel(orders);
+      stream.pipe(res);
     } catch (error) {
       next(error);
     }
