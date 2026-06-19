@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { OrdersService, EditWindowExpiredError } from '../services/orders.service';
 import { AttachmentsService } from '../services/attachments.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
+import { parsePasteText } from '../utils/pasteParser';
+import prisma from '../config/database';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -143,6 +145,28 @@ export class OrdersController {
       if (error.message === 'Attachment not found') {
         return sendError(res, 'NOT_FOUND', error.message, 404);
       }
+      next(error);
+    }
+  }
+
+  // Smart Paste Parser — Blueprint Section 11
+  static async parsePaste(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rawText } = req.body;
+
+      if (!rawText || typeof rawText !== 'string') {
+        return sendError(res, 'VALIDATION_ERROR', 'rawText is required and must be a string');
+      }
+
+      // Fetch all visible fields from the database
+      const fields = await prisma.field.findMany({
+        where: { isVisible: true },
+        select: { id: true, name: true, label: true, type: true },
+      });
+
+      const result = parsePasteText(rawText, fields);
+      return sendSuccess(res, result);
+    } catch (error) {
       next(error);
     }
   }

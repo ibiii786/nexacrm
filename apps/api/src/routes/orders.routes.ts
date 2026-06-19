@@ -28,6 +28,13 @@ router.post(
   OrdersController.createOrder
 );
 
+// Smart Paste Parser — must be before /:id routes
+router.post(
+  '/parse-paste',
+  authorize([PERMISSIONS.ORDERS_CREATE]),
+  OrdersController.parsePaste
+);
+
 router.put(
   '/:id',
   authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),

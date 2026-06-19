@@ -3,12 +3,14 @@ import { api } from '../../lib/api';
 import { Link } from 'react-router-dom';
 import { PlusIcon, SearchIcon, KanbanIcon, ListIcon } from 'lucide-react';
 import { OrdersTable } from './OrdersTable';
+import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('list');
   const [search, setSearch] = useState('');
+  const [isParserOpen, setIsParserOpen] = useState(false);
 
   useEffect(() => {
     fetchStatuses();
@@ -74,7 +76,10 @@ export default function OrdersPage() {
             </button>
           </div>
 
-          <button className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors shadow-sm font-medium">
+          <button 
+            onClick={() => setIsParserOpen(true)}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors shadow-sm font-medium"
+          >
             <PlusIcon size={16} />
             <span>New Order</span>
           </button>
@@ -124,6 +129,14 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+
+      <OrderPasteParser 
+        isOpen={isParserOpen} 
+        onClose={() => setIsParserOpen(false)} 
+        onOrderCreated={() => {
+          fetchOrders();
+        }} 
+      />
     </div>
   );
 }
