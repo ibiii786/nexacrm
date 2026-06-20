@@ -27,13 +27,15 @@ export default function Dashboard() {
         const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
         const endpoint = isAdmin ? '/dashboard/admin' : '/dashboard/user';
         const res = await api.get(endpoint);
-        setData(res.data.data);
-        
         if (!isAdmin) {
-          // fetch announcements separately for users
-          const annRes = await api.get('/announcements?activeOnly=true');
-          setData((prev: any) => ({ ...prev, announcements: annRes.data.data }));
+          setData(res.data.data);
+        } else {
+          setData(res.data.data);
         }
+        
+        // Fetch announcements for ALL users
+        const annRes = await api.get('/announcements?activeOnly=true&limit=10');
+        setData((prev: any) => ({ ...prev, announcements: annRes.data.data }));
       } catch (error) {
         console.error('Failed to load dashboard', error);
       } finally {

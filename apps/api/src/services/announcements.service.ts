@@ -16,12 +16,13 @@ export interface UpdateAnnouncementInput {
 }
 
 export class AnnouncementsService {
-  async getAllAnnouncements(onlyActive = false) {
+  async getAllAnnouncements(onlyActive = false, limit?: number) {
     const where = onlyActive ? { isActive: true } : {};
     
     return prisma.announcement.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: limit,
       include: {
         creator: { select: { id: true, name: true } },
       },

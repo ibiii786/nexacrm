@@ -21,8 +21,10 @@ export class AnnouncementsController {
     // But default endpoint might just fetch all for admin, and only active for users
     // Let's rely on a query param
     const onlyActive = req.query.all !== 'true';
+    const limitParam = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+    const limit = limitParam && !isNaN(limitParam) ? limitParam : undefined;
     
-    const announcements = await announcementsService.getAllAnnouncements(onlyActive);
+    const announcements = await announcementsService.getAllAnnouncements(onlyActive, limit);
     return sendSuccess(res, announcements);
   }
 

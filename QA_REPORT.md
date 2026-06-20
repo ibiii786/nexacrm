@@ -514,3 +514,17 @@
 **What I expected:** Everything to work exactly as requested without logic issues or duplicate fields.
 **What actually happened:** All steps successfully passed. Found and resolved the archived "Price" field issue causing silent field failures.
 **Evidence:** Tested with backend emulation and verified frontend logic.
+
+
+## HALF 2 - SEQUENTIAL WHOLE-APPLICATION LOGIC AUDIT
+
+### Stage 9 — Dashboard Audit
+**Status:** PASS (After Fixes)
+**What I did:** Performed a full 7-point audit of the Dashboard page (dashboard.tsx, dashboard.service.ts, dashboard.controller.ts, and all widget components). Traced every default state and API call.
+**What I expected:** The dashboard should safely bound all data fetches without pulling infinite historical records. Admin and User views should accurately reflect widgets, and endpoints should be securely gated by role.
+**What actually happened:** Found 4 logic issues and fixed them:
+1. **Unbounded Fetch (Announcements):** /api/announcements?activeOnly=true fetched all active announcements without pagination. Added a limit parameter to the API and updated the frontend to pass limit=10.
+2. **Blank Admin Announcements Widget:** The Admin dashboard expects data?.announcements, but the frontend explicitly wrapped the fetch in if (!isAdmin). Thus, the widget was permanently blank for admins. Removed the if (!isAdmin) check so it fetches for everyone.
+3. **Unbounded Fetch (Today's Deliveries):** getAdminDashboardStats fetched all deliveries for the current day unconditionally. Added a 	ake: 50 limit to prevent payload bloat on very busy days.
+4. **Missing Role Check:** /api/dashboard/admin was only protected by uthenticate, meaning a normal USER could hit the endpoint directly. Added an explicit SUPER_ADMIN and ADMIN role check in dashboard.controller.ts.
+**Evidence:** Verified that the UI now populates announcements for admins. Network logs show limit=10 applied to announcements. Code verified to enforce 	ake: 50 on deliveries and 403 on /dashboard/admin for non-admins.

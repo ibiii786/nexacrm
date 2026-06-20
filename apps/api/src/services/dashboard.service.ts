@@ -74,7 +74,8 @@ export class DashboardService {
     const todayDeliveries = await prisma.order.findMany({
       where: { deliveryDate: today },
       include: { status: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: 50
     });
 
     // Since you were gone (new entries since last login)
