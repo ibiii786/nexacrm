@@ -76,18 +76,22 @@ export class OrdersService {
     page?: number;
     limit?: number;
   }) {
-    const where: any = {};
+    const where: any = { deletedAt: null };
     if (params?.statusId) where.statusId = params.statusId;
     if (params?.search) {
       where.OR = [
         { orderNumber: { contains: params.search, mode: 'insensitive' } },
-        // Could expand search to customFields JSON if needed, but keeping simple
       ];
     }
     if (params?.startDate || params?.endDate) {
       where.createdAt = {};
       if (params?.startDate) where.createdAt.gte = new Date(params.startDate);
-      if (params?.endDate) where.createdAt.lte = new Date(params.endDate);
+      if (params?.endDate) {
+        // Treat endDate as inclusive of the full day
+        const end = new Date(params.endDate);
+        end.setHours(23, 59, 59, 999);
+        where.createdAt.lte = end;
+      }
     }
 
     const page = params?.page || 1;

@@ -49,7 +49,8 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const { data } = await api.get('/orders', { params: { search, startDate, endDate, page, limit: 50 } });
+      const endDateParam = endDate ? new Date(endDate + 'T23:59:59').toISOString() : undefined;
+      const { data } = await api.get('/orders', { params: { search, startDate, endDate: endDateParam, page, limit: 50 } });
       setOrders(data.data);
       if (data.meta) {
         setTotalPages(data.meta.totalPages || 1);

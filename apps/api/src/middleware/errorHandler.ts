@@ -37,5 +37,11 @@ export function errorHandler(
   }
 
   // Fallback to generic 500
-  return sendError(res, 'INTERNAL_SERVER_ERROR', 'An unexpected error occurred', 500);
+  const isDev = process.env.NODE_ENV !== 'production';
+  return sendError(
+    res, 
+    'INTERNAL_SERVER_ERROR', 
+    isDev ? `An unexpected error occurred: ${err.message}` : 'An unexpected error occurred', 
+    500
+  );
 }

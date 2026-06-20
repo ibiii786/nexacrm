@@ -5,6 +5,7 @@ import { Role } from '@prisma/client';
 import { PermissionsService } from './permissions.service';
 import { settingsService } from './settings.service';
 import { notificationsService } from './notifications.service';
+import { DEFAULT_USER_PERMISSIONS } from '@nexacrm/shared';
 
 export class UsersService {
   static async getUsers() {
@@ -74,10 +75,7 @@ export class UsersService {
     if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN') {
       permsToAssign = allPerms;
     } else if (data.role === 'USER') {
-      // Need to import DEFAULT_USER_PERMISSIONS dynamically or from shared
-      // Since it's imported in other places from @nexacrm/shared, we will require it here
-      const { DEFAULT_USER_PERMISSIONS } = require('@nexacrm/shared');
-      permsToAssign = allPerms.filter(p => DEFAULT_USER_PERMISSIONS.includes(p.name));
+      permsToAssign = allPerms.filter(p => DEFAULT_USER_PERMISSIONS.includes(p.name as any));
     }
 
     if (permsToAssign.length > 0) {

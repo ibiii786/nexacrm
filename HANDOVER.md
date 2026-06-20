@@ -1,23 +1,19 @@
-# QA Handover
+# Project Handover Status
 
-## Current Status
-- **Protocol Part 1**: Completed.
-- **Protocol Part 2**: Completed (All Sections 2.1 through 2.11 are fully tested and documented).
+**Current Status:**
+- Stage 1: Completed
+- Stage 2: Completed
+- Stage 3: Completed
+- Stage 4: Completed
+- Stage 5: Completed
+- Stage 6: Completed
+- Stage 7: Next up
 
-## Summary of Findings
-- **Section 2.1 (Authentication)**: 10 PASS, 2 FAIL, 0 LOGIC ISSUES.
-- **Section 2.2 (Orders)**: 11 PASS, 8 FAIL, 3 LOGIC ISSUES.
-- **Section 2.3 (Status & Field Management)**: 2 PASS, 3 FAIL, 1 LOGIC ISSUE.
-- **Section 2.4 (Users, Groups, Permissions)**: 2 PASS, 1 FAIL, 0 LOGIC ISSUES.
-- **Section 2.5 (Dashboard)**: 4 PASS, 1 FAIL, 0 LOGIC ISSUES.
-- **Section 2.6 (Payroll Module)**: 1 PASS, 3 FAIL, 0 LOGIC ISSUES.
-- **Section 2.7 (Facebook Accounts)**: 2 PASS, 2 FAIL, 0 LOGIC ISSUES.
-- **Section 2.8 (Notifications & Announcements)**: 1 PASS, 2 FAIL, 1 NOT TESTABLE.
-- **Section 2.9 (Settings)**: 2 PASS, 2 FAIL, 0 LOGIC ISSUES.
-- **Section 2.10 (Global Search)**: 2 PASS, 0 FAIL, 1 LOGIC ISSUE.
-- **Section 2.11 (General Cross-Cutting Checks)**: 1 PASS, 1 FAIL, 0 LOGIC ISSUES, 2 NOT TESTABLE.
+**Context for Next Stage:**
+- **Stage 7** involves fixing the unbounded Orders fetch in `OrdersPage.tsx` and `orders.service.ts`/`orders.controller.ts`. Right now it fetches all orders without limits. We need to implement pagination (like `AuditLogPage.tsx` does) and add default date filters (e.g. today or this week) so the page loads efficiently.
 
-## Next Steps
-The QA verification protocol is entirely completed.
-The generated `QA_REPORT.md` serves as the official punch list of 25+ distinct FAILs and LOGIC ISSUES.
-A separate phase of work can now begin to fix every item documented in the report, one at a time.
+## Verification Details for Stage 4:
+- Added "Undecided" status in `packages/shared/src/constants/defaultStatuses.ts` with position 0 and `isDefault: true`. Shifted "Confirmed" down to position 1 and `isDefault: false`.
+- Upgraded the status seeding logic in `apps/api/prisma/seed.ts` to query by name first and correctly `update` existing statuses with their new `isDefault` flags or positions, completely preventing duplicate statuses.
+- Ran `npx prisma db seed` successfully; the DB was correctly updated without creating duplicate entries.
+- Confirmed that since `Undecided` is `position: 0`, both manual order creation and Smart Paste natively default to it, as the frontend pulls the first status in the sorted list.
