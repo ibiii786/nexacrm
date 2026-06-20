@@ -50,7 +50,8 @@ export class UsersService {
   static async createUser(data: { name: string; email: string; passwordPlain: string; role: Role; createdBy?: string }) {
     const passwordHash = await argon2.hash(data.passwordPlain);
     
-    return prisma.user.create({
+    // Create the user
+    const user = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
@@ -65,6 +66,31 @@ export class UsersService {
         role: true,
       }
     });
+
+    // Assign default permissions
+    const allPerms = await prisma.permission.findMany();
+    let permsToAssign: any[] = [];
+    
+    if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN') {
+      permsToAssign = allPerms;
+    } else if (data.role === 'USER') {
+      // Need to import DEFAULT_USER_PERMISSIONS dynamically or from shared
+      // Since it's imported in other places from @nexacrm/shared, we will require it here
+      const { DEFAULT_USER_PERMISSIONS } = require('@nexacrm/shared');
+      permsToAssign = allPerms.filter(p => DEFAULT_USER_PERMISSIONS.includes(p.name));
+    }
+
+    if (permsToAssign.length > 0) {
+      await prisma.userPermission.createMany({
+        data: permsToAssign.map(p => ({
+          userId: user.id,
+          permissionId: p.id,
+          grantedBy: data.createdBy || user.id, // self if not provided
+        }))
+      });
+    }
+
+    return user;
   }
 
   static async updateUser(id: string, data: { name?: string; email?: string; role?: Role; passwordPlain?: string }) {
