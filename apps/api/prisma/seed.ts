@@ -133,13 +133,20 @@ async function main() {
 
   // 4. Default Statuses (idempotent)
   console.log('Seeding default statuses...');
-  // We don't have a unique constraint on status name, so we check first
+  // We don't have a unique constraint on status name, so we check first by name
   for (const status of DEFAULT_STATUSES) {
     const existing = await prisma.status.findFirst({
-      where: { name: status.name, isDefault: status.isDefault },
+      where: { name: status.name, deletedAt: null },
     });
 
-    if (!existing) {
+    if (existing) {
+      if (existing.isDefault !== status.isDefault || existing.position !== status.position) {
+        await prisma.status.update({
+          where: { id: existing.id },
+          data: { isDefault: status.isDefault, position: status.position },
+        });
+      }
+    } else {
       await prisma.status.create({
         data: {
           name: status.name,
