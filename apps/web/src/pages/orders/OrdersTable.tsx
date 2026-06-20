@@ -134,8 +134,10 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
                 />
               </th>
               <th className="px-6 py-4 font-medium">Order #</th>
+              <th className="px-6 py-4 font-medium">Customer</th>
+              <th className="px-6 py-4 font-medium w-48">Products</th>
+              <th className="px-6 py-4 font-medium">Payment</th>
               <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium">Delivery Date</th>
               <th className="px-6 py-4 font-medium">Created By</th>
               <th className="px-6 py-4 font-medium">Created At</th>
             </tr>
@@ -168,6 +170,26 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
                       {order.orderNumber}
                     </Link>
                   </td>
+                  <td className="px-6 py-4 text-slate-800 dark:text-slate-200 font-medium">
+                    {order.customFields?.customerName || '-'}
+                    {order.customFields?.customerPhone && (
+                      <div className="text-xs text-slate-500 font-normal mt-0.5">{order.customFields.customerPhone}</div>
+                    )}
+                    {order.customFields?.deliveryAddress && (
+                      <div className="text-xs text-slate-500 font-normal mt-0.5 max-w-[200px] truncate" title={order.customFields.deliveryAddress}>
+                        {order.customFields.deliveryAddress}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                    <div className="line-clamp-2" title={order.customFields?.productsOrdered}>
+                      {order.customFields?.productsOrdered || '-'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                    {order.customFields?.paymentStatus || '-'}
+                    {order.customFields?.price ? ` ($${order.customFields.price})` : ''}
+                  </td>
                   <td className="px-6 py-4">
                     <span 
                       className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -176,12 +198,9 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
                       {order.status?.name}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                    {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : '-'}
-                  </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{order.creator?.name}</td>
                   <td className="px-6 py-4 text-slate-500 text-xs">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {new Date(order.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                   </td>
                 </tr>
               );
