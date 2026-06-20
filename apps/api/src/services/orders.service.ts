@@ -145,6 +145,43 @@ export class OrdersService {
       }
     }
 
+    // 2.5 Duplicate prevention: check for identical order created within the last 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentOrders = await prisma.order.findMany({
+      where: {
+        createdAt: { gte: fiveMinutesAgo },
+        statusId: data.statusId
+      },
+      select: { customFields: true, notes: true, deliveryDate: true }
+    });
+
+    const isDuplicate = recentOrders.some(order => {
+      const orderNotes = order.notes || '';
+      const dataNotes = data.notes || '';
+      if (orderNotes !== dataNotes) return false;
+      
+      const orderDate = order.deliveryDate ? order.deliveryDate.getTime() : null;
+      const dataDate = data.deliveryDate ? data.deliveryDate.getTime() : null;
+      if (orderDate !== dataDate) return false;
+      
+      const existing = order.customFields as any;
+      if (!existing) return false;
+
+      const newKeys = Object.keys(validatedCustomFields);
+      const oldKeys = Object.keys(existing);
+      
+      if (newKeys.length !== oldKeys.length) return false;
+      // If there are no custom fields and no notes, we don't consider it a blockable duplicate 
+      // just to be safe, but usually there are fields.
+      if (newKeys.length === 0 && !data.notes) return false;
+
+      return newKeys.every(key => existing[key] === validatedCustomFields[key]);
+    });
+
+    if (isDuplicate) {
+      throw new Error('An identical order was just created. Please avoid duplicate submissions.');
+    }
+
     // 3. Create the order
     const order = await prisma.order.create({
       data: {
