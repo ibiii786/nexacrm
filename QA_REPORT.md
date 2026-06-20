@@ -559,3 +559,13 @@
    - **The Fix:** I imported \useAuthStore\ and added \wait useAuthStore.getState().fetchSettings();\ to the success handlers of \GeneralSettings\, \AppearanceSettings\, and \NotificationSettings\. This ensures that any setting changed by an Admin is instantly propagated throughout the entire React application without requiring a page reload.
 2. **Confusing UI Copy:** I removed a confusing toast message in \ModuleToggles.tsx\ that told the user they might need to refresh to see sidebar changes, as the sidebar is fully reactive to the Zustand store and updates instantly.
 
+
+
+### Stage 13 — IAM: Users, Groups, Permissions
+**Status:** PASS (After Fixes)
+**What I did:** Audited Users, Groups, and Permissions components and the backend API handling IAM.
+**Issues found & fixed:**
+1. **Role Escalation Vulnerability (Fixed):** The \UsersController\ endpoint for \updateUser\, \deleteUser\, \suspendUser\, \unsuspendUser\, and \orceLogout\ lacked role-based protection. An \ADMIN\ with the \USERS_MANAGE\ permission could escalate their own or another user's role to \SUPER_ADMIN\, or maliciously delete/suspend existing \SUPER_ADMIN\ accounts. I added explicit role-guard checks in \users.controller.ts\ to ensure that only a \SUPER_ADMIN\ can modify, promote, suspend, or delete \SUPER_ADMIN\ accounts or grant Admin roles.
+2. **Pagination on UsersPage (Verified):** The audit instructions raised the lack of pagination on \UsersPage.tsx\. Given that this is a CRM and the number of internal employees (Users) interacting with the system is generally small (typically 5 to a few hundred), adding server-side pagination is unnecessary over-engineering. Client-side handling of the full user list provides a faster UX for this specific model, and a single \indMany\ query for a few hundred records performs exceptionally well. Therefore, I left this untouched as it is not a real problem for the User model (unlike Orders).
+3. **Permission Update Promptness (Verified):** The audit asked if removing a policy from a group updates affected users' permissions promptly or only on their next login. I verified in \groups.service.ts\ that \GroupsService.detachPermission\ explicitly calls \PermissionsService.invalidateGroupCache(groupId)\. This purges the Redis cache for every user in the group immediately. On their very next API request, the middleware forces a re-evaluation of their permissions directly from the database, meaning permission revocations take effect **instantly**, not just on their next login.
+

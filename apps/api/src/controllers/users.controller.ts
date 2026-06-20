@@ -48,7 +48,26 @@ export class UsersController {
 
   static async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await UsersService.updateUser((req.params.id as string), req.body);
+      const requestingUser = (req as any).user;
+      const targetUserId = req.params.id as string;
+
+      // Fetch target user to check their current role
+      const targetUser = await UsersService.getUserById(targetUserId);
+      if (!targetUser) {
+        return sendError(res, 'NOT_FOUND', 'User not found', 404);
+      }
+
+      // Role escalation guard
+      if (requestingUser.role !== 'SUPER_ADMIN') {
+        if (targetUser.role === 'SUPER_ADMIN') {
+          return sendError(res, 'FORBIDDEN', 'Only a Super Admin can modify another Super Admin', 403);
+        }
+        if (req.body.role && (req.body.role === 'ADMIN' || req.body.role === 'SUPER_ADMIN')) {
+          return sendError(res, 'FORBIDDEN_ROLE_ESCALATION', 'Only a Super Admin can grant Admin roles', 403);
+        }
+      }
+
+      const user = await UsersService.updateUser(targetUserId, req.body);
       return sendSuccess(res, user);
     } catch (error: any) {
       if (error.code === 'P2025') {
@@ -63,9 +82,14 @@ export class UsersController {
 
   static async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
-      // Prevent deleting self or SUPER_ADMIN (enforced implicitly via role, but good to check self)
+      // Prevent deleting self
       if ((req.params.id as string) === (req as any).user.id) {
         return sendError(res, 'BAD_REQUEST', 'Cannot delete your own account', 400);
+      }
+
+      const targetUser = await UsersService.getUserById(req.params.id as string);
+      if (targetUser?.role === 'SUPER_ADMIN' && (req as any).user.role !== 'SUPER_ADMIN') {
+        return sendError(res, 'FORBIDDEN', 'Only a Super Admin can delete another Super Admin', 403);
       }
 
       await UsersService.deleteUser((req.params.id as string));
@@ -86,6 +110,12 @@ export class UsersController {
       if ((req.params.id as string) === (req as any).user.id) {
         return sendError(res, 'BAD_REQUEST', 'Cannot suspend your own account', 400);
       }
+      
+      const targetUser = await UsersService.getUserById(req.params.id as string);
+      if (targetUser?.role === 'SUPER_ADMIN' && (req as any).user.role !== 'SUPER_ADMIN') {
+        return sendError(res, 'FORBIDDEN', 'Only a Super Admin can suspend another Super Admin', 403);
+      }
+      
       await UsersService.suspendUser((req.params.id as string));
       return sendSuccess(res, { message: 'User suspended' });
     } catch (error) {
@@ -95,6 +125,11 @@ export class UsersController {
 
   static async unsuspendUser(req: Request, res: Response, next: NextFunction) {
     try {
+      const targetUser = await UsersService.getUserById(req.params.id as string);
+      if (targetUser?.role === 'SUPER_ADMIN' && (req as any).user.role !== 'SUPER_ADMIN') {
+        return sendError(res, 'FORBIDDEN', 'Only a Super Admin can unsuspend another Super Admin', 403);
+      }
+
       await UsersService.unsuspendUser((req.params.id as string));
       return sendSuccess(res, { message: 'User unsuspended' });
     } catch (error) {
@@ -104,6 +139,11 @@ export class UsersController {
 
   static async forceLogout(req: Request, res: Response, next: NextFunction) {
     try {
+      const targetUser = await UsersService.getUserById(req.params.id as string);
+      if (targetUser?.role === 'SUPER_ADMIN' && (req as any).user.role !== 'SUPER_ADMIN') {
+        return sendError(res, 'FORBIDDEN', 'Only a Super Admin can force logout another Super Admin', 403);
+      }
+
       await UsersService.forceLogout((req.params.id as string));
       return sendSuccess(res, { message: 'User forced logged out' });
     } catch (error) {
