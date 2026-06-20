@@ -80,4 +80,17 @@ export class StatusesController {
       next(error);
     }
   }
+
+  static async reorderStatuses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { orderedIds } = req.body;
+      if (!orderedIds || !Array.isArray(orderedIds)) {
+        return sendError(res, 'VALIDATION_ERROR', 'orderedIds array is required');
+      }
+      await StatusesService.reorderStatuses(orderedIds);
+      return sendSuccess(res, { message: 'Statuses reordered successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

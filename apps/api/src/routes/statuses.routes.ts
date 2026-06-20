@@ -15,6 +15,13 @@ router.get(
   StatusesController.getStatuses
 );
 
+router.put(
+  '/reorder',
+  authorize([PERMISSIONS.STATUS_MANAGE]),
+  systemAuditLogger('Status'),
+  StatusesController.reorderStatuses
+);
+
 router.get(
   '/:id',
   // Authenticated users can view

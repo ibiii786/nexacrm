@@ -117,6 +117,17 @@ export class StatusesService {
     });
   }
 
+  static async reorderStatuses(orderedIds: string[]) {
+    return prisma.$transaction(async (tx) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        await tx.status.update({
+          where: { id: orderedIds[i] },
+          data: { position: i }
+        });
+      }
+    });
+  }
+
   /**
    * Used when creating/updating orders to know which fields apply to a status
    */

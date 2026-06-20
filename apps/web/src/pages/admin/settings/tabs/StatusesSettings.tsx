@@ -3,6 +3,73 @@ import { api } from '../../../../lib/api';
 import toast from 'react-hot-toast';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
 import { StatusModal } from './StatusModal';
+import { GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableTableRow({ status, openEditModal, restoreStatus, confirmDelete }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: status.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 1 : 0,
+    position: isDragging ? 'relative' as any : undefined,
+  };
+
+  return (
+    <tr 
+      ref={setNodeRef} 
+      style={style} 
+      className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 bg-white dark:bg-slate-900 ${isDragging ? 'opacity-50' : ''}`}
+    >
+      <td className="py-3 px-4 w-10">
+        <div {...attributes} {...listeners} className="cursor-grab hover:text-indigo-600 text-slate-400">
+          <GripVertical size={18} />
+        </div>
+      </td>
+      <td className="py-3 px-4">
+        <div 
+          className="w-6 h-6 rounded-full border border-slate-200 dark:border-slate-700" 
+          style={{ backgroundColor: status.color }}
+        ></div>
+      </td>
+      <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300 font-medium">
+        {status.name}
+      </td>
+      <td className="py-3 px-4 text-sm text-right">
+        <button onClick={() => openEditModal(status)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
+        {status.isArchived ? (
+          <button onClick={() => restoreStatus(status.id)} className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">Restore</button>
+        ) : (
+          <button onClick={() => confirmDelete(status)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Archive</button>
+        )}
+      </td>
+    </tr>
+  );
+}
 
 export function StatusesSettings() {
   const [statuses, setStatuses] = useState<any[]>([]);
@@ -64,6 +131,38 @@ export function StatusesSettings() {
     }
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setStatuses((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        
+        const newOrder = arrayMove(items, oldIndex, newIndex);
+        
+        // Save to backend
+        api.put('/statuses/reorder', {
+          orderedIds: newOrder.map(s => s.id)
+        }).then(() => {
+          toast.success('Status order saved');
+        }).catch(() => {
+          toast.error('Failed to save order');
+          fetchStatuses(); // revert on failure
+        });
+        
+        return newOrder;
+      });
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -98,27 +197,26 @@ export function StatusesSettings() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-            {statuses.map(status => (
-              <tr key={status.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="py-3 px-4">
-                  <div 
-                    className="w-6 h-6 rounded-full border border-slate-200 dark:border-slate-700" 
-                    style={{ backgroundColor: status.color }}
-                  ></div>
-                </td>
-                <td className="py-3 px-4 text-sm text-slate-700 dark:text-slate-300 font-medium">
-                  {status.name}
-                </td>
-                <td className="py-3 px-4 text-sm text-right">
-                  <button onClick={() => openEditModal(status)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
-                  {status.isArchived ? (
-                    <button onClick={() => restoreStatus(status.id)} className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">Restore</button>
-                  ) : (
-                    <button onClick={() => confirmDelete(status)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Archive</button>
-                  )}
-                </td>
-              </tr>
-            ))}
+            <DndContext 
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext 
+                items={statuses.map(s => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {statuses.map(status => (
+                  <SortableTableRow 
+                    key={status.id} 
+                    status={status} 
+                    openEditModal={openEditModal} 
+                    restoreStatus={restoreStatus} 
+                    confirmDelete={confirmDelete} 
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
             {statuses.length === 0 && (
               <tr>
                 <td colSpan={3} className="py-8 text-center text-slate-500 dark:text-slate-400">
