@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../../../lib/api';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface UserModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function UserModal({ isOpen, onClose, onSuccess }: UserModalProps) {
     role: 'USER',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
 
@@ -61,13 +63,22 @@ export function UserModal({ isOpen, onClose, onSuccess }: UserModalProps) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
-            <input
-              type="password"
-              required
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white pr-10"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
