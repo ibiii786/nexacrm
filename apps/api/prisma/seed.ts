@@ -9,6 +9,7 @@ import {
   DEFAULT_STATUSES,
   STANDARD_FIELDS,
   DEFAULT_SETTINGS,
+  DEFAULT_USER_PERMISSIONS,
 } from '@nexacrm/shared';
 
 const prisma = new PrismaClient();
@@ -104,6 +105,29 @@ async function main() {
         module: moduleName,
       },
     });
+  }
+
+  console.log('Granting permissions to test users...');
+  
+  const allPerms = await prisma.permission.findMany();
+  
+  if (testUser) {
+    const defaultPerms = allPerms.filter(p => DEFAULT_USER_PERMISSIONS.includes(p.name as any));
+    for (const p of defaultPerms) {
+      const existing = await prisma.userPermission.findFirst({ where: { userId: testUser.id, permissionId: p.id } });
+      if (!existing) {
+        await prisma.userPermission.create({ data: { userId: testUser.id, permissionId: p.id } });
+      }
+    }
+  }
+
+  if (adminUser) {
+    for (const p of allPerms) {
+      const existing = await prisma.userPermission.findFirst({ where: { userId: adminUser.id, permissionId: p.id } });
+      if (!existing) {
+        await prisma.userPermission.create({ data: { userId: adminUser.id, permissionId: p.id } });
+      }
+    }
   }
 
 

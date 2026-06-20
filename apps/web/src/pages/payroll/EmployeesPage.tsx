@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
+import { EmployeeModal } from '../../components/payroll/EmployeeModal';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -20,6 +23,28 @@ export default function EmployeesPage() {
     fetchEmployees();
   }, []);
 
+  const openCreateModal = () => {
+    setSelectedEmployee(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (emp: any) => {
+    setSelectedEmployee(emp);
+    setIsModalOpen(true);
+  };
+
+  const fetchEmployeesList = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/payroll/employees');
+      setEmployees(res.data.data);
+    } catch (error) {
+      toast.error('Failed to load employees');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -29,7 +54,7 @@ export default function EmployeesPage() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Employees</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">Manage your workforce for payroll.</p>
         </div>
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+        <button onClick={openCreateModal} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
           Add Employee
         </button>
       </div>
@@ -53,7 +78,11 @@ export default function EmployeesPage() {
               </tr>
             ) : (
               employees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                <tr 
+                  key={emp.id} 
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                  onClick={() => openEditModal(emp)}
+                >
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{emp.name}</td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{emp.role || '-'}</td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">${Number(emp.baseSalary || 0).toLocaleString()}</td>
@@ -70,6 +99,13 @@ export default function EmployeesPage() {
           </tbody>
         </table>
       </div>
+
+      <EmployeeModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchEmployeesList}
+        employee={selectedEmployee}
+      />
     </div>
   );
 }

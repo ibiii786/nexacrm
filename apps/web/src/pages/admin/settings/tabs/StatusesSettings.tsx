@@ -11,7 +11,7 @@ export function StatusesSettings() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<any>(null);
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null as string | null });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null as string | null, count: 0 });
 
   useEffect(() => {
     fetchStatuses();
@@ -38,16 +38,16 @@ export function StatusesSettings() {
     setIsModalOpen(true);
   };
 
-  const confirmDelete = (id: string) => {
-    setDeleteDialog({ open: true, id });
+  const confirmDelete = (status: any) => {
+    setDeleteDialog({ open: true, id: status.id, count: status._count?.orders || 0 });
   };
 
   const deleteStatus = async () => {
     if (!deleteDialog.id) return;
     try {
       await api.delete(`/statuses/${deleteDialog.id}`);
-      toast.success('Status deleted');
-      setDeleteDialog({ open: false, id: null });
+      toast.success('Status archived');
+      setDeleteDialog({ open: false, id: null, count: 0 });
       fetchStatuses();
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Failed to delete status');
@@ -114,7 +114,7 @@ export function StatusesSettings() {
                   {status.isArchived ? (
                     <button onClick={() => restoreStatus(status.id)} className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">Restore</button>
                   ) : (
-                    <button onClick={() => confirmDelete(status.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Archive</button>
+                    <button onClick={() => confirmDelete(status)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Archive</button>
                   )}
                 </td>
               </tr>
@@ -132,10 +132,10 @@ export function StatusesSettings() {
 
       <ConfirmDialog
         isOpen={deleteDialog.open}
-        title="Delete Status"
-        message="Are you sure you want to delete this status? You cannot delete a status if orders are assigned to it."
+        title="Archive Status"
+        message={`Are you sure you want to archive this status? There are ${deleteDialog.count} orders currently assigned to it. They will still be accessible, but you won't be able to select this status for new orders.`}
         onConfirm={deleteStatus}
-        onCancel={() => setDeleteDialog({ open: false, id: null })}
+        onCancel={() => setDeleteDialog({ open: false, id: null, count: 0 })}
       />
 
       <StatusModal

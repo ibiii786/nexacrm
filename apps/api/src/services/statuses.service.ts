@@ -8,6 +8,9 @@ export class StatusesService {
       include: {
         statusFields: {
           include: { field: true }
+        },
+        _count: {
+          select: { orders: true }
         }
       },
       orderBy: { position: 'asc' }
@@ -129,9 +132,12 @@ export class StatusesService {
 
     if (!status) return [];
 
-    const specificFields = status.statusFields.map(sf => sf.field);
+    const specificFields = status.statusFields
+      .map(sf => sf.field)
+      .filter(f => !f.isArchived && f.isVisible);
+      
     const globalFields = await prisma.field.findMany({
-      where: { isGlobal: true }
+      where: { isGlobal: true, isArchived: false, isVisible: true }
     });
 
     // Merge and deduplicate just in case

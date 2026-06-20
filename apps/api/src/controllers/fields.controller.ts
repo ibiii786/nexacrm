@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { FieldsService } from '../services/fields.service';
+import { PermissionsService } from '../services/permissions.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
+import { PERMISSIONS } from '@nexacrm/shared';
 
 export class FieldsController {
   static async getFields(req: Request, res: Response, next: NextFunction) {
@@ -32,11 +34,20 @@ export class FieldsController {
         return sendError(res, 'VALIDATION_ERROR', 'Name, label, type, and position are required');
       }
 
+      let finalIsRequired = !!isRequired;
+      const user = (req as any).user;
+      if (user.role !== 'SUPER_ADMIN' && finalIsRequired) {
+        const perms = await PermissionsService.getEffectivePermissions(user.id);
+        if (!perms.includes(PERMISSIONS.FIELDS_MAKE_REQUIRED)) {
+          finalIsRequired = false;
+        }
+      }
+
       const field = await FieldsService.createField({
         name,
         label,
         type,
-        isRequired,
+        isRequired: finalIsRequired,
         isVisible,
         isGlobal,
         options,
@@ -52,7 +63,19 @@ export class FieldsController {
 
   static async updateField(req: Request, res: Response, next: NextFunction) {
     try {
-      const field = await FieldsService.updateField((req.params.id as string), req.body);
+      const payload = { ...req.body };
+      if (payload.isRequired !== undefined) {
+        let finalIsRequired = !!payload.isRequired;
+        const user = (req as any).user;
+        if (user.role !== 'SUPER_ADMIN' && finalIsRequired) {
+          const perms = await PermissionsService.getEffectivePermissions(user.id);
+          if (!perms.includes(PERMISSIONS.FIELDS_MAKE_REQUIRED)) {
+            finalIsRequired = false;
+          }
+        }
+        payload.isRequired = finalIsRequired;
+      }
+      const field = await FieldsService.updateField((req.params.id as string), payload);
       return sendSuccess(res, field);
     } catch (error: any) {
       if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Field not found', 404);

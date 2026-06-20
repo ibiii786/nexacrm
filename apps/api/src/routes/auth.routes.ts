@@ -14,6 +14,9 @@ router.post('/refresh', AuthController.refresh);
 router.post('/logout', AuthController.logout);
 router.get('/me', authenticate, AuthController.getMe);
 
-// Other endpoints (me, reset-password) will be added later when we build the authenticate middleware
+router.post('/forgot-password', AuthController.forgotPassword);
+router.post('/reset-password', AuthController.resetPassword);
+
+// Other endpoints (me) will be added later when we build the authenticate middleware
 
 export default router;

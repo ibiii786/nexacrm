@@ -1,8 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { RequirePermission } from './components/auth/RequirePermission';
 import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/login';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import Dashboard from './pages/dashboard';
 import UsersPage from './pages/admin/iam/UsersPage';
 import GroupsPage from './pages/admin/iam/GroupsPage';
@@ -37,6 +40,12 @@ function App() {
     }
   }, [theme]);
 
+  // Apply primary color
+  const primaryColor = useAuthStore(state => state.settings?.primaryColor) || '#4f46e5'; // Default indigo-600
+  useEffect(() => {
+    document.documentElement.style.setProperty('--primary', primaryColor);
+  }, [primaryColor]);
+
   // Handle Session Timeout (Idle detection)
   const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -66,6 +75,8 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
@@ -76,14 +87,14 @@ function App() {
         <Route path="/orders/:id" element={<OrderDetailPage />} />
         
         {/* Admin IAM Routes */}
-        <Route path="/admin/users" element={<UsersPage />} />
-        <Route path="/admin/groups" element={<GroupsPage />} />
-        <Route path="/admin/permissions" element={<PermissionsPage />} />
-        <Route path="/admin/audit-log" element={<AuditLogPage />} />
+        <Route path="/admin/users" element={<RequirePermission permissions={['users:view']}><UsersPage /></RequirePermission>} />
+        <Route path="/admin/groups" element={<RequirePermission permissions={['users:view']}><GroupsPage /></RequirePermission>} />
+        <Route path="/admin/permissions" element={<RequirePermission permissions={['users:manage']}><PermissionsPage /></RequirePermission>} />
+        <Route path="/admin/audit-log" element={<RequirePermission permissions={['audit:view']}><AuditLogPage /></RequirePermission>} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
 
         {/* User & System Settings */}
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings" element={<RequirePermission permissions={['settings:access']}><SettingsPage /></RequirePermission>} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/my-permissions" element={<MyPermissions />} />
         {/* Payroll Routes */}

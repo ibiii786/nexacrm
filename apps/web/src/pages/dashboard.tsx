@@ -83,7 +83,7 @@ export default function Dashboard() {
           
           <div className="flex items-center gap-3">
             <Link 
-              to="/orders"
+              to="/orders?create=true"
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
             >
               <Plus size={18} />

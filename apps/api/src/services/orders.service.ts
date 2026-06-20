@@ -39,10 +39,40 @@ async function enforceEditWindow(orderCreatedAt: Date, userRole: string): Promis
   }
 }
 
+/**
+ * Validates and coerces a custom field value based on its type definition.
+ */
+function validateFieldValue(field: any, value: any): any {
+  if (value === null || value === undefined || value === '') return value;
+
+  let val = value;
+  
+  switch (field.type) {
+    case 'NUMBER':
+      val = Number(val);
+      if (isNaN(val)) throw new Error(`Field ${field.name} must be a valid number`);
+      break;
+    case 'DATE':
+      const date = new Date(val);
+      if (isNaN(date.getTime())) throw new Error(`Field ${field.name} must be a valid date`);
+      val = date.toISOString();
+      break;
+    case 'BOOLEAN':
+      val = Boolean(val);
+      break;
+    default: // TEXT, EMAIL, URL, SELECT, etc.
+      if (typeof val === 'string') val = DOMPurify.sanitize(val);
+  }
+  
+  return val;
+}
+
 export class OrdersService {
   static async getOrders(params?: {
     statusId?: string;
     search?: string;
+    startDate?: string;
+    endDate?: string;
   }) {
     const where: any = {};
     if (params?.statusId) where.statusId = params.statusId;
@@ -51,6 +81,11 @@ export class OrdersService {
         { orderNumber: { contains: params.search, mode: 'insensitive' } },
         // Could expand search to customFields JSON if needed, but keeping simple
       ];
+    }
+    if (params?.startDate || params?.endDate) {
+      where.createdAt = {};
+      if (params?.startDate) where.createdAt.gte = new Date(params.startDate);
+      if (params?.endDate) where.createdAt.lte = new Date(params.endDate);
     }
 
     return prisma.order.findMany({
@@ -94,10 +129,8 @@ export class OrdersService {
 
     for (const field of allowedFields) {
       const value = data.customFields[field.id] !== undefined ? data.customFields[field.id] : data.customFields[field.name];
-      if (value !== undefined) {
-        let val = value;
-        if (typeof val === 'string') val = DOMPurify.sanitize(val);
-        validatedCustomFields[field.name] = val;
+      if (value !== undefined && value !== null && value !== '') {
+        validatedCustomFields[field.name] = validateFieldValue(field, value);
       } else if (field.isRequired) {
         throw new Error(`Field ${field.name} is required for this status`);
       }
@@ -202,9 +235,12 @@ export class OrdersService {
         const value = data.customFields[field.id] !== undefined ? data.customFields[field.id] : data.customFields[field.name];
         if (value !== undefined) {
           const oldVal = mergedFields[field.name];
-          let newVal = value;
-          if (typeof newVal === 'string') newVal = DOMPurify.sanitize(newVal);
+          const newVal = validateFieldValue(field, value);
           
+          if ((newVal === null || newVal === undefined || newVal === '') && field.isRequired) {
+            throw new Error(`Field ${field.name} is required for this status`);
+          }
+
           if (oldVal !== newVal) {
             mergedFields[field.name] = newVal;
             auditLogs.push({
@@ -218,6 +254,21 @@ export class OrdersService {
       }
       
       updateData.customFields = mergedFields;
+    }
+
+    // If status changed, ensure all required fields for the new status are present
+    // in the resulting customFields (either newly updated or already existing)
+    if (updateData.statusId) {
+      const allowedFields = await StatusesService.getFieldsForStatus(updateData.statusId);
+      const fieldsToCheck = updateData.customFields || (existingOrder.customFields as any) || {};
+      for (const field of allowedFields) {
+        if (field.isRequired) {
+          const val = fieldsToCheck[field.name];
+          if (val === undefined || val === null || val === '') {
+            throw new Error(`Field ${field.name} is required to move to this status`);
+          }
+        }
+      }
     }
 
     // If nothing changed, just return

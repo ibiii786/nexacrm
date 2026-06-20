@@ -1,13 +1,20 @@
 import { Link } from 'react-router-dom';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { api } from '../../lib/api';
+import toast from 'react-hot-toast';
+import { TrashIcon } from 'lucide-react';
 
 interface OrdersTableProps {
   orders: any[];
+  statuses?: any[];
+  onOrderUpdated?: () => void;
 }
 
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const rowVirtualizer = useVirtualizer({
     count: orders.length,
@@ -25,12 +32,95 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         ]
       : [0, 0];
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(new Set(orders.map(o => o.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const newSet = new Set(selectedIds);
+    if (checked) newSet.add(id);
+    else newSet.delete(id);
+    setSelectedIds(newSet);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} orders?`)) return;
+    setIsProcessing(true);
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => api.delete(`/orders/${id}`)));
+      toast.success(`Deleted ${selectedIds.size} orders`);
+      setSelectedIds(new Set());
+      if (onOrderUpdated) onOrderUpdated();
+    } catch (err) {
+      toast.error('Some orders could not be deleted (Admin only past edit window)');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBulkStatusChange = async (statusId: string) => {
+    setIsProcessing(true);
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => api.put(`/orders/${id}`, { statusId })));
+      toast.success(`Updated ${selectedIds.size} orders`);
+      setSelectedIds(new Set());
+      if (onOrderUpdated) onOrderUpdated();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || 'Failed to update some orders due to required fields');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden h-full flex flex-col">
+      {selectedIds.size > 0 && (
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800 p-3 flex items-center justify-between">
+          <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+            {selectedIds.size} order(s) selected
+          </span>
+          <div className="flex gap-2 items-center">
+            <select
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleBulkStatusChange(e.target.value);
+                  e.target.value = '';
+                }
+              }}
+              disabled={isProcessing}
+              className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+            >
+              <option value="">Move to status...</option>
+              {statuses.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleBulkDelete}
+              disabled={isProcessing}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-md transition-colors"
+            >
+              <TrashIcon size={14} /> Delete Selected
+            </button>
+          </div>
+        </div>
+      )}
       <div ref={parentRef} className="overflow-auto flex-1">
         <table className="w-full text-left text-sm relative">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 sticky top-0 z-10">
             <tr>
+              <th className="px-6 py-4 font-medium w-10">
+                <input 
+                  type="checkbox" 
+                  checked={orders.length > 0 && selectedIds.size === orders.length}
+                  onChange={handleSelectAll}
+                  className="rounded border-slate-300 text-primary focus:ring-primary"
+                />
+              </th>
               <th className="px-6 py-4 font-medium">Order #</th>
               <th className="px-6 py-4 font-medium">Status</th>
               <th className="px-6 py-4 font-medium">Delivery Date</th>
@@ -41,7 +131,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {before > 0 && (
               <tr>
-                <td colSpan={5} style={{ height: `${before}px` }} />
+                <td colSpan={6} style={{ height: `${before}px` }} />
               </tr>
             )}
             {virtualItems.map((virtualRow) => {
@@ -51,8 +141,16 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                   key={order.id}
                   data-index={virtualRow.index}
                   ref={rowVirtualizer.measureElement}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors group cursor-pointer"
+                  className={`transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/20 ${selectedIds.has(order.id) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}
                 >
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedIds.has(order.id)}
+                      onChange={(e) => handleSelectOne(order.id, e.target.checked)}
+                      className="rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                  </td>
                   <td className="px-6 py-4 font-medium">
                     <Link to={`/orders/${order.id}`} data-testid={`order-link-${order.orderNumber}`} className="text-primary hover:underline">
                       {order.orderNumber}
@@ -78,12 +176,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
             })}
             {after > 0 && (
               <tr>
-                <td colSpan={5} style={{ height: `${after}px` }} />
+                <td colSpan={6} style={{ height: `${after}px` }} />
               </tr>
             )}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                   No orders found
                 </td>
               </tr>

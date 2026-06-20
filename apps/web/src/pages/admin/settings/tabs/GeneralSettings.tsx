@@ -12,6 +12,8 @@ const generalSettingsSchema = z.object({
   language: z.string().min(1, 'Language is required'),
   editWindowMinutes: z.string().regex(/^\d+$/, 'Must be a number'),
   sessionTimeoutMinutes: z.string().regex(/^\d+$/, 'Must be a number'),
+  companyName: z.string().optional(),
+  companyLogo: z.string().url('Must be a valid URL').optional().or(z.literal('')),
 });
 
 type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
@@ -26,6 +28,8 @@ export function GeneralSettings() {
       language: 'en',
       editWindowMinutes: '30',
       sessionTimeoutMinutes: '30',
+      companyName: '',
+      companyLogo: '',
     }
   });
 
@@ -38,6 +42,8 @@ export function GeneralSettings() {
           language: res.data.data.language || 'en',
           editWindowMinutes: res.data.data.editWindowMinutes || '30',
           sessionTimeoutMinutes: res.data.data.sessionTimeoutMinutes || '30',
+          companyName: res.data.data.companyName || '',
+          companyLogo: res.data.data.companyLogo || '',
         });
       } catch (error) {
         toast.error('Failed to load settings');
@@ -124,6 +130,38 @@ export function GeneralSettings() {
             />
             <p className="mt-1 text-xs text-slate-500">How long users can be idle before being logged out.</p>
             {errors.sessionTimeoutMinutes && <p className="mt-1 text-sm text-red-600">{errors.sessionTimeoutMinutes.message}</p>}
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">Company Details</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Company Name
+              </label>
+              <input 
+                type="text" 
+                {...register('companyName')}
+                placeholder="Acme Corp"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+              />
+              {errors.companyName && <p className="mt-1 text-sm text-red-600">{errors.companyName.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Company Logo URL
+              </label>
+              <input 
+                type="url" 
+                {...register('companyLogo')}
+                placeholder="https://example.com/logo.png"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+              />
+              <p className="mt-1 text-xs text-slate-500">Must be a valid image URL.</p>
+              {errors.companyLogo && <p className="mt-1 text-sm text-red-600">{errors.companyLogo.message}</p>}
+            </div>
           </div>
         </div>
 

@@ -7,10 +7,12 @@ interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOrderCreated: () => void;
+  order?: any; // If provided, modal is in edit mode
 }
 
-export function OrderModal({ isOpen, onClose, onOrderCreated }: OrderModalProps) {
+export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = !!order;
   
   // Form State
   const [statusId, setStatusId] = useState('');
@@ -25,27 +27,51 @@ export function OrderModal({ isOpen, onClose, onOrderCreated }: OrderModalProps)
   useEffect(() => {
     if (isOpen) {
       fetchMetadata();
-      resetForm();
+      if (order) {
+        setStatusId(order.statusId);
+        setDeliveryDate(order.deliveryDate ? new Date(order.deliveryDate).toISOString().split('T')[0] : '');
+        setNotes(order.notes || '');
+        // For custom fields, map existing keys to field IDs if possible, or just pass them as is.
+        // Actually, order.customFields uses field NAMES.
+        // We'll populate it below once statusFields are loaded.
+        setCustomFields(order.customFields || {});
+      } else {
+        resetForm();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, order]);
 
   useEffect(() => {
     // When status changes, figure out which fields are allowed
     if (statusId) {
       api.get(`/statuses/${statusId}/fields`)
-        .then((res: any) => setStatusFields(res.data.data))
+        .then((res: any) => {
+          setStatusFields(res.data.data);
+          if (order && order.statusId === statusId) {
+             // Map customFields names to IDs for the form
+             const mapped: any = {};
+             res.data.data.forEach((f: any) => {
+               if (order.customFields && order.customFields[f.name] !== undefined) {
+                 mapped[f.id] = order.customFields[f.name];
+               }
+             });
+             setCustomFields(mapped);
+          } else if (!order || order.statusId !== statusId) {
+             setCustomFields({}); // clear custom fields if changing status
+          }
+        })
         .catch((err: any) => console.error('Failed to load status fields', err));
     } else {
       setStatusFields([]);
     }
-  }, [statusId]);
+  }, [statusId, order]);
 
   const fetchMetadata = async () => {
     try {
       const statusesRes = await api.get('/statuses');
       setStatuses(statusesRes.data.data);
-      if (statusesRes.data.data.length > 0) {
-        setStatusId(statusesRes.data.data[0].id); // Select first status by default
+      if (statusesRes.data.data.length > 0 && !order) {
+        setStatusId(statusesRes.data.data[0].id); // Select first status by default if not editing
       }
     } catch (err) {
       console.error('Failed to load metadata', err);
@@ -63,14 +89,21 @@ export function OrderModal({ isOpen, onClose, onOrderCreated }: OrderModalProps)
     setIsSubmitting(true);
 
     try {
-      await api.post('/orders', {
+      const payload = {
         statusId,
         deliveryDate: deliveryDate ? new Date(deliveryDate).toISOString() : undefined,
         notes,
         customFields
-      });
+      };
 
-      toast.success('Order created successfully');
+      if (isEditMode) {
+        await api.put(`/orders/${order.id}`, payload);
+        toast.success('Order updated successfully');
+      } else {
+        await api.post('/orders', payload);
+        toast.success('Order created successfully');
+      }
+      
       onOrderCreated();
       onClose();
     } catch (err: any) {
@@ -88,7 +121,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated }: OrderModalProps)
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <FileTextIcon size={20} className="text-primary" />
-            Create New Order
+            {isEditMode ? 'Edit Order' : 'Create New Order'}
           </h2>
           <button onClick={onClose} className="p-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
             <XIcon size={20} />
@@ -164,7 +197,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated }: OrderModalProps)
             className="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? <Loader2Icon size={16} className="animate-spin" /> : <CheckIcon size={16} />}
-            Create Order
+            {isEditMode ? 'Save Changes' : 'Create Order'}
           </button>
         </div>
       </div>

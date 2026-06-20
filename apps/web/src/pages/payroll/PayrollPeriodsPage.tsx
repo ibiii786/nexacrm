@@ -2,24 +2,39 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { Download } from 'lucide-react';
+import { PayrollPeriodModal } from '../../components/payroll/PayrollPeriodModal';
 
 export default function PayrollPeriodsPage() {
   const [periods, setPeriods] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<any>(null);
+
+  const fetchPeriods = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/payroll/periods');
+      setPeriods(res.data.data);
+    } catch (error) {
+      toast.error('Failed to load payroll periods');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPeriods = async () => {
-      try {
-        const res = await api.get('/payroll/periods');
-        setPeriods(res.data.data);
-      } catch (error) {
-        toast.error('Failed to load payroll periods');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPeriods();
   }, []);
+
+  const openCreateModal = () => {
+    setSelectedPeriod(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (period: any) => {
+    setSelectedPeriod(period);
+    setIsModalOpen(true);
+  };
 
   const downloadPdf = async (periodId: string) => {
     try {
@@ -68,7 +83,10 @@ export default function PayrollPeriodsPage() {
             <Download size={18} />
             Export Summary (Excel)
           </button>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+          <button 
+            onClick={openCreateModal}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+          >
             Generate Payroll
           </button>
         </div>
@@ -109,9 +127,15 @@ export default function PayrollPeriodsPage() {
                       {period.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right flex justify-end gap-3">
                     <button 
-                      onClick={() => downloadPdf(period.id)}
+                      onClick={(e) => { e.stopPropagation(); openEditModal(period); }}
+                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); downloadPdf(period.id); }}
                       className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       Download PDF
@@ -123,6 +147,13 @@ export default function PayrollPeriodsPage() {
           </tbody>
         </table>
       </div>
+
+      <PayrollPeriodModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchPeriods}
+        period={selectedPeriod}
+      />
     </div>
   );
 }

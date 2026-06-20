@@ -8,7 +8,7 @@ interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
-  type: 'order' | 'user' | 'status' | 'announcement';
+  type: 'order' | 'user' | 'status' | 'announcement' | 'fbAccount';
 }
 
 interface GlobalSearchModalProps {
@@ -59,6 +59,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         
         const combined: SearchResult[] = [
           ...data.orders.map((o: any) => ({ ...o, type: 'order' })),
+          ...(data.fbAccounts || []).map((fb: any) => ({ ...fb, type: 'fbAccount' })),
           ...data.users.map((u: any) => ({ ...u, type: 'user' })),
           ...data.announcements.map((a: any) => ({ ...a, type: 'announcement' })),
           ...data.statuses.map((s: any) => ({ ...s, type: 'status' })),
@@ -125,6 +126,9 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       case 'status':
         if (isAdmin) navigate(`/settings?tab=statuses`);
         break;
+      case 'fbAccount':
+        navigate(`/fb-accounts/${result.id}`);
+        break;
       case 'announcement':
         navigate(`/dashboard`); // Could open specific announcement
         break;
@@ -136,6 +140,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       case 'order': return <ShoppingBag size={18} className="text-indigo-500" />;
       case 'user': return <User size={18} className="text-green-500" />;
       case 'status': return <CheckCircle size={18} className="text-amber-500" />;
+      case 'fbAccount': return <FileText size={18} className="text-blue-500" />;
       case 'announcement': return <FileText size={18} className="text-purple-500" />;
       default: return <Search size={18} className="text-slate-500" />;
     }

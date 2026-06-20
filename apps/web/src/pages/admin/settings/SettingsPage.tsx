@@ -4,7 +4,8 @@ import { FieldsSettings } from './tabs/FieldsSettings';
 import { StatusesSettings } from './tabs/StatusesSettings';
 import { ModuleToggles } from './tabs/ModuleToggles';
 import { AppearanceSettings } from './tabs/AppearanceSettings';
-import { Settings, CheckSquare, Palette, List, ToggleRight } from 'lucide-react';
+import { NotificationSettings } from './tabs/NotificationSettings';
+import { Settings, CheckSquare, Palette, List, ToggleRight, Bell } from 'lucide-react';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
@@ -15,6 +16,7 @@ export default function SettingsPage() {
     { id: 'statuses', label: 'Statuses', icon: List },
     { id: 'modules', label: 'Modules', icon: ToggleRight },
     { id: 'appearance', label: 'Appearance', icon: Palette },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
   ];
 
   return (
@@ -55,8 +57,9 @@ export default function SettingsPage() {
             {activeTab === 'general' && <GeneralSettings />}
             {activeTab === 'fields' && <FieldsSettings />}
             {activeTab === 'statuses' && <StatusesSettings />}
-            {activeTab === 'modules' && <ModuleToggles />}
-            {activeTab === 'appearance' && <AppearanceSettings />}
+            { activeTab === 'modules' && <ModuleToggles />}
+            { activeTab === 'appearance' && <AppearanceSettings />}
+            { activeTab === 'notifications' && <NotificationSettings />}
           </div>
         </div>
       </div>

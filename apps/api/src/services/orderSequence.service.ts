@@ -20,8 +20,8 @@ export class OrderSequenceService {
       },
     });
 
-    // Format: YYYY-00001
+    // Format: NX-YYYY-00001
     const paddedNumber = sequence.lastNumber.toString().padStart(5, '0');
-    return `${currentYear}-${paddedNumber}`;
+    return `NX-${currentYear}-${paddedNumber}`;
   }
 }

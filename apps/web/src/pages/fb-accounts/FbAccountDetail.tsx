@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Lock, Unlock, Eye } from 'lucide-react';
+import { Lock, Unlock, Eye, X } from 'lucide-react';
 
 export default function FbAccountDetail() {
   const { id } = useParams();
@@ -15,11 +15,18 @@ export default function FbAccountDetail() {
   const [password, setPassword] = useState('');
   const [revealing, setRevealing] = useState(false);
 
+  // Status Update state
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+  const [statusReason, setStatusReason] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   useEffect(() => {
     const fetchAccount = async () => {
       try {
         const res = await api.get(`/fb-accounts/${id}`);
         setAccount(res.data.data);
+        setNewStatus(res.data.data.status);
       } catch (error) {
         toast.error('Failed to load FB account details');
       } finally {
@@ -49,14 +56,45 @@ export default function FbAccountDetail() {
     }
   };
 
+  const handleUpdateStatus = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!statusReason) {
+      toast.error('Reason is required');
+      return;
+    }
+    setUpdatingStatus(true);
+    try {
+      const res = await api.put(`/fb-accounts/${id}`, {
+        status: newStatus,
+        statusChangeReason: statusReason
+      });
+      setAccount(res.data.data);
+      toast.success('Status updated successfully');
+      setIsStatusModalOpen(false);
+      setStatusReason('');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!account) return <div>Account not found</div>;
 
   return (
     <div className="p-8 pb-20 max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{account.displayName}</h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-1">Status: {account.status}</p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{account.displayName}</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Status: {account.status}</p>
+        </div>
+        <button 
+          onClick={() => setIsStatusModalOpen(true)}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+        >
+          Update Status
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -150,6 +188,63 @@ export default function FbAccountDetail() {
           </div>
         </div>
       </div>
+
+      {/* Status Update Modal */}
+      {isStatusModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Update Status</h2>
+              <button onClick={() => setIsStatusModalOpen(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <form id="status-form" onSubmit={handleUpdateStatus} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Status</label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="RESTRICTED">Restricted</option>
+                    <option value="BANNED">Banned</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Reason *</label>
+                  <textarea
+                    required
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                    placeholder="Why is this status being changed?"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary resize-none h-24"
+                  />
+                </div>
+              </form>
+            </div>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+              <button
+                type="button"
+                onClick={() => setIsStatusModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="status-form"
+                disabled={updatingStatus}
+                className="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors disabled:opacity-50"
+              >
+                {updatingStatus ? 'Saving...' : 'Update Status'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

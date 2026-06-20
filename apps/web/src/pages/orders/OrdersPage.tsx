@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
 import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon, CalendarIcon } from 'lucide-react';
@@ -8,20 +9,34 @@ import { OrdersKanban } from '../../components/orders/OrdersKanban';
 import { OrdersCalendar } from '../../components/orders/OrdersCalendar';
 
 export default function OrdersPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('list');
   const [search, setSearch] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [isParserOpen, setIsParserOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('create') === 'true') {
+      setIsParserOpen(true);
+      // Optional: remove it from URL so it doesn't reopen on refresh
+      setSearchParams(prev => {
+        prev.delete('create');
+        return prev;
+      });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchStatuses();
     fetchOrders();
-  }, [search]);
+  }, [search, startDate, endDate]);
 
   const fetchOrders = async () => {
     try {
-      const { data } = await api.get('/orders', { params: { search } });
+      const { data } = await api.get('/orders', { params: { search, startDate, endDate } });
       setOrders(data.data);
     } catch (error) {
       console.error(error);
@@ -32,6 +47,8 @@ export default function OrdersPage() {
     // Generate URL and trigger download
     const params = new URLSearchParams();
     if (search) params.append('search', search);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
     
     // In a real app, you might want to use a token if needed, but since it's a direct download URL,
     // often cookies are used or a short-lived token. For now, we will just open the URL.
@@ -80,6 +97,24 @@ export default function OrdersPage() {
               className="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
               value={search}
               onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="flex gap-2 items-center">
+            <input 
+              type="date"
+              data-testid="orders-start-date"
+              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+              value={startDate}
+              onChange={e => setStartDate(e.target.value)}
+            />
+            <span className="text-slate-400 text-sm">to</span>
+            <input 
+              type="date"
+              data-testid="orders-end-date"
+              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
             />
           </div>
 
@@ -132,7 +167,7 @@ export default function OrdersPage() {
 
       <div className="flex-1 min-h-0">
         {viewMode === 'list' && (
-          <OrdersTable orders={orders} />
+          <OrdersTable orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
         )}
         {viewMode === 'board' && (
           <OrdersKanban orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />

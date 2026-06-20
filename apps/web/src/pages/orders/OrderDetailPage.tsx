@@ -3,12 +3,17 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { ArrowLeftIcon, CalendarIcon, UserIcon, ClockIcon, Paperclip, DownloadIcon, TrashIcon } from 'lucide-react';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { OrderModal } from '../../components/orders/OrderModal';
+import { useAuthStore } from '../../stores/authStore';
+import toast from 'react-hot-toast';
 
 export default function OrderDetailPage() {
   const { id } = useParams();
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; attachmentId: string | null }>({ open: false, attachmentId: null });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchOrder();
@@ -37,8 +42,10 @@ export default function OrderDetailPage() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       fetchOrder();
-    } catch (error) {
+      toast.success('File uploaded successfully');
+    } catch (error: any) {
       console.error('File upload failed', error);
+      toast.error(error.response?.data?.error?.message || 'Failed to upload file');
     }
   };
 
@@ -92,9 +99,15 @@ export default function OrderDetailPage() {
         </div>
         
         <div className="flex gap-3">
-          <button data-testid="order-detail-edit-button" className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium">
-            Edit Order
-          </button>
+          {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('orders:edit_own') || (user as any)?.effectivePermissions?.includes('orders:edit_any')) && (
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              data-testid="order-detail-edit-button" 
+              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium"
+            >
+              Edit Order
+            </button>
+          )}
         </div>
       </div>
 
@@ -199,6 +212,15 @@ export default function OrderDetailPage() {
         onConfirm={deleteAttachment}
         isDestructive={true}
       />
+
+      {isEditModalOpen && (
+        <OrderModal 
+          isOpen={isEditModalOpen} 
+          onClose={() => setIsEditModalOpen(false)} 
+          onOrderCreated={fetchOrder} 
+          order={order}
+        />
+      )}
     </div>
   );
 }

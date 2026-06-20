@@ -5,6 +5,7 @@ import { env } from '../config/env';
 import prisma from '../config/database';
 import redis from '../config/redis';
 import { logger } from '../config/logger';
+import { sendEmail } from '../utils/email';
 
 export interface TokenPayload {
   userId: string;
@@ -195,5 +196,64 @@ export class AuthService {
       // 15 minute lockout window
       await redis.expire(key, 900);
     }
+  }
+
+  static async forgotPassword(email: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.isActive || user.deletedAt) {
+      // Don't leak user existence
+      return;
+    }
+
+    // Generate reset token
+    const token = crypto.randomBytes(32).toString('hex');
+    const resetTokenExp = new Date();
+    resetTokenExp.setHours(resetTokenExp.getHours() + 1); // 1 hour expiry
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: token,
+        resetTokenExp
+      }
+    });
+
+    const resetLink = `${env.VITE_URL || 'http://localhost:5175'}/reset-password?token=${token}`;
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Password Reset Request',
+      text: `You requested a password reset. Please go to this link to reset your password: ${resetLink}`,
+      html: `<p>You requested a password reset.</p><p><a href="${resetLink}">Click here to reset your password</a></p>`
+    });
+  }
+
+  static async resetPassword(token: string, newPasswordPlain: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExp: {
+          gt: new Date()
+        }
+      }
+    });
+
+    if (!user) {
+      throw new Error('INVALID_TOKEN');
+    }
+
+    const passwordHash = await argon2.hash(newPasswordPlain);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        resetToken: null,
+        resetTokenExp: null
+      }
+    });
+
+    // Revoke all existing sessions to force login with new password
+    await this.revokeAllUserSessions(user.id);
   }
 }

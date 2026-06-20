@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
 import { env } from '../config/env';
 import { AuditService } from '../services/audit.service';
+import { PermissionsService } from '../services/permissions.service';
 
 export class AuthController {
   static async login(req: Request, res: Response, next: NextFunction) {
@@ -28,7 +29,10 @@ export class AuthController {
       // Log the login action
       await AuditService.log('LOGIN', 'User', user.id, user.id, { userAgent }, req);
 
-      return sendSuccess(res, { user, accessToken });
+      const permissions = await PermissionsService.getUserPermissions(user.id);
+      const userWithPermissions = { ...user, permissions };
+
+      return sendSuccess(res, { user: userWithPermissions, accessToken });
     } catch (error: any) {
       if (error.message === 'ACCOUNT_LOCKED') {
         return sendError(res, 'ACCOUNT_LOCKED', 'Too many failed attempts. Try again in 15 minutes.', 429);
@@ -91,7 +95,42 @@ export class AuthController {
   }
 
   static async getMe(req: Request, res: Response, next: NextFunction) {
-    // req.user will be populated by the authenticate middleware
-    return sendSuccess(res, { user: (req as any).user });
+    try {
+      const user = (req as any).user;
+      const permissions = await PermissionsService.getUserPermissions(user.id);
+      return sendSuccess(res, { user: { ...user, permissions } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return sendError(res, 'VALIDATION_ERROR', 'Email is required');
+      }
+      await AuthService.forgotPassword(email);
+      // Always return success to prevent email enumeration
+      return sendSuccess(res, { message: 'If an account exists, a password reset link has been sent.' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) {
+        return sendError(res, 'VALIDATION_ERROR', 'Token and new password are required');
+      }
+      await AuthService.resetPassword(token, password);
+      return sendSuccess(res, { message: 'Password has been reset successfully. You can now log in.' });
+    } catch (error: any) {
+      if (error.message === 'INVALID_TOKEN') {
+        return sendError(res, 'INVALID_TOKEN', 'The password reset link is invalid or has expired.', 400);
+      }
+      next(error);
+    }
   }
 }

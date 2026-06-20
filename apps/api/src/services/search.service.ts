@@ -24,8 +24,7 @@ export class SearchService {
         (
           order_number ILIKE ${searchTerm} OR
           notes ILIKE ${searchTerm} OR
-          custom_fields->>'Customer Name' ILIKE ${searchTerm} OR
-          custom_fields->>'Customer Phone' ILIKE ${searchTerm}
+          custom_fields::text ILIKE ${searchTerm}
         )
       LIMIT 10
     `;
@@ -60,6 +59,7 @@ export class SearchService {
 
     // 4. Search Statuses (Admin only)
     let statuses: any[] = [];
+    let fbAccounts: any[] = [];
     if (isAdmin) {
       statuses = await prisma.status.findMany({
         where: {
@@ -69,13 +69,24 @@ export class SearchService {
         select: { id: true, name: true, color: true },
         take: 5
       });
+      
+      fbAccounts = await prisma.fbAccount.findMany({
+        where: {
+          OR: [
+            { displayName: { contains: query, mode: 'insensitive' } },
+            { linkedEmail: { contains: query, mode: 'insensitive' } }
+          ]
+        },
+        select: { id: true, displayName: true, linkedEmail: true, status: true },
+        take: 5
+      });
     }
 
     return {
       orders: ordersRaw.map((o: any) => ({
         id: o.id,
         title: o.orderNumber,
-        subtitle: o.customFields?.['Customer Name'] || 'Unknown Customer'
+        subtitle: o.customFields?.['Customer Name'] || o.customFields?.['Client Name'] || 'Unknown Customer'
       })),
       announcements: announcements.map((a: any) => ({
         id: a.id,
@@ -91,6 +102,11 @@ export class SearchService {
         id: s.id,
         title: s.name,
         subtitle: 'Status'
+      })),
+      fbAccounts: fbAccounts.map((fb: any) => ({
+        id: fb.id,
+        title: fb.displayName,
+        subtitle: `FB Account - ${fb.linkedEmail || 'No Email'}`
       }))
     };
   }

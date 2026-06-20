@@ -10,10 +10,12 @@ import prisma from '../config/database';
 export class OrdersController {
   static async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
-      const { statusId, search } = req.query;
+      const { statusId, search, startDate, endDate } = req.query;
       const orders = await OrdersService.getOrders({
         statusId: statusId as string,
         search: search as string,
+        startDate: startDate as string,
+        endDate: endDate as string,
       });
       return sendSuccess(res, orders);
     } catch (error) {
@@ -23,10 +25,12 @@ export class OrdersController {
 
   static async exportOrdersExcel(req: Request, res: Response, next: NextFunction) {
     try {
-      const { statusId, search } = req.query;
+      const { statusId, search, startDate, endDate } = req.query;
       const orders = await OrdersService.getOrders({
         statusId: statusId as string,
         search: search as string,
+        startDate: startDate as string,
+        endDate: endDate as string,
       });
 
       res.setHeader('Content-Disposition', 'attachment; filename="orders_export.xlsx"');

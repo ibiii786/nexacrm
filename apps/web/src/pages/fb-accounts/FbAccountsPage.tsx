@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { FbAccountModal } from '../../components/fb-accounts/FbAccountModal';
 
 export default function FbAccountsPage() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -21,6 +23,18 @@ export default function FbAccountsPage() {
     fetchAccounts();
   }, []);
 
+  const fetchAccountsList = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/fb-accounts');
+      setAccounts(res.data.data);
+    } catch (error) {
+      toast.error('Failed to load FB accounts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -30,7 +44,10 @@ export default function FbAccountsPage() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Facebook Accounts Vault</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">Manage Facebook accounts securely.</p>
         </div>
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+        >
           Add Account
         </button>
       </div>
@@ -84,6 +101,12 @@ export default function FbAccountsPage() {
           </tbody>
         </table>
       </div>
+
+      <FbAccountModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchAccountsList}
+      />
     </div>
   );
 }
