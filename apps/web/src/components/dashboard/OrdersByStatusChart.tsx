@@ -20,7 +20,7 @@ export function OrdersByStatusChart({ data }: OrdersByStatusChartProps) {
               <Pie
                 data={data}
                 cx="50%"
-                cy="50%"
+                cy="40%"
                 innerRadius={60}
                 outerRadius={80}
                 paddingAngle={5}
@@ -35,7 +35,7 @@ export function OrdersByStatusChart({ data }: OrdersByStatusChartProps) {
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 itemStyle={{ color: '#1e293b' }}
               />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
+              <Legend verticalAlign="bottom" height={60} iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>
