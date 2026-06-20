@@ -22,11 +22,11 @@ export default function PermissionsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Permissions</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
             View all available predefined system permissions.
           </p>
         </div>

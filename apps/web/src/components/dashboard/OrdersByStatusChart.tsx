@@ -14,7 +14,7 @@ export function OrdersByStatusChart({ data }: OrdersByStatusChartProps) {
         <CardTitle className="text-lg font-semibold">Orders by Status</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px] w-full">
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
