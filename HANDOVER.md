@@ -21,3 +21,5 @@
 Stage 9 completed. Next is Stage 10.
 
 Stage 10 completed. Next is Stage 11.
+
+Stage 11 completed. Next is Stage 12.

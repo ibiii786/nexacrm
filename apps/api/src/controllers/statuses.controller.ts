@@ -43,7 +43,10 @@ export class StatusesController {
       });
 
       return sendSuccess(res, status, undefined, 201);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        return sendError(res, 'VALIDATION_ERROR', `A status with the name '${req.body.name}' already exists.`, 400);
+      }
       next(error);
     }
   }
@@ -53,6 +56,9 @@ export class StatusesController {
       const status = await StatusesService.updateStatus((req.params.id as string), req.body);
       return sendSuccess(res, status);
     } catch (error: any) {
+      if (error.code === 'P2002') {
+        return sendError(res, 'VALIDATION_ERROR', `A status with the name '${req.body.name}' already exists.`, 400);
+      }
       if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Status not found', 404);
       next(error);
     }

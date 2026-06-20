@@ -539,3 +539,13 @@
 2. **Missing UI Permission Guards for Bulk Actions:** The \OrdersTable\ rendered the Bulk Status Move and Bulk Delete buttons to any user who checked a box, regardless of permissions (resulting in a generic backend error upon click). **Fix:** Wrapped the bulk action UI elements in \orders:edit_any\/\edit_own\ and \orders:delete_any\/\delete_own\ checks using \useAuthStore\.
 3. **Minor Table Layout Bug:** Empty and padding rows in the virtualized \OrdersTable\ had \colSpan={6}\ instead of 8, causing alignment issues. **Fix:** Corrected to 8.
 **Evidence:** Toggling to Calendar mode now forces a targeted month-window fetch and passes pagination limits. Bulk UI elements successfully disappear for unprivileged users.
+
+
+### Stage 11 — Settings: Fields and Statuses
+**Status:** PASS (After Fixes)
+**What I did:** Audited \FieldsSettings.tsx\, \FieldModal.tsx\, \StatusesSettings.tsx\, \StatusModal.tsx\, and the respective backend controllers.
+**Issues found & fixed:**
+1. **Duplicate Name Logic Gaps:** Both Fields and Statuses lacked proper handling for duplicate names. If a user tried to create a field or status with a name that already existed, the backend would throw a generic 500 error due to unhandled Prisma \P2002\ unique constraint failures. I updated both \ields.controller.ts\ and \statuses.controller.ts\ to explicitly catch \P2002\ errors and return a clean 400 Validation Error to the user.
+2. **Warning on Archiving:** I verified that archiving a status correctly pulls the count of affected orders and warns the user in the UI before archiving, fulfilling the blueprint requirement.
+3. **Deleting Required Fields:** When a field is soft-deleted, it no longer appears in the UI and is no longer enforced for new or updated orders. Existing order data is preserved in the JSON payload. A warning is presented to the user before deletion, aligning with the blueprint's soft-delete behavior.
+

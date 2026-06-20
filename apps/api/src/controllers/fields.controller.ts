@@ -58,7 +58,10 @@ export class FieldsController {
       });
 
       return sendSuccess(res, field, undefined, 201);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        return sendError(res, 'VALIDATION_ERROR', `A field with the key '${req.body.name}' already exists. Please choose a different key.`, 400);
+      }
       next(error);
     }
   }
@@ -80,6 +83,9 @@ export class FieldsController {
       const field = await FieldsService.updateField((req.params.id as string), payload);
       return sendSuccess(res, field);
     } catch (error: any) {
+      if (error.code === 'P2002') {
+        return sendError(res, 'VALIDATION_ERROR', `A field with the key '${req.body.name}' already exists. Please choose a different key.`, 400);
+      }
       if (error.code === 'P2025') return sendError(res, 'NOT_FOUND', 'Field not found', 404);
       next(error);
     }
