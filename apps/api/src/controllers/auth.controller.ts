@@ -29,7 +29,7 @@ export class AuthController {
       // Log the login action
       await AuditService.log('LOGIN', 'User', user.id, user.id, { userAgent }, req);
 
-      const permissions = await PermissionsService.getUserPermissions(user.id);
+      const permissions = await PermissionsService.getEffectivePermissions(user.id);
       const userWithPermissions = { ...user, permissions };
 
       return sendSuccess(res, { user: userWithPermissions, accessToken });
@@ -97,7 +97,7 @@ export class AuthController {
   static async getMe(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const permissions = await PermissionsService.getUserPermissions(user.id);
+      const permissions = await PermissionsService.getEffectivePermissions(user.id);
       return sendSuccess(res, { user: { ...user, permissions } });
     } catch (error) {
       next(error);
