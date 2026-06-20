@@ -233,6 +233,15 @@ export class OrdersService {
       const existing = order.customFields as any;
       if (!existing) return false;
 
+      // Primary duplicate signal: explicitly compare customer name and phone
+      const newName = validatedCustomFields['customerName'] || '';
+      const oldName = existing['customerName'] || '';
+      if (newName !== oldName) return false;
+
+      const newPhone = validatedCustomFields['customerPhone'] || '';
+      const oldPhone = existing['customerPhone'] || '';
+      if (newPhone !== oldPhone) return false;
+
       const newKeys = Object.keys(validatedCustomFields);
       const oldKeys = Object.keys(existing);
       
