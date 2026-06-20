@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import { PassThrough } from 'stream';
+import { settingsService } from './settings.service';
 
 export class ExportService {
   /**
@@ -8,8 +9,10 @@ export class ExportService {
    * Uses exceljs for efficient server-side generation of large datasets.
    */
   static async generateOrdersExcel(orders: any[]): Promise<PassThrough> {
+    const companyName = await settingsService.getSettingByKey('companyName', 'NexaCRM');
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'NexaCRM';
+    workbook.creator = companyName;
+    workbook.title = `${companyName} - Orders Export`;
     const sheet = workbook.addWorksheet('Orders');
 
     // Define columns based on standard fields
@@ -76,8 +79,10 @@ export class ExportService {
    * Generates an Excel file for payroll summary and streams it.
    */
   static async generatePayrollSummaryExcel(periods: any[]): Promise<PassThrough> {
+    const companyName = await settingsService.getSettingByKey('companyName', 'NexaCRM');
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'NexaCRM';
+    workbook.creator = companyName;
+    workbook.title = `${companyName} - Payroll Summary`;
     const sheet = workbook.addWorksheet('Payroll Summary');
 
     sheet.columns = [
@@ -116,13 +121,14 @@ export class ExportService {
    * Generates a Salary Slip PDF for a specific payroll period.
    */
   static async generateSalarySlipPdf(period: any): Promise<PassThrough> {
+    const companyName = await settingsService.getSettingByKey('companyName', 'NexaCRM');
     const doc = new PDFDocument({ margin: 50 });
     const stream = new PassThrough();
     doc.pipe(stream);
 
     doc.fontSize(20).text('Salary Slip', { align: 'center' });
     doc.moveDown();
-    doc.fontSize(14).text('NexaCRM', { align: 'center' });
+    doc.fontSize(14).text(companyName, { align: 'center' });
     doc.moveDown(2);
 
     doc.fontSize(12).text(`Employee: ${period.employee?.name || ''}`);
