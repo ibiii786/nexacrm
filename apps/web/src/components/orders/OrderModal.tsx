@@ -156,7 +156,9 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
             </div>
 
             {/* Dynamic Fields for the selected status */}
-            {statusFields.map(field => (
+            {statusFields
+              .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
+              .map(field => (
               <div key={field.id}>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   {field.label} {field.isRequired && '*'}
