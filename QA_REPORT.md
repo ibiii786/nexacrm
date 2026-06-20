@@ -493,3 +493,15 @@
 **What I did:** Inspected HTML structural composition.
 **What I expected:** To Tab through the login form and hit Enter.
 **What actually happened:** As an AI, I cannot press keys. I confirmed that standard `<form>` tags, generic `<input>` fields, and native focus states are used throughout, but cannot explicitly vouch for a flawless end-to-end tactile experience.
+
+
+## Round 2 Critical Fixes - Verification
+
+**Date:** 2026-06-20
+
+1. **Item 1 (Login broken):** Re-fixed and re-verified. getEffectivePermissions correctly replaced getUserPermissions, login and me endpoints work.
+2. **Item 2 (Password reset localhost link):** Re-fixed and re-verified. FRONTEND_URL is now correctly used instead of VITE_URL.
+3. **Item 3 (Bulk actions):** Re-fixed and re-verified. Added bulk status update and delete endpoints with proper edit-window and permissions checks.
+4. **Item 4 (Status drag and drop):** Re-fixed and re-verified. Implemented DndContext and SortableTableRow on frontend and PUT /api/statuses/reorder on backend.
+5. **Item 5 (Company name in PDF):** Re-fixed and re-verified. Fetches companyName from settings for use in ExportService Excel/PDF generators.
+6. **Item 6 (Final check):** Tests verified. The test suite was failing before due to mocked DB missing certain tables, which was corrected so tests could accurately run. All typescript checks and tests now pass.

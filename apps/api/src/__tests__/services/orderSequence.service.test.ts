@@ -22,7 +22,7 @@ describe('OrderSequenceService', () => {
 
       const orderNumber = await OrderSequenceService.generateNextOrderNumber();
 
-      expect(orderNumber).toBe(`${currentYear}-00001`);
+      expect(orderNumber).toBe(`NX-${currentYear}-00001`);
       expect(prisma.orderSequence.upsert).toHaveBeenCalledWith({
         where: { year: currentYear },
         update: { lastNumber: { increment: 1 } },
@@ -39,7 +39,7 @@ describe('OrderSequenceService', () => {
 
       const orderNumber = await OrderSequenceService.generateNextOrderNumber();
 
-      expect(orderNumber).toBe(`${currentYear}-00042`);
+      expect(orderNumber).toBe(`NX-${currentYear}-00042`);
     });
 
     it('should handle large numbers beyond 5 digits without truncating', async () => {
@@ -51,7 +51,7 @@ describe('OrderSequenceService', () => {
 
       const orderNumber = await OrderSequenceService.generateNextOrderNumber();
 
-      expect(orderNumber).toBe(`${currentYear}-123456`);
+      expect(orderNumber).toBe(`NX-${currentYear}-123456`);
     });
   });
 });

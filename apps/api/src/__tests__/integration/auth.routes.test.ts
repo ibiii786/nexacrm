@@ -6,6 +6,7 @@ jest.mock('../../services/auth.service');
 jest.mock('../../config/redis', () => ({
   get: jest.fn(),
   set: jest.fn(),
+  setex: jest.fn(),
   del: jest.fn(),
 }));
 jest.mock('../../config/database', () => ({
@@ -14,6 +15,15 @@ jest.mock('../../config/database', () => ({
   },
   session: {
     findUnique: jest.fn(),
+  },
+  userPermission: {
+    findMany: jest.fn().mockResolvedValue([]),
+  },
+  groupMember: {
+    findMany: jest.fn().mockResolvedValue([]),
+  },
+  auditLog: {
+    create: jest.fn().mockResolvedValue({}),
   }
 }));
 
