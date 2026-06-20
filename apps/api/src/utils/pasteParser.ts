@@ -133,32 +133,35 @@ function normalizeValue(value: string, fieldType: string): string {
   }
 }
 
-const ALIAS_MAP: Record<string, string> = {
-  'name': 'customerName',
-  'contact name': 'customerName',
-  'contact': 'customerPhone',
-  'contact number': 'customerPhone',
-  'phone': 'customerPhone',
-  'address': 'deliveryAddress',
-  'products': 'productsOrdered',
-  'product': 'productsOrdered',
-  'total': 'price',
-  'total price': 'price',
-  'amount': 'price',
+const SYNONYMS: Record<string, string[]> = {
+  customerPhone: ['phone', 'mobile', 'cell', 'tel', 'contact', 'number'],
+  customerName: ['name', 'customer', 'client', 'buyer', 'person'],
+  deliveryDate: ['date', 'when', 'time', 'eta'],
+  deliveryAddress: ['address', 'shipping', 'location', 'ship', 'dest'],
+  productsOrdered: ['product', 'item', 'order', 'goods'],
+  price: ['price', 'total', 'amount', 'cost', 'sum', 'pay'],
+  notes: ['note', 'remark', 'comment', 'instruction', 'extra']
 };
 
 /**
  * Try to match a candidate field name against known fields.
- * Priority: alias match → exact match → contains match → Levenshtein ≤ 2.
+ * Priority: synonym match → exact match → contains match → Levenshtein ≤ 2.
  */
 function matchField(candidateName: string, fields: FieldDefinition[]): FieldDefinition | null {
   const lower = candidateName.toLowerCase().trim();
 
-  // 0. Alias match
-  const aliasName = ALIAS_MAP[lower];
-  if (aliasName) {
-    const matchedField = fields.find(f => f.name === aliasName);
-    if (matchedField) return matchedField;
+  // 0. Robust Synonym/Keyword match
+  // We check if the candidate name contains any of our known generic keywords.
+  for (const [standardName, keywords] of Object.entries(SYNONYMS)) {
+    if (keywords.some(keyword => lower.includes(keyword))) {
+      // Prioritize phone over name if 'contact' or 'number' is used along with 'customer'
+      if (standardName === 'customerName' && (lower.includes('phone') || lower.includes('number') || lower.includes('contact'))) {
+        continue; // Skip mapping to Name if it's clearly a Phone Number
+      }
+      
+      const matchedField = fields.find(f => f.name === standardName);
+      if (matchedField) return matchedField;
+    }
   }
 
   // 1. Exact match (case-insensitive) on label or name
