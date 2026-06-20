@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { XIcon, FileTextIcon, CheckIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react';
+import { STANDARD_FIELDS } from '@nexacrm/shared';
 
 interface OrderPasteParserProps {
   isOpen: boolean;
@@ -257,7 +258,9 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
               </div>
 
               {/* Dynamic Fields for the selected status */}
-              {statusFields.map(field => (
+              {statusFields
+                .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
+                .map(field => (
                 <div key={field.id}>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     {field.label} {field.isRequired && '*'}
