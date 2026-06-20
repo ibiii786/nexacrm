@@ -133,12 +133,33 @@ function normalizeValue(value: string, fieldType: string): string {
   }
 }
 
+const ALIAS_MAP: Record<string, string> = {
+  'name': 'customerName',
+  'contact name': 'customerName',
+  'contact': 'customerPhone',
+  'contact number': 'customerPhone',
+  'phone': 'customerPhone',
+  'address': 'deliveryAddress',
+  'products': 'productsOrdered',
+  'product': 'productsOrdered',
+  'total': 'price',
+  'total price': 'price',
+  'amount': 'price',
+};
+
 /**
  * Try to match a candidate field name against known fields.
- * Priority: exact match → contains match → Levenshtein ≤ 2.
+ * Priority: alias match → exact match → contains match → Levenshtein ≤ 2.
  */
 function matchField(candidateName: string, fields: FieldDefinition[]): FieldDefinition | null {
   const lower = candidateName.toLowerCase().trim();
+
+  // 0. Alias match
+  const aliasName = ALIAS_MAP[lower];
+  if (aliasName) {
+    const matchedField = fields.find(f => f.name === aliasName);
+    if (matchedField) return matchedField;
+  }
 
   // 1. Exact match (case-insensitive) on label or name
   for (const field of fields) {

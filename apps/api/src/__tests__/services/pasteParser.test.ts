@@ -57,6 +57,23 @@ Price - $1,200.50`;
       expect(result.mappedFields['f1']).toBe('Jane Doe');
       expect(result.mappedFields['f5']).toBe('1200.5');
     });
+
+    it('should map all fields perfectly using alias mapping from real sample', () => {
+      const input = `Name: Adrian kozakiewicz
+Contact: 4169967757
+ADDRESS: 113 surbray grive mississauga 
+Products: 1x Double Size 12" Thick Anna plus mattress 
+Total : 250$`;
+
+      const result = parsePasteText(input, sampleFields);
+
+      expect(result.mappedFields['f1']).toBe('Adrian kozakiewicz');
+      expect(result.mappedFields['f2']).toBe('+14169967757');
+      expect(result.mappedFields['f3']).toBe('113 surbray grive mississauga');
+      expect(result.mappedFields['f4']).toBe('1x Double Size 12" Thick Anna plus mattress');
+      expect(result.mappedFields['f5']).toBe('250');
+      expect(result.unknownFields).toHaveLength(0);
+    });
   });
 
   describe('parsePasteText - unrecognized fields', () => {
@@ -152,6 +169,10 @@ describe('normalizeCurrency', () => {
 
   it('should handle $ with spaces', () => {
     expect(normalizeCurrency('$ 300')).toBe('300');
+  });
+
+  it('should handle trailing $', () => {
+    expect(normalizeCurrency('250$')).toBe('250');
   });
 });
 
