@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { XIcon, FileTextIcon, CheckIcon, Loader2Icon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { STANDARD_FIELDS } from '@nexacrm/shared';
+import { useAuthStore } from '../../stores/authStore';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface OrderModalProps {
 }
 
 export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModalProps) {
+  const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!order;
   
@@ -158,20 +161,47 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
             {/* Dynamic Fields for the selected status */}
             {statusFields
               .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
-              .map(field => (
-              <div key={field.id}>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  {field.label} {field.isRequired && '*'}
-                </label>
-                <input
-                  type="text"
-                  value={customFields[field.id] || ''}
-                  onChange={e => setCustomFields({ ...customFields, [field.id]: e.target.value })}
-                  required={field.isRequired}
-                  className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                />
-              </div>
-            ))}
+              .map(field => {
+                const standardDef = STANDARD_FIELDS.find(sf => sf.name === field.name);
+                const isSystem = standardDef?.isSystem;
+
+                let displayValue = customFields[field.id] || '';
+                if (isSystem) {
+                  if (field.name === 'createdBy') {
+                    displayValue = isEditMode ? order?.creator?.name : user?.name || '';
+                  } else if (field.name === 'orderNumber') {
+                    displayValue = isEditMode ? order?.orderNumber : 'Auto-generated';
+                  } else if (field.name === 'orderDate') {
+                    displayValue = isEditMode && order?.createdAt 
+                      ? new Date(order.createdAt).toLocaleDateString() 
+                      : 'Auto-generated';
+                  }
+                }
+
+                return (
+                  <div key={field.id}>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      {field.label} {field.isRequired && !isSystem && '*'}
+                    </label>
+                    <input
+                      type="text"
+                      value={displayValue}
+                      onChange={e => {
+                        if (!isSystem) {
+                          setCustomFields({ ...customFields, [field.id]: e.target.value });
+                        }
+                      }}
+                      required={field.isRequired && !isSystem}
+                      disabled={isSystem}
+                      className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white ${
+                        isSystem 
+                          ? 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 cursor-not-allowed'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                      }`}
+                    />
+                  </div>
+                );
+              })}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
