@@ -51,6 +51,11 @@ router.get(
   OrdersController.getOrder
 );
 
+router.get(
+  '/:id/copy-text',
+  OrdersController.getOrderCopyText
+);
+
 router.put(
   '/:id',
   authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),

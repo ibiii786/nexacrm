@@ -23,6 +23,8 @@ export class FieldsService {
     isGlobal?: boolean;
     options?: any;
     position: number;
+    isCopyable?: boolean;
+    copyPosition?: number | null;
     addedBy: string;
   }) {
     return prisma.field.create({
@@ -35,6 +37,8 @@ export class FieldsService {
         isGlobal: data.isGlobal,
         options: data.options,
         position: data.position,
+        isCopyable: data.isCopyable,
+        copyPosition: data.copyPosition,
         addedBy: data.addedBy,
       }
     });
@@ -50,6 +54,8 @@ export class FieldsService {
     isArchived?: boolean;
     options?: any;
     position?: number;
+    isCopyable?: boolean;
+    copyPosition?: number | null;
   }) {
     return prisma.field.update({
       where: { id },

@@ -113,6 +113,47 @@ export class OrdersService {
     });
   }
 
+  static async getOrderCopyText(id: string) {
+    const order = await this.getOrderById(id);
+    if (!order) return null;
+
+    const fields = await StatusesService.getFieldsForStatus(order.statusId);
+    
+    // Sort fields by copyPosition, then position
+    const copyableFields = fields
+      .filter(f => f.isCopyable)
+      .sort((a, b) => {
+        if (a.copyPosition !== null && b.copyPosition !== null) return a.copyPosition - b.copyPosition;
+        if (a.copyPosition !== null) return -1;
+        if (b.copyPosition !== null) return 1;
+        return a.position - b.position;
+      });
+
+    const lines: string[] = [];
+    for (const field of copyableFields) {
+      let value: any = undefined;
+
+      // Same pattern as createOrder
+      if (['orderStatus', 'deliveryDate', 'notes', 'orderNumber', 'orderDate', 'createdBy'].includes(field.name)) {
+        if (field.name === 'orderStatus') value = order.status?.name;
+        if (field.name === 'deliveryDate') value = order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : undefined;
+        if (field.name === 'notes') value = order.notes;
+        if (field.name === 'orderNumber') value = order.orderNumber;
+        if (field.name === 'orderDate') value = new Date(order.createdAt).toLocaleDateString();
+        if (field.name === 'createdBy') value = order.creator?.name;
+      } else {
+        const customFields = order.customFields as any;
+        value = customFields[field.id] !== undefined ? customFields[field.id] : customFields[field.name];
+      }
+
+      if (value !== undefined && value !== null && value !== '') {
+        lines.push(`${field.label}: ${value}`);
+      }
+    }
+
+    return lines.join('\n');
+  }
+
   static async createOrder(data: {
     statusId: string;
     deliveryDate?: Date;

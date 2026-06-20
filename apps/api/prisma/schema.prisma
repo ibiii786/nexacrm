@@ -178,6 +178,8 @@ model Field {
   isArchived Boolean  @default(false) @map("is_archived")
   options    Json?    @db.JsonB
   position   Int
+  isCopyable Boolean  @default(true) @map("is_copyable")
+  copyPosition Int?   @map("copy_position")
   addedBy    String?  @map("added_by") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz

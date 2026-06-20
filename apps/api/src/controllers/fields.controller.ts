@@ -28,7 +28,7 @@ export class FieldsController {
   static async createField(req: Request, res: Response, next: NextFunction) {
     try {
       const addedBy = (req as any).user.id;
-      const { name, label, type, isRequired, isVisible, isGlobal, options, position } = req.body;
+      const { name, label, type, isRequired, isVisible, isGlobal, options, position, isCopyable, copyPosition } = req.body;
 
       if (!name || !label || !type || position === undefined) {
         return sendError(res, 'VALIDATION_ERROR', 'Name, label, type, and position are required');
@@ -52,6 +52,8 @@ export class FieldsController {
         isGlobal,
         options,
         position,
+        isCopyable,
+        copyPosition,
         addedBy
       });
 

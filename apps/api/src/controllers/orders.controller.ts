@@ -53,6 +53,17 @@ export class OrdersController {
     }
   }
 
+  static async getOrderCopyText(req: Request, res: Response, next: NextFunction) {
+    try {
+      const copyText = await OrdersService.getOrderCopyText((req.params.id as string));
+      if (!copyText) return sendError(res, 'NOT_FOUND', 'Order not found', 404);
+      res.setHeader('Content-Type', 'text/plain');
+      return res.status(200).send(copyText);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async createOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const createdBy = (req as any).user.id;

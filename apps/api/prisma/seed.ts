@@ -168,7 +168,18 @@ async function main() {
       where: { name: field.name },
     });
 
-    if (!existing) {
+    // createdBy is strictly internal-only metadata about who entered the record.
+    // It must never be shared externally with customers when copying order details.
+    const isCopyable = field.name !== 'createdBy';
+
+    if (existing) {
+      if (existing.isCopyable !== isCopyable) {
+        await prisma.field.update({
+          where: { id: existing.id },
+          data: { isCopyable, copyPosition: field.position },
+        });
+      }
+    } else {
       await prisma.field.create({
         data: {
           name: field.name,
@@ -178,6 +189,8 @@ async function main() {
           isVisible: true,
           isGlobal: true,
           position: field.position,
+          isCopyable: isCopyable,
+          copyPosition: field.position,
           addedBy: superAdmin.id,
           options: field.options || null,
         },
