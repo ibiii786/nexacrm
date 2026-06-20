@@ -73,6 +73,8 @@ export class OrdersService {
     search?: string;
     startDate?: string;
     endDate?: string;
+    page?: number;
+    limit?: number;
   }) {
     const where: any = {};
     if (params?.statusId) where.statusId = params.statusId;
@@ -88,14 +90,33 @@ export class OrdersService {
       if (params?.endDate) where.createdAt.lte = new Date(params.endDate);
     }
 
-    return prisma.order.findMany({
-      where,
-      include: {
-        status: true,
-        creator: { select: { id: true, name: true } },
+    const page = params?.page || 1;
+    const limit = params?.limit || 50;
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          status: true,
+          creator: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    return {
+      orders,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      orderBy: { createdAt: 'desc' }
-    });
+    };
   }
 
   static async getOrderById(id: string) {

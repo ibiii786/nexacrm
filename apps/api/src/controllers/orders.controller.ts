@@ -10,14 +10,16 @@ import prisma from '../config/database';
 export class OrdersController {
   static async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
-      const { statusId, search, startDate, endDate } = req.query;
-      const orders = await OrdersService.getOrders({
+      const { statusId, search, startDate, endDate, page, limit } = req.query;
+      const result = await OrdersService.getOrders({
         statusId: statusId as string,
         search: search as string,
         startDate: startDate as string,
         endDate: endDate as string,
+        page: page ? parseInt(page as string, 10) : undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
       });
-      return sendSuccess(res, orders);
+      return sendSuccess(res, result.orders, result.meta);
     } catch (error) {
       next(error);
     }
@@ -26,17 +28,19 @@ export class OrdersController {
   static async exportOrdersExcel(req: Request, res: Response, next: NextFunction) {
     try {
       const { statusId, search, startDate, endDate } = req.query;
-      const orders = await OrdersService.getOrders({
+      const result = await OrdersService.getOrders({
         statusId: statusId as string,
         search: search as string,
         startDate: startDate as string,
         endDate: endDate as string,
+        // No pagination for export to export all matching records
+        limit: 10000, 
       });
 
       res.setHeader('Content-Disposition', 'attachment; filename="orders_export.xlsx"');
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-      const stream = await ExportService.generateOrdersExcel(orders);
+      const stream = await ExportService.generateOrdersExcel(result.orders);
       stream.pipe(res);
     } catch (error) {
       next(error);
@@ -212,7 +216,7 @@ export class OrdersController {
 
       // Fetch all visible fields from the database
       const fields = await prisma.field.findMany({
-        where: { isVisible: true },
+        where: { isVisible: true, isArchived: false },
         select: { id: true, name: true, label: true, type: true },
       });
 

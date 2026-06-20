@@ -13,9 +13,14 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('list');
+  const defaultEndDate = new Date().toISOString().split('T')[0];
+  const defaultStartDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
   const [search, setSearch] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isParserOpen, setIsParserOpen] = useState(false);
 
   useEffect(() => {
@@ -31,13 +36,24 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchStatuses();
-    fetchOrders();
+  }, []);
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1);
   }, [search, startDate, endDate]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [search, startDate, endDate, page]);
 
   const fetchOrders = async () => {
     try {
-      const { data } = await api.get('/orders', { params: { search, startDate, endDate } });
+      const { data } = await api.get('/orders', { params: { search, startDate, endDate, page, limit: 50 } });
       setOrders(data.data);
+      if (data.meta) {
+        setTotalPages(data.meta.totalPages || 1);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -165,9 +181,34 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 flex flex-col">
         {viewMode === 'list' && (
-          <OrdersTable orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
+          <>
+            <div className="flex-1 min-h-0">
+              <OrdersTable orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
+            </div>
+            {(page > 1 || page < totalPages) && (
+              <div className="p-4 flex justify-between items-center bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
         {viewMode === 'board' && (
           <OrdersKanban orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
