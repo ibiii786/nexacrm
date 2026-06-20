@@ -51,12 +51,18 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
     if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} orders?`)) return;
     setIsProcessing(true);
     try {
-      await Promise.all(Array.from(selectedIds).map(id => api.delete(`/orders/${id}`)));
-      toast.success(`Deleted ${selectedIds.size} orders`);
+      const res = await api.delete('/orders/bulk/delete', { data: { ids: Array.from(selectedIds) } });
+      const data = res.data.data;
+      if (data.successful.length > 0) {
+        toast.success(`Deleted ${data.successful.length} orders`);
+      }
+      if (data.failed.length > 0) {
+        toast.error(`${data.failed.length} orders could not be deleted (Admin only past edit window)`);
+      }
       setSelectedIds(new Set());
       if (onOrderUpdated) onOrderUpdated();
-    } catch (err) {
-      toast.error('Some orders could not be deleted (Admin only past edit window)');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || 'Some orders could not be deleted');
     } finally {
       setIsProcessing(false);
     }
@@ -65,12 +71,18 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
   const handleBulkStatusChange = async (statusId: string) => {
     setIsProcessing(true);
     try {
-      await Promise.all(Array.from(selectedIds).map(id => api.put(`/orders/${id}`, { statusId })));
-      toast.success(`Updated ${selectedIds.size} orders`);
+      const res = await api.put('/orders/bulk/status', { ids: Array.from(selectedIds), statusId });
+      const data = res.data.data;
+      if (data.successful.length > 0) {
+        toast.success(`Updated ${data.successful.length} orders`);
+      }
+      if (data.failed.length > 0) {
+        toast.error(`Failed to update ${data.failed.length} orders due to required fields or edit window limit`);
+      }
       setSelectedIds(new Set());
       if (onOrderUpdated) onOrderUpdated();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Failed to update some orders due to required fields');
+      toast.error(err.response?.data?.error?.message || 'Failed to update orders');
     } finally {
       setIsProcessing(false);
     }

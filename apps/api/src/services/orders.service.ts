@@ -316,4 +316,35 @@ export class OrdersService {
       action: 'ORDER_DELETED',
     });
   }
+
+  static async bulkUpdateStatus(ids: string[], statusId: string, updatedBy: string, userRole: string) {
+    const successful: string[] = [];
+    const failed: { id: string, reason: string }[] = [];
+    for (const id of ids) {
+      try {
+        await this.updateOrder(id, { statusId, updatedBy, userRole });
+        successful.push(id);
+      } catch (error: any) {
+        failed.push({ id, reason: error.message });
+      }
+    }
+    return { successful, failed };
+  }
+
+  static async bulkDelete(ids: string[], deletedBy: string, userRole: string) {
+    if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      throw new Error('Only admins can delete orders');
+    }
+    const successful: string[] = [];
+    const failed: { id: string, reason: string }[] = [];
+    for (const id of ids) {
+      try {
+        await this.deleteOrder(id, deletedBy, userRole);
+        successful.push(id);
+      } catch (error: any) {
+        failed.push({ id, reason: error.message });
+      }
+    }
+    return { successful, failed };
+  }
 }

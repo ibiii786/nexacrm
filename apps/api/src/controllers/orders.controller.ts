@@ -115,6 +115,44 @@ export class OrdersController {
     }
   }
 
+  static async bulkUpdateStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const { ids, statusId } = req.body;
+      
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return sendError(res, 'VALIDATION_ERROR', 'An array of order IDs is required');
+      }
+      if (!statusId) {
+        return sendError(res, 'VALIDATION_ERROR', 'statusId is required');
+      }
+
+      const results = await OrdersService.bulkUpdateStatus(ids, statusId, user.id, user.role);
+      return sendSuccess(res, results);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async bulkDelete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return sendError(res, 'VALIDATION_ERROR', 'An array of order IDs is required');
+      }
+
+      const results = await OrdersService.bulkDelete(ids, user.id, user.role);
+      return sendSuccess(res, results);
+    } catch (error: any) {
+      if (error.message === 'Only admins can delete orders') {
+        return sendError(res, 'FORBIDDEN', error.message, 403);
+      }
+      next(error);
+    }
+  }
+
   // Attachments
   static async uploadAttachment(req: Request, res: Response, next: NextFunction) {
     try {

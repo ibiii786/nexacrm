@@ -34,6 +34,18 @@ router.post(
   OrdersController.createOrder
 );
 
+router.put(
+  '/bulk/status',
+  authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),
+  OrdersController.bulkUpdateStatus
+);
+
+router.delete(
+  '/bulk/delete',
+  authorize([PERMISSIONS.ORDERS_DELETE_OWN, PERMISSIONS.ORDERS_DELETE_ANY]),
+  OrdersController.bulkDelete
+);
+
 router.get(
   '/:id',
   OrdersController.getOrder
