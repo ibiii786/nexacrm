@@ -28,12 +28,17 @@ export class UsersController {
 
   static async createUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const createdBy = (req as any).user.id;
+      const requestingUser = (req as any).user;
+      const createdBy = requestingUser.id;
+      const createdByRole = requestingUser.role;
       // Map 'password' from request body to 'passwordPlain' expected by service
       const { password, ...rest } = req.body;
-      const user = await UsersService.createUser({ ...rest, passwordPlain: password, createdBy });
+      const user = await UsersService.createUser({ ...rest, passwordPlain: password, createdBy, createdByRole });
       return sendSuccess(res, user, undefined, 201);
     } catch (error: any) {
+      if (error.code === 'FORBIDDEN_ROLE_ESCALATION') {
+        return sendError(res, 'FORBIDDEN_ROLE_ESCALATION', error.message, 403);
+      }
       if (error.code === 'P2002') {
         return sendError(res, 'CONFLICT', 'Email already in use', 409);
       }

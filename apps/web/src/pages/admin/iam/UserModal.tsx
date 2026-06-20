@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../../../lib/api';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuthStore } from '../../../stores/authStore';
 
 interface UserModalProps {
   isOpen: boolean;
@@ -10,6 +11,9 @@ interface UserModalProps {
 }
 
 export function UserModal({ isOpen, onClose, onSuccess }: UserModalProps) {
+  const currentUser = useAuthStore((state) => state.user);
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -88,8 +92,12 @@ export function UserModal({ isOpen, onClose, onSuccess }: UserModalProps) {
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             >
               <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
+              {isSuperAdmin && <option value="ADMIN">Admin</option>}
+              {isSuperAdmin && <option value="SUPER_ADMIN">Super Admin</option>}
             </select>
+            {!isSuperAdmin && (
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Admins can only create User accounts. Contact a Super Admin to create Admin accounts.</p>
+            )}
           </div>
           
           <div className="mt-6 flex justify-end gap-3">

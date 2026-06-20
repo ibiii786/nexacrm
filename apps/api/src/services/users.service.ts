@@ -48,7 +48,15 @@ export class UsersService {
     });
   }
 
-  static async createUser(data: { name: string; email: string; passwordPlain: string; role: Role; createdBy?: string }) {
+  static async createUser(data: { name: string; email: string; passwordPlain: string; role: Role; createdBy?: string; createdByRole?: string }) {
+    // Role escalation guard: ADMINs can only create USERs, not other ADMINs or SUPER_ADMINs.
+    // Only SUPER_ADMIN can create ADMIN or SUPER_ADMIN accounts.
+    if (data.createdByRole === 'ADMIN' && (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN')) {
+      const err: any = new Error('Only a Super Admin can create Admin accounts');
+      err.code = 'FORBIDDEN_ROLE_ESCALATION';
+      throw err;
+    }
+
     const passwordHash = await argon2.hash(data.passwordPlain);
     
     // Create the user
