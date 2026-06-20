@@ -217,8 +217,7 @@ export class AuthService {
         resetTokenExp
       }
     });
-
-    const resetLink = `${env.VITE_URL || 'http://localhost:5175'}/reset-password?token=${token}`;
+    const resetLink = `${env.FRONTEND_URL}/reset-password?token=${token}`;
 
     await sendEmail({
       to: user.email,
