@@ -128,6 +128,15 @@ export class OrdersService {
     const validatedCustomFields: any = {};
 
     for (const field of allowedFields) {
+      // Native fields check
+      if (['orderStatus', 'deliveryDate', 'notes', 'orderNumber', 'orderDate', 'createdBy'].includes(field.name)) {
+        if (field.name === 'orderStatus' && field.isRequired && !data.statusId) throw new Error(`Field ${field.name} is required for this status`);
+        if (field.name === 'deliveryDate' && field.isRequired && !data.deliveryDate) throw new Error(`Field ${field.name} is required for this status`);
+        if (field.name === 'notes' && field.isRequired && !data.notes) throw new Error(`Field ${field.name} is required for this status`);
+        // orderNumber, orderDate, createdBy are auto-generated, no user input required
+        continue;
+      }
+
       const value = data.customFields[field.id] !== undefined ? data.customFields[field.id] : data.customFields[field.name];
       if (value !== undefined && value !== null && value !== '') {
         validatedCustomFields[field.name] = validateFieldValue(field, value);
@@ -232,6 +241,10 @@ export class OrdersService {
       const mergedFields = { ...((existingOrder.customFields as any) || {}) };
       
       for (const field of allowedFields) {
+        if (['orderStatus', 'deliveryDate', 'notes', 'orderNumber', 'orderDate', 'createdBy'].includes(field.name)) {
+          continue;
+        }
+
         const value = data.customFields[field.id] !== undefined ? data.customFields[field.id] : data.customFields[field.name];
         if (value !== undefined) {
           const oldVal = mergedFields[field.name];
@@ -262,8 +275,15 @@ export class OrdersService {
       const allowedFields = await StatusesService.getFieldsForStatus(updateData.statusId);
       const fieldsToCheck = updateData.customFields || (existingOrder.customFields as any) || {};
       for (const field of allowedFields) {
+        if (['orderNumber', 'orderDate', 'createdBy'].includes(field.name)) continue;
+
         if (field.isRequired) {
-          const val = fieldsToCheck[field.name];
+          let val = fieldsToCheck[field.name];
+
+          if (field.name === 'orderStatus') val = updateData.statusId;
+          else if (field.name === 'deliveryDate') val = ('deliveryDate' in updateData ? updateData.deliveryDate : existingOrder.deliveryDate);
+          else if (field.name === 'notes') val = ('notes' in updateData ? updateData.notes : existingOrder.notes);
+
           if (val === undefined || val === null || val === '') {
             throw new Error(`Field ${field.name} is required to move to this status`);
           }
