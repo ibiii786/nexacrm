@@ -64,6 +64,19 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleCopyOrder = async () => {
+    try {
+      const { data } = await api.get(`/orders/${id}/copy-text`);
+      // It returns plain text, so data might just be the string, depending on axios response
+      const textToCopy = typeof data === 'string' ? data : data.data || data;
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success('Order details copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy order text', error);
+      toast.error('Failed to copy order details');
+    }
+  };
+
   if (isLoading) return <div className="p-8">Loading order details...</div>;
   if (!order) return <div className="p-8">Order not found</div>;
 
@@ -99,6 +112,14 @@ export default function OrderDetailPage() {
         </div>
         
         <div className="flex gap-3">
+          <button 
+            onClick={handleCopyOrder}
+            data-testid="order-detail-copy-button" 
+            className="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-500/20 font-medium"
+          >
+            Copy Details
+          </button>
+
           {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('orders:edit_own') || (user as any)?.effectivePermissions?.includes('orders:edit_any')) && (
             <button 
               onClick={() => setIsEditModalOpen(true)}

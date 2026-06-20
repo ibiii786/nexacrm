@@ -220,19 +220,18 @@ function matchField(candidateName: string, fields: FieldDefinition[]): FieldDefi
 }
 
 /**
- * Split a line into key-value pair using `:` or ` - ` as delimiter.
+ * Split a line into key-value pair using `:` or `=` or ` - ` as delimiter.
  * Returns null if no delimiter found.
  */
 function splitLine(line: string): { key: string; value: string } | null {
-  // Try `:` first (first occurrence only)
-  const colonIdx = line.indexOf(':');
-  if (colonIdx > 0) {
-    const key = line.substring(0, colonIdx).trim();
-    const value = line.substring(colonIdx + 1).trim();
+  const match = line.match(/^([^:=-]+)[:=-](.+)$/);
+  if (match) {
+    const key = match[1].trim();
+    const value = match[2].trim();
     if (key && value) return { key, value };
   }
 
-  // Try ` - ` delimiter
+  // Fallback for ` - ` if not matched
   const dashIdx = line.indexOf(' - ');
   if (dashIdx > 0) {
     const key = line.substring(0, dashIdx).trim();

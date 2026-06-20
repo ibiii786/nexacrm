@@ -20,6 +20,8 @@ export function FieldModal({ isOpen, onClose, onSuccess, field }: FieldModalProp
     isGlobal: true,
     position: 0,
     options: '', // comma separated for enum
+    isCopyable: true,
+    copyPosition: null as number | null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,6 +36,8 @@ export function FieldModal({ isOpen, onClose, onSuccess, field }: FieldModalProp
         isGlobal: field.isGlobal,
         position: field.position,
         options: field.options ? field.options.join(', ') : '',
+        isCopyable: field.isCopyable ?? true,
+        copyPosition: field.copyPosition ?? null,
       });
     } else {
       setFormData({
@@ -45,6 +49,8 @@ export function FieldModal({ isOpen, onClose, onSuccess, field }: FieldModalProp
         isGlobal: true,
         position: 0,
         options: '',
+        isCopyable: true,
+        copyPosition: null,
       });
     }
   }, [field, isOpen]);
@@ -185,6 +191,29 @@ export function FieldModal({ isOpen, onClose, onSuccess, field }: FieldModalProp
               />
               <span className="text-sm text-slate-700 dark:text-slate-300">Global (Appears on all statuses)</span>
             </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.isCopyable}
+                onChange={e => setFormData({ ...formData, isCopyable: e.target.checked })}
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Include in copied order text</span>
+            </label>
+            {formData.isCopyable && (
+              <div className="pl-6 pt-1">
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  Copy Position (Order in copied text, optional)
+                </label>
+                <input
+                  type="number"
+                  value={formData.copyPosition === null ? '' : formData.copyPosition}
+                  onChange={e => setFormData({ ...formData, copyPosition: e.target.value === '' ? null : parseInt(e.target.value) })}
+                  className="w-full sm:w-1/2 px-3 py-1 text-sm border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                  placeholder="e.g. 1"
+                />
+              </div>
+            )}
           </div>
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
