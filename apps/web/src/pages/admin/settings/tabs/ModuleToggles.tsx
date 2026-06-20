@@ -35,7 +35,7 @@ export function ModuleToggles() {
     
     try {
       await api.put('/settings', { [key]: checked.toString() });
-      toast.success('Module setting updated. You may need to refresh to see sidebar changes.');
+      toast.success('Module setting updated.');
       await fetchSettings(); // This updates the global store instantly
     } catch (error) {
       setModules(previousState);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../../lib/api';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../../../stores/authStore';
 
 export function NotificationSettings() {
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,7 @@ export function NotificationSettings() {
     
     try {
       await api.put('/settings', { [key]: newValue ? 'true' : 'false' });
+      await useAuthStore.getState().fetchSettings();
       toast.success('Notification preference saved');
     } catch (error) {
       // Revert on failure

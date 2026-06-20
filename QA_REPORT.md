@@ -549,3 +549,13 @@
 2. **Warning on Archiving:** I verified that archiving a status correctly pulls the count of affected orders and warns the user in the UI before archiving, fulfilling the blueprint requirement.
 3. **Deleting Required Fields:** When a field is soft-deleted, it no longer appears in the UI and is no longer enforced for new or updated orders. Existing order data is preserved in the JSON payload. A warning is presented to the user before deletion, aligning with the blueprint's soft-delete behavior.
 
+
+
+### Stage 12 — Settings: General, Appearance, Notifications, Module Toggles
+**Status:** PASS (After Fixes)
+**What I did:** Audited \GeneralSettings.tsx\, \AppearanceSettings.tsx\, \NotificationSettings.tsx\, and \ModuleToggles.tsx\ to verify if settings take effect immediately across the app.
+**Issues found & fixed:**
+1. **Settings Not Taking Immediate Effect (Global Store Stale):** I discovered that while \ModuleToggles\ was correctly refreshing the global \useAuthStore\ state after saving, \GeneralSettings\ and \AppearanceSettings\ were only sending API requests without updating the frontend's global state. This meant critical settings like \sessionTimeoutMinutes\ (used in \App.tsx\ for auto-logout) or global theme preferences would remain stale in other components until the user manually refreshed the page.
+   - **The Fix:** I imported \useAuthStore\ and added \wait useAuthStore.getState().fetchSettings();\ to the success handlers of \GeneralSettings\, \AppearanceSettings\, and \NotificationSettings\. This ensures that any setting changed by an Admin is instantly propagated throughout the entire React application without requiring a page reload.
+2. **Confusing UI Copy:** I removed a confusing toast message in \ModuleToggles.tsx\ that told the user they might need to refresh to see sidebar changes, as the sidebar is fully reactive to the Zustand store and updates instantly.
+

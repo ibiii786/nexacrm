@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../../lib/api';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../../../stores/authStore';
 
 export function AppearanceSettings() {
   const [theme, setTheme] = useState('light');
@@ -26,6 +27,7 @@ export function AppearanceSettings() {
     setTheme(newTheme);
     try {
       await api.put('/settings', { theme: newTheme });
+      await useAuthStore.getState().fetchSettings();
       toast.success('Theme preference saved');
       
       // Update HTML class
@@ -44,6 +46,7 @@ export function AppearanceSettings() {
     document.documentElement.style.setProperty('--primary', newColor);
     try {
       await api.put('/settings', { primaryColor: newColor });
+      await useAuthStore.getState().fetchSettings();
       toast.success('Primary color updated');
     } catch (error) {
       toast.error('Failed to update primary color');

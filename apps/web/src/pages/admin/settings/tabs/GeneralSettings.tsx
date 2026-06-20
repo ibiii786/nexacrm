@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { api } from '../../../../lib/api';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../../../stores/authStore';
 
 const generalSettingsSchema = z.object({
   timezone: z.string().min(1, 'Timezone is required'),
@@ -57,6 +58,7 @@ export function GeneralSettings() {
   const onSubmit = async (data: GeneralSettingsValues) => {
     try {
       await api.put('/settings', data);
+      await useAuthStore.getState().fetchSettings();
       toast.success('Settings updated successfully');
     } catch (error) {
       toast.error('Failed to update settings');
