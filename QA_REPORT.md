@@ -528,3 +528,14 @@
 3. **Unbounded Fetch (Today's Deliveries):** getAdminDashboardStats fetched all deliveries for the current day unconditionally. Added a 	ake: 50 limit to prevent payload bloat on very busy days.
 4. **Missing Role Check:** /api/dashboard/admin was only protected by uthenticate, meaning a normal USER could hit the endpoint directly. Added an explicit SUPER_ADMIN and ADMIN role check in dashboard.controller.ts.
 **Evidence:** Verified that the UI now populates announcements for admins. Network logs show limit=10 applied to announcements. Code verified to enforce 	ake: 50 on deliveries and 403 on /dashboard/admin for non-admins.
+
+
+### Stage 10 — Orders detail and table components Audit
+**Status:** PASS (After Fixes)
+**What I did:** Audited \OrdersPage.tsx\, \OrdersTable.tsx\, \OrderDetailPage.tsx\, \OrdersKanban.tsx\, and \OrdersCalendar.tsx\. Checked for pagination leaks, permission guard integrity, and logic consistency across views.
+**What I expected:** Kanban and Calendar views must display all records within their respective filtered bounds (not just the first 50 paginated records). Bulk actions must be permission-gated in the UI, matching backend behavior.
+**What actually happened:** Found 2 major logic flaws and 1 minor layout issue:
+1. **Silent Record Dropping in Kanban/Calendar:** Kanban and Calendar views blindly received the paginated (limit: 50) dataset from \OrdersPage\. Navigating to older dates in the Calendar or looking at Kanban columns caused massive data omissions. **Fix:** Hoisted the Calendar's internal date state up to \OrdersPage\. When viewing Calendar or Kanban, \etchOrders\ now overrides pagination (limit 1000) and precisely targets the calendar's month window or Kanban's date filters.
+2. **Missing UI Permission Guards for Bulk Actions:** The \OrdersTable\ rendered the Bulk Status Move and Bulk Delete buttons to any user who checked a box, regardless of permissions (resulting in a generic backend error upon click). **Fix:** Wrapped the bulk action UI elements in \orders:edit_any\/\edit_own\ and \orders:delete_any\/\delete_own\ checks using \useAuthStore\.
+3. **Minor Table Layout Bug:** Empty and padding rows in the virtualized \OrdersTable\ had \colSpan={6}\ instead of 8, causing alignment issues. **Fix:** Corrected to 8.
+**Evidence:** Toggling to Calendar mode now forces a targeted month-window fetch and passes pagination limits. Bulk UI elements successfully disappear for unprivileged users.

@@ -17,14 +17,13 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 interface OrdersCalendarProps {
   orders: any[];
   statuses: any[];
+  currentDate: Date;
+  onNextMonth: () => void;
+  onPrevMonth: () => void;
+  onToday: () => void;
 }
 
-export function OrdersCalendar({ orders, statuses }: OrdersCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-
+export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onPrevMonth, onToday }: OrdersCalendarProps) {
   // Generate calendar grid
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
@@ -98,19 +97,19 @@ export function OrdersCalendar({ orders, statuses }: OrdersCalendarProps) {
         </h2>
         <div className="flex gap-2">
           <button 
-            onClick={prevMonth}
+            onClick={onPrevMonth}
             className="p-1.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
           >
             <ChevronLeftIcon size={20} />
           </button>
           <button 
-            onClick={() => setCurrentDate(new Date())}
+            onClick={onToday}
             className="px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium"
           >
             Today
           </button>
           <button 
-            onClick={nextMonth}
+            onClick={onNextMonth}
             className="p-1.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
           >
             <ChevronRightIcon size={20} />

@@ -8,6 +8,8 @@ import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
 import { OrdersKanban } from '../../components/orders/OrdersKanban';
 import { OrdersCalendar } from '../../components/orders/OrdersCalendar';
 
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths } from 'date-fns';
+
 export default function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<any[]>([]);
@@ -22,6 +24,7 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isParserOpen, setIsParserOpen] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
   useEffect(() => {
     if (searchParams.get('create') === 'true') {
@@ -41,16 +44,40 @@ export default function OrdersPage() {
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, startDate, endDate]);
+  }, [search, startDate, endDate, viewMode]);
 
   useEffect(() => {
     fetchOrders();
-  }, [search, startDate, endDate, page]);
+  }, [search, startDate, endDate, page, viewMode, calendarDate]);
 
   const fetchOrders = async () => {
     try {
-      const endDateParam = endDate ? new Date(endDate + 'T23:59:59').toISOString() : undefined;
-      const { data } = await api.get('/orders', { params: { search, startDate, endDate: endDateParam, page, limit: 50 } });
+      let currentStartDate = startDate;
+      let currentEndDate = endDate ? new Date(endDate + 'T23:59:59').toISOString() : undefined;
+      let currentLimit = 50;
+      let currentPage = page;
+
+      if (viewMode === 'calendar') {
+        const monthStart = startOfMonth(calendarDate);
+        const monthEnd = endOfMonth(calendarDate);
+        currentStartDate = startOfWeek(monthStart).toISOString().split('T')[0];
+        currentEndDate = endOfWeek(monthEnd).toISOString().split('T')[0];
+        currentLimit = 1000;
+        currentPage = 1;
+      } else if (viewMode === 'board') {
+        currentLimit = 1000;
+        currentPage = 1;
+      }
+
+      const { data } = await api.get('/orders', { 
+        params: { 
+          search, 
+          startDate: currentStartDate, 
+          endDate: currentEndDate, 
+          page: currentPage, 
+          limit: currentLimit 
+        } 
+      });
       setOrders(data.data);
       if (data.meta) {
         setTotalPages(data.meta.totalPages || 1);
@@ -215,7 +242,14 @@ export default function OrdersPage() {
           <OrdersKanban orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
         )}
         {viewMode === 'calendar' && (
-          <OrdersCalendar orders={orders} statuses={statuses} />
+          <OrdersCalendar 
+            orders={orders} 
+            statuses={statuses} 
+            currentDate={calendarDate}
+            onNextMonth={() => setCalendarDate(addMonths(calendarDate, 1))}
+            onPrevMonth={() => setCalendarDate(subMonths(calendarDate, 1))}
+            onToday={() => setCalendarDate(new Date())}
+          />
         )}
       </div>
 

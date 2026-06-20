@@ -1,3 +1,4 @@
+import { useAuthStore } from '../../stores/authStore';
 import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -12,6 +13,7 @@ interface OrdersTableProps {
 }
 
 export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTableProps) {
+  const { user } = useAuthStore();
   const parentRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
@@ -88,6 +90,9 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
     }
   };
 
+  const canEdit = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || (user as any)?.effectivePermissions?.includes('orders:edit_own') || (user as any)?.effectivePermissions?.includes('orders:edit_any');
+  const canDelete = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || (user as any)?.effectivePermissions?.includes('orders:delete_own') || (user as any)?.effectivePermissions?.includes('orders:delete_any');
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden h-full flex flex-col">
       {selectedIds.size > 0 && (
@@ -96,28 +101,32 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
             {selectedIds.size} order(s) selected
           </span>
           <div className="flex gap-2 items-center">
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleBulkStatusChange(e.target.value);
-                  e.target.value = '';
-                }
-              }}
-              disabled={isProcessing}
-              className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-            >
-              <option value="">Move to status...</option>
-              {statuses.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-            <button
-              onClick={handleBulkDelete}
-              disabled={isProcessing}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-md transition-colors"
-            >
-              <TrashIcon size={14} /> Delete Selected
-            </button>
+            {canEdit && (
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleBulkStatusChange(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                disabled={isProcessing}
+                className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+              >
+                <option value="">Move to status...</option>
+                {statuses.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            )}
+            {canDelete && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={isProcessing}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-md transition-colors"
+              >
+                <TrashIcon size={14} /> Delete Selected
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -145,7 +154,7 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {before > 0 && (
               <tr>
-                <td colSpan={6} style={{ height: `${before}px` }} />
+                <td colSpan={8} style={{ height: `${before}px` }} />
               </tr>
             )}
             {virtualItems.map((virtualRow) => {
@@ -207,12 +216,12 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
             })}
             {after > 0 && (
               <tr>
-                <td colSpan={6} style={{ height: `${after}px` }} />
+                <td colSpan={8} style={{ height: `${after}px` }} />
               </tr>
             )}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                   No orders found
                 </td>
               </tr>
