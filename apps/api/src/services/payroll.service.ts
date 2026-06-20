@@ -77,18 +77,36 @@ export class PayrollService {
   }
 
   async createPayrollPeriod(data: any, createdBy: string) {
-    // Basic net salary calculation
-    const grossSalary = data.grossSalary || 0;
-    const deductionsTotal = data.deductions ? Object.values(data.deductions).reduce((acc: any, val: any) => acc + Number(val), 0) : 0;
-    const netSalary = Number(grossSalary) - Number(deductionsTotal);
+    const employee = await prisma.employee.findUnique({ where: { id: data.employeeId } });
+    
+    // Fetch unassigned advances in this period
+    const advances = await prisma.advance.findMany({
+      where: {
+        employeeId: data.employeeId,
+        date: { gte: new Date(data.periodStart), lte: new Date(data.periodEnd) },
+        payrollPeriodId: null
+      }
+    });
+    
+    const advanceTotal = advances.reduce((sum, adv) => sum + Number(adv.amount || 0), 0);
 
-    return prisma.payrollPeriod.create({
+    // Basic net salary calculation
+    const grossSalary = data.grossSalary !== undefined ? data.grossSalary : (employee?.baseSalary || 0);
+    const explicitDeductions = data.deductions ? Object.values(data.deductions).reduce((acc: any, val: any) => acc + Number(val), 0) : 0;
+    const deductionsTotal = explicitDeductions + advanceTotal;
+    
+    // If the frontend explicitly passed a netSalary, respect it, otherwise calculate it
+    const netSalary = data.netSalary !== undefined && data.netSalary !== null 
+      ? data.netSalary 
+      : (Number(grossSalary) - Number(deductionsTotal));
+
+    const period = await prisma.payrollPeriod.create({
       data: {
         employeeId: data.employeeId,
         periodStart: new Date(data.periodStart),
         periodEnd: new Date(data.periodEnd),
         grossSalary: grossSalary,
-        deductions: data.deductions || {},
+        deductions: data.deductions || { advances: advanceTotal },
         netSalary: netSalary,
         status: data.status || 'PENDING',
         paidAt: data.status === 'PAID' ? new Date() : null,
@@ -98,6 +116,16 @@ export class PayrollService {
         employee: true,
       }
     });
+
+    // Link advances to this period
+    if (advances.length > 0) {
+      await prisma.advance.updateMany({
+        where: { id: { in: advances.map(a => a.id) } },
+        data: { payrollPeriodId: period.id }
+      });
+    }
+
+    return period;
   }
 
   async updatePayrollPeriod(id: string, data: any) {
@@ -113,7 +141,9 @@ export class PayrollService {
       updateData.paidAt = null;
     }
 
-    if (data.grossSalary !== undefined || data.deductions !== undefined) {
+    if (data.netSalary !== undefined && data.netSalary !== null) {
+      updateData.netSalary = data.netSalary;
+    } else if (data.grossSalary !== undefined || data.deductions !== undefined) {
       // Re-calculate net
       const period = await prisma.payrollPeriod.findUnique({ where: { id } });
       const gross = data.grossSalary !== undefined ? data.grossSalary : period?.grossSalary;

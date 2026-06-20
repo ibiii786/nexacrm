@@ -569,3 +569,16 @@
 2. **Pagination on UsersPage (Verified):** The audit instructions raised the lack of pagination on \UsersPage.tsx\. Given that this is a CRM and the number of internal employees (Users) interacting with the system is generally small (typically 5 to a few hundred), adding server-side pagination is unnecessary over-engineering. Client-side handling of the full user list provides a faster UX for this specific model, and a single \indMany\ query for a few hundred records performs exceptionally well. Therefore, I left this untouched as it is not a real problem for the User model (unlike Orders).
 3. **Permission Update Promptness (Verified):** The audit asked if removing a policy from a group updates affected users' permissions promptly or only on their next login. I verified in \groups.service.ts\ that \GroupsService.detachPermission\ explicitly calls \PermissionsService.invalidateGroupCache(groupId)\. This purges the Redis cache for every user in the group immediately. On their very next API request, the middleware forces a re-evaluation of their permissions directly from the database, meaning permission revocations take effect **instantly**, not just on their next login.
 
+
+
+### Stage 14 — Payroll Module
+**Status:** PASS (After Fixes)
+**What I did:** Audited \PayrollDashboard.tsx\, \EmployeesPage.tsx\, \PayrollPeriodsPage.tsx\, \AdvancesPage.tsx\, and \payroll.service.ts\ to verify the net salary calculations and overall logic.
+**Issues found & fixed:**
+1. **Broken Net Salary Calculation (Fixed):** I discovered a critical logic gap between the frontend \PayrollPeriodModal.tsx\ and the backend \payroll.service.ts\. The frontend was only sending an optional manual \
+etSalary\ value, omitting \grossSalary\ and \deductions\. However, the backend completely ignored the submitted \
+etSalary\ and forcibly calculated it as \grossSalary - deductionsTotal\. Because both values were undefined, the backend defaulted them to \ \, resulting in all new payroll periods silently being saved with a Net Salary of \$0\.
+   - **The Fix:** I completely overhauled \createPayrollPeriod\ and \updatePayrollPeriod\ in \payroll.service.ts\. The backend now automatically fetches the employee's \aseSalary\ to use as the \grossSalary\. It also automatically queries for any unassigned \Advances\ that fall within the payroll period dates, sums them up as deductions, links them to the new payroll period, and calculates the true \
+etSalary\. Furthermore, if the admin chooses to manually type in an override \
+etSalary\ in the UI, the backend now respects it rather than forcing it to \ \.
+
