@@ -11,26 +11,28 @@ export class DashboardService {
     const lastMonthEnd = endOfDay(subDays(monthStart, 1));
 
     // KPI Cards
-    const ordersToday = await prisma.order.count({ where: { createdAt: { gte: today } } });
-    const ordersThisWeek = await prisma.order.count({ where: { createdAt: { gte: weekStart } } });
-    const ordersThisMonth = await prisma.order.count({ where: { createdAt: { gte: monthStart } } });
+    const ordersToday = await prisma.order.count({ where: { createdAt: { gte: today }, deletedAt: null } });
+    const ordersThisWeek = await prisma.order.count({ where: { createdAt: { gte: weekStart }, deletedAt: null } });
+    const ordersThisMonth = await prisma.order.count({ where: { createdAt: { gte: monthStart }, deletedAt: null } });
     const ordersLastMonth = await prisma.order.count({
       where: {
         createdAt: {
           gte: lastMonthStart,
           lte: lastMonthEnd
-        }
+        },
+        deletedAt: null
       }
     });
 
     const activeUsersToday = await prisma.user.count({
-      where: { lastLogin: { gte: today } }
+      where: { lastLogin: { gte: today }, deletedAt: null }
     });
 
     // Orders by status
     const statuses = await prisma.status.findMany();
     const statusCounts = await prisma.order.groupBy({
       by: ['statusId'],
+      where: { deletedAt: null },
       _count: { id: true },
     });
     
@@ -72,7 +74,7 @@ export class DashboardService {
 
     // Today's deliveries
     const todayDeliveries = await prisma.order.findMany({
-      where: { deliveryDate: today },
+      where: { deliveryDate: today, deletedAt: null },
       include: { status: true },
       orderBy: { createdAt: 'desc' },
       take: 50
@@ -82,7 +84,7 @@ export class DashboardService {
     let newEntriesSinceLastLogin: any[] = [];
     if (previousLoginAt) {
       newEntriesSinceLastLogin = await prisma.order.findMany({
-        where: { createdAt: { gt: new Date(previousLoginAt) } },
+        where: { createdAt: { gt: new Date(previousLoginAt) }, deletedAt: null },
         include: { status: true, creator: { select: { id: true, name: true } } },
         orderBy: { createdAt: 'desc' },
         take: 50 // Limit to avoid massive payloads
@@ -111,13 +113,13 @@ export class DashboardService {
     const monthStart = startOfMonth(new Date());
 
     // KPI Cards (own orders)
-    const ordersToday = await prisma.order.count({ where: { createdBy: userId, createdAt: { gte: today } } });
-    const ordersThisWeek = await prisma.order.count({ where: { createdBy: userId, createdAt: { gte: weekStart } } });
-    const ordersThisMonth = await prisma.order.count({ where: { createdBy: userId, createdAt: { gte: monthStart } } });
+    const ordersToday = await prisma.order.count({ where: { createdBy: userId, createdAt: { gte: today }, deletedAt: null } });
+    const ordersThisWeek = await prisma.order.count({ where: { createdBy: userId, createdAt: { gte: weekStart }, deletedAt: null } });
+    const ordersThisMonth = await prisma.order.count({ where: { createdBy: userId, createdAt: { gte: monthStart }, deletedAt: null } });
 
     // My recent orders
     const myRecentOrders = await prisma.order.findMany({
-      where: { createdBy: userId },
+      where: { createdBy: userId, deletedAt: null },
       include: { status: true },
       orderBy: { createdAt: 'desc' },
       take: 10
@@ -125,7 +127,7 @@ export class DashboardService {
 
     // Today's deliveries (system-wide)
     const todayDeliveries = await prisma.order.findMany({
-      where: { deliveryDate: today },
+      where: { deliveryDate: today, deletedAt: null },
       include: { status: true },
       orderBy: { createdAt: 'desc' },
       take: 20
@@ -135,7 +137,7 @@ export class DashboardService {
     let newEntriesSinceLastLogin: any[] = [];
     if (previousLoginAt) {
       newEntriesSinceLastLogin = await prisma.order.findMany({
-        where: { createdBy: userId, createdAt: { gt: new Date(previousLoginAt) } },
+        where: { createdBy: userId, createdAt: { gt: new Date(previousLoginAt) }, deletedAt: null },
         include: { status: true },
         orderBy: { createdAt: 'desc' },
         take: 20
