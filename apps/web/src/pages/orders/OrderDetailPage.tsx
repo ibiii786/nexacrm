@@ -207,8 +207,8 @@ export default function OrderDetailPage() {
                 return (
                   <div key={file.id} className="flex flex-col p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                     {isImage && (
-                      <a href={fileUrl} target="_blank" rel="noreferrer" className="block mb-3 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <img src={fileUrl} alt={file.filename} className="w-full h-auto max-h-48 object-contain" />
+                      <a href={fileUrl} target="_blank" rel="noreferrer" className="block mb-3 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 hover:opacity-95 transition-opacity bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+                        <img src={fileUrl} alt={file.filename} className="w-full h-auto object-contain" style={{ maxHeight: '800px' }} />
                       </a>
                     )}
                     <div className="flex items-center justify-between">

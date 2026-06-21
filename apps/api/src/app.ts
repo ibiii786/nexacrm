@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -58,6 +59,9 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api', routes);
+
+// Static file serving for uploads
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // 404 handler
 app.use((req, res) => {
