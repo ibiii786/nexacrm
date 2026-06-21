@@ -6,6 +6,7 @@ import { useAuthStore } from '../../../../stores/authStore';
 export function NotificationSettings() {
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
+    emailNotificationsEnabled: true,
     emailNotifyOrderStatusChanged: true,
     emailNotifyOrderAssigned: true,
     emailNotifyAccountModified: true,
@@ -19,6 +20,7 @@ export function NotificationSettings() {
         const res = await api.get('/settings');
         const data = res.data.data;
         setSettings({
+          emailNotificationsEnabled: data.emailNotificationsEnabled === 'true',
           emailNotifyOrderStatusChanged: data.emailNotifyOrderStatusChanged === 'true',
           emailNotifyOrderAssigned: data.emailNotifyOrderAssigned === 'true',
           emailNotifyAccountModified: data.emailNotifyAccountModified === 'true',
@@ -60,12 +62,38 @@ export function NotificationSettings() {
   ] as const;
 
   return (
-    <div className="max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Email Notifications</h2>
-      
-      <div className="space-y-6">
-        {notifications.map(({ key, label, desc }) => (
-          <div key={key} className="flex items-center justify-between">
+    <div className="max-w-2xl space-y-6">
+      {/* Master Switch */}
+      <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/30 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">Master Email Switch</h2>
+            <p className="text-sm text-indigo-700 dark:text-indigo-300 mt-1">Globally enable or disable all email notifications sent by the system.</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={settings.emailNotificationsEnabled}
+              onChange={() => handleToggle('emailNotificationsEnabled')}
+            />
+            <div className="w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-slate-500 peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+      </div>
+
+      {/* Granular Toggles */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Specific Notifications</h2>
+        
+        <div className="space-y-6 opacity-100 transition-opacity" style={{ opacity: settings.emailNotificationsEnabled ? 1 : 0.5 }}>
+          {!settings.emailNotificationsEnabled && (
+            <div className="text-sm text-amber-600 dark:text-amber-400 mb-4 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md">
+              Master switch is off. These emails will not be sent.
+            </div>
+          )}
+          {notifications.map(({ key, label, desc }) => (
+            <div key={key} className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-900 dark:text-white">{label}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">{desc}</p>
@@ -79,8 +107,9 @@ export function NotificationSettings() {
               />
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
             </label>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -46,9 +46,13 @@ export default function ProfilePage() {
     try {
       await api.put(`/users/${user?.id}`, { name: data.name, email: data.email });
       toast.success('Profile updated successfully');
-      // In a real app we might want to refresh the user token or auth store here
-    } catch (error) {
-      toast.error('Failed to update profile');
+      
+      // Fetch updated user info
+      const res = await api.get('/auth/me');
+      useAuthStore.setState({ user: res.data.data.user });
+      
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || 'Failed to update profile');
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -114,8 +118,7 @@ export default function ProfilePage() {
                 <input 
                   type="email" 
                   {...profileForm.register('email')}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white cursor-not-allowed"
-                  readOnly // Usually email change requires a separate verification flow
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
                 {profileForm.formState.errors.email && (
                   <p className="mt-1 text-sm text-red-600">{profileForm.formState.errors.email.message}</p>

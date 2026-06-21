@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import { PlusIcon, TrashIcon, Megaphone } from 'lucide-react';
+import { PlusIcon, TrashIcon, Megaphone, Eye } from 'lucide-react';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 interface Announcement {
@@ -17,6 +18,53 @@ interface AnnouncementModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+interface AnnouncementReadModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  announcement: Announcement | null;
+}
+
+function AnnouncementReadModal({ isOpen, onClose, announcement }: AnnouncementReadModalProps) {
+  if (!isOpen || !announcement) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{announcement.title}</h2>
+            <div className="flex items-center gap-3 mt-2">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                announcement.priority === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                announcement.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+              }`}>
+                {announcement.priority}
+              </span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                Posted {format(new Date(announcement.createdAt), 'MMM d, yyyy h:mm a')}
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+            &times;
+          </button>
+        </div>
+        <div className="prose dark:prose-invert max-w-none">
+          <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300 text-base leading-relaxed">
+            {announcement.content}
+          </p>
+        </div>
+        <div className="mt-8 flex justify-end">
+          <button onClick={onClose} className="rounded-md bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function AnnouncementModal({ isOpen, onClose, onSuccess }: AnnouncementModalProps) {
@@ -97,6 +145,7 @@ export default function AnnouncementsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [readModal, setReadModal] = useState<{ open: boolean; announcement: Announcement | null }>({ open: false, announcement: null });
 
   useEffect(() => {
     fetchAnnouncements();
@@ -182,7 +231,13 @@ export default function AnnouncementsPage() {
                     {a.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-6 py-4 text-right flex justify-end gap-2">
+                  <button
+                    onClick={() => setReadModal({ open: true, announcement: a })}
+                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                    title="View">
+                    <Eye size={18} />
+                  </button>
                   <button
                     onClick={() => confirmDelete(a.id)}
                     className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
@@ -215,6 +270,12 @@ export default function AnnouncementsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchAnnouncements}
+      />
+
+      <AnnouncementReadModal
+        isOpen={readModal.open}
+        onClose={() => setReadModal({ open: false, announcement: null })}
+        announcement={readModal.announcement}
       />
     </div>
   );

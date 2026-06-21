@@ -25,7 +25,7 @@ export function GeneralSettings() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useHookForm<GeneralSettingsValues>({
     resolver: zodResolver(generalSettingsSchema),
     defaultValues: {
-      timezone: 'UTC',
+      timezone: 'America/Toronto',
       language: 'en',
       editWindowMinutes: '30',
       sessionTimeoutMinutes: '30',
@@ -39,7 +39,7 @@ export function GeneralSettings() {
       try {
         const res = await api.get('/settings');
         reset({
-          timezone: res.data.data.timezone || 'UTC',
+          timezone: res.data.data.timezone || 'America/Toronto',
           language: res.data.data.language || 'en',
           editWindowMinutes: res.data.data.editWindowMinutes || '30',
           sessionTimeoutMinutes: res.data.data.sessionTimeoutMinutes || '30',

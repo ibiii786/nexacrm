@@ -9,13 +9,14 @@ export class SettingsService {
     
     // Default settings if empty
     const defaultSettings: Record<string, string> = {
-      timezone: 'UTC',
+      timezone: 'America/Toronto',
       language: 'en',
       editWindowMinutes: '30',
       sessionTimeoutMinutes: '30',
       isPayrollEnabled: 'false',
       isFbAccountsEnabled: 'false',
       theme: 'light',
+      emailNotificationsEnabled: 'true',
       emailNotifyOrderStatusChanged: 'true',
       emailNotifyOrderAssigned: 'true',
       emailNotifyAccountModified: 'true',
