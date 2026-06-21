@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install",
-  "buildCommand": "cd apps/web && npm run build",
+  "buildCommand": "npx turbo run build --filter=web",
   "outputDirectory": "apps/web/dist",
   "framework": "vite"
 }
