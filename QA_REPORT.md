@@ -582,3 +582,13 @@ etSalary\ and forcibly calculated it as \grossSalary - deductionsTotal\. Because
 etSalary\. Furthermore, if the admin chooses to manually type in an override \
 etSalary\ in the UI, the backend now respects it rather than forcing it to \ \.
 
+
+
+### Stage 15 — Facebook Accounts Module
+**Status:** PASS
+**What I did:** Audited \FbAccountsPage.tsx\, \FbAccountDetail.tsx\, \FbAccountModal.tsx\, \b.controller.ts\, and \b.service.ts\ to verify vault note security and password handling.
+**Issues found & fixed:**
+- **None.** I confirmed that no raw password field exists in the UI for the Facebook accounts. The proxy/login details are correctly stored in an AES-256-GCM encrypted \aultNote\ via the backend \encrypt\ function.
+- I verified that the encrypted vault note genuinely requires explicit reveal-with-password-confirmation. The \b.controller.ts\ safely strips the \aultNoteEncrypted\ property from all standard GET/POST/PUT responses. The only way to retrieve the decrypted note is via the \POST /fb-accounts/:id/reveal\ endpoint, which strictly verifies the requesting user's actual system password before performing decryption.
+- In the edit modal (\FbAccountModal.tsx\), the \aultNote\ field is initialized as empty, so the note is never accidentally exposed or sent back to the client during an edit flow.
+
