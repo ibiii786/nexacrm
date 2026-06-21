@@ -45,3 +45,5 @@ export interface ApiErrorResponse {
 }
 
 export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+// Force rebuild: 2026-06-21
