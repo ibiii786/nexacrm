@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nexacrm/shared": "*",
+    "@nexacrm/shared": "file:../../packages/shared",
     "@prisma/client": "^6.2.1",
     "@types/pdfkit": "^0.17.6",
     "argon2": "^0.41.1",
