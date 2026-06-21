@@ -39,7 +39,7 @@ export class DashboardService {
     const ordersByStatus = statuses.map(status => {
       const count = statusCounts.find(s => s.statusId === status.id)?._count.id || 0;
       return { status: status.name, color: status.color, count };
-    });
+    }).filter(s => s.count > 0);
 
     // Orders trend (last 30 days) - using raw SQL for date grouping is easier in Postgres
     const ordersTrendRaw = await prisma.$queryRaw<any[]>`
