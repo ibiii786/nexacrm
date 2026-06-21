@@ -57,8 +57,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (token) {
       try {
         const res = await api.get('/auth/me');
+        await get().fetchSettings();
         set({ user: res.data.data.user, accessToken: token, isAuthenticated: true, isLoading: false });
-        get().fetchSettings();
       } catch (error) {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Download } from 'lucide-react';
+import { Download, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PayrollPeriodModal } from '../../components/payroll/PayrollPeriodModal';
 
 export default function PayrollPeriodsPage() {
@@ -9,6 +10,7 @@ export default function PayrollPeriodsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<any>(null);
+  const navigate = useNavigate();
 
   const fetchPeriods = async () => {
     setLoading(true);
@@ -71,9 +73,18 @@ export default function PayrollPeriodsPage() {
   return (
     <div className="p-8 pb-20 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Payroll Periods</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Manage salary disbursements and generate slips.</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/payroll')}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
+            title="Back to Payroll Dashboard"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Payroll Periods</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">Manage salary disbursements and generate slips.</p>
+          </div>
         </div>
         <div className="flex gap-4">
           <button 

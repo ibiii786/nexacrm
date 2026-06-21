@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { EmployeeModal } from '../../components/payroll/EmployeeModal';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -50,9 +53,18 @@ export default function EmployeesPage() {
   return (
     <div className="p-8 pb-20 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Employees</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Manage your workforce for payroll.</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/payroll')}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
+            title="Back to Payroll Dashboard"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Employees</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">Manage your workforce for payroll.</p>
+          </div>
         </div>
         <button onClick={openCreateModal} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
           Add Employee

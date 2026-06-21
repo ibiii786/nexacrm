@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { FbAccountModal } from '../../components/fb-accounts/FbAccountModal';
 
 export default function FbAccountsPage() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -40,9 +42,18 @@ export default function FbAccountsPage() {
   return (
     <div className="p-8 pb-20 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Facebook Accounts Vault</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Manage Facebook accounts securely.</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Facebook Accounts Vault</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">Manage Facebook accounts securely.</p>
+          </div>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}

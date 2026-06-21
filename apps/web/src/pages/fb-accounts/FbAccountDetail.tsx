@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Lock, Unlock, Eye, X } from 'lucide-react';
+import { Lock, Unlock, Eye, X, ArrowLeft, Trash2, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function FbAccountDetail() {
   const { id } = useParams();
@@ -20,6 +21,13 @@ export default function FbAccountDetail() {
   const [newStatus, setNewStatus] = useState('');
   const [statusReason, setStatusReason] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  // New Vault state
+  const [isCreateVaultModalOpen, setIsCreateVaultModalOpen] = useState(false);
+  const [newVaultNote, setNewVaultNote] = useState('');
+  const [creatingVault, setCreatingVault] = useState(false);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAccount = async () => {
@@ -79,22 +87,68 @@ export default function FbAccountDetail() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!confirm('Are you sure you want to delete this account? This cannot be undone.')) return;
+    try {
+      await api.delete(`/fb-accounts/${id}`);
+      toast.success('Account deleted successfully');
+      navigate('/fb-accounts');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete account');
+    }
+  };
+
+  const handleCreateVault = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVaultNote) return;
+    setCreatingVault(true);
+    try {
+      const res = await api.put(`/fb-accounts/${id}`, { vaultNote: newVaultNote });
+      setAccount(res.data.data);
+      toast.success('Vault created successfully');
+      setIsCreateVaultModalOpen(false);
+      setNewVaultNote('');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to create vault');
+    } finally {
+      setCreatingVault(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!account) return <div>Account not found</div>;
 
   return (
     <div className="p-8 pb-20 max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{account.displayName}</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Status: {account.status}</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/fb-accounts')}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
+            title="Back to FB Accounts"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{account.displayName}</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">Status: {account.status}</p>
+          </div>
         </div>
-        <button 
-          onClick={() => setIsStatusModalOpen(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
-        >
-          Update Status
-        </button>
+        <div className="flex gap-4">
+          <button 
+            onClick={handleDeleteAccount}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition flex items-center gap-2"
+          >
+            <Trash2 size={18} />
+            Delete
+          </button>
+          <button 
+            onClick={() => setIsStatusModalOpen(true)}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+          >
+            Update Status
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -147,7 +201,16 @@ export default function FbAccountDetail() {
           
           <div className="flex-1">
             {!account.hasVaultNote ? (
-              <p className="text-slate-500 text-sm">No vault note saved for this account.</p>
+              <div className="space-y-4">
+                <p className="text-slate-500 text-sm">No vault note saved for this account.</p>
+                <button
+                  onClick={() => setIsCreateVaultModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
+                >
+                  <Plus size={18} />
+                  Add Vault Note
+                </button>
+              </div>
             ) : isRevealed ? (
               <div className="bg-slate-50 dark:bg-slate-800 rounded p-4 border border-slate-200 dark:border-slate-700">
                 <pre className="text-sm whitespace-pre-wrap font-mono text-slate-800 dark:text-slate-200">
@@ -240,6 +303,54 @@ export default function FbAccountDetail() {
                 className="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors disabled:opacity-50"
               >
                 {updatingStatus ? 'Saving...' : 'Update Status'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Vault Modal */}
+      {isCreateVaultModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Add Vault Note</h2>
+              <button onClick={() => setIsCreateVaultModalOpen(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <form id="vault-form" onSubmit={handleCreateVault} className="space-y-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  This note will be AES-256 encrypted in the database.
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Secure Content</label>
+                  <textarea
+                    required
+                    value={newVaultNote}
+                    onChange={(e) => setNewVaultNote(e.target.value)}
+                    placeholder="Enter passwords, 2FA codes, or recovery info..."
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary resize-none h-32 font-mono text-sm"
+                  />
+                </div>
+              </form>
+            </div>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+              <button
+                type="button"
+                onClick={() => setIsCreateVaultModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="vault-form"
+                disabled={creatingVault}
+                className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 rounded-md transition-colors disabled:opacity-50"
+              >
+                {creatingVault ? 'Saving...' : 'Save Vault Note'}
               </button>
             </div>
           </div>
