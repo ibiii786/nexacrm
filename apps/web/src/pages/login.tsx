@@ -34,7 +34,7 @@ export default function LoginPage() {
       const response = await api.post('/auth/login', data);
       const { user, accessToken } = response.data.data;
       
-      setAuth(user, accessToken, rememberMe);
+      await setAuth(user, accessToken, rememberMe);
       navigate(from, { replace: true });
     } catch (err: any) {
       if (err.response?.data?.error?.message) {

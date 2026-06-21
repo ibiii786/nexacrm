@@ -8,10 +8,9 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   settings: Record<string, string> | null;
-  setAuth: (user: User, accessToken: string, rememberMe?: boolean) => void;
+  setAuth: (user: User, accessToken: string, rememberMe?: boolean) => Promise<void>;
   clearAuth: () => void;
   setLoading: (isLoading: boolean) => void;
-  loadUser: () => Promise<void>;
   fetchSettings: () => Promise<void>;
 }
 
@@ -22,7 +21,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: true,
   settings: null,
 
-  setAuth: (user, accessToken, rememberMe = true) => {
+  setAuth: async (user, accessToken, rememberMe = true) => {
     if (rememberMe) {
       localStorage.setItem('token', accessToken);
       sessionStorage.removeItem('token');
@@ -30,6 +29,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       sessionStorage.setItem('token', accessToken);
       localStorage.removeItem('token');
     }
+    
+    // Fetch settings before declaring the app ready
+    try {
+      const res = await api.get('/settings');
+      set({ settings: res.data.data });
+    } catch (error) {
+      console.error('Failed to fetch settings', error);
+    }
+
     set({
       user,
       accessToken,
@@ -51,23 +59,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setLoading: (isLoading: boolean) => set({ isLoading }),
-
-  loadUser: async () => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      try {
-        const res = await api.get('/auth/me');
-        await get().fetchSettings();
-        set({ user: res.data.data.user, accessToken: token, isAuthenticated: true, isLoading: false });
-      } catch (error) {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false });
-      }
-    } else {
-      set({ isLoading: false });
-    }
-  },
 
   fetchSettings: async () => {
     try {

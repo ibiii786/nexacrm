@@ -21,6 +21,9 @@ export function ProtectedRoute() {
             // Let's just set isAuthenticated to true if the request succeeds
             // The access token is usually returned in the refresh, not the /me route, 
             // but our axios instance handles token updates transparently
+            // Fetch settings before rendering routes
+            await useAuthStore.getState().fetchSettings();
+            
             useAuthStore.setState({ 
               isAuthenticated: true, 
               user: response.data.data.user,
