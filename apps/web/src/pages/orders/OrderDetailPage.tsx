@@ -201,7 +201,8 @@ export default function OrderDetailPage() {
             
             <div className="space-y-3">
               {order.attachments?.map((file: any) => {
-                const fileUrl = `${(import.meta as any).env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/${file.filePath.replace(/\\/g, '/')}`;
+                const fileName = file.filePath.split(/[\\/]/).pop();
+                const fileUrl = `${(import.meta as any).env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${fileName}`;
                 const isImage = file.mimeType?.startsWith('image/') || file.filename.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                 
                 return (
