@@ -26,7 +26,6 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 app.use(
   cors({
@@ -62,7 +61,10 @@ app.get('/health', (req, res) => {
 app.use('/api', routes);
 
 // Static file serving for uploads
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(process.cwd(), 'uploads')));
 
 // 404 handler
 app.use((req, res) => {
