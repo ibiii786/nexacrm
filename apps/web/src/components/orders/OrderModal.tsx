@@ -32,7 +32,12 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
       fetchMetadata();
       if (order) {
         setStatusId(order.statusId);
-        setDeliveryDate(order.deliveryDate ? new Date(order.deliveryDate).toISOString().split('T')[0] : '');
+        if (order.deliveryDate) {
+          const d = new Date(order.deliveryDate);
+          setDeliveryDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+        } else {
+          setDeliveryDate('');
+        }
         setNotes(order.notes || '');
         // For custom fields, map existing keys to field IDs if possible, or just pass them as is.
         // Actually, order.customFields uses field NAMES.
@@ -94,7 +99,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
     try {
       const payload = {
         statusId,
-        deliveryDate: deliveryDate ? new Date(deliveryDate).toISOString() : undefined,
+        deliveryDate: deliveryDate ? new Date(deliveryDate + 'T12:00:00').toISOString() : undefined,
         notes,
         customFields
       };

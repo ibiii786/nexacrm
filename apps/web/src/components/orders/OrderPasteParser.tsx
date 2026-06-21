@@ -142,7 +142,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
       // 2. Create Order
       await api.post('/orders', {
         statusId,
-        deliveryDate: deliveryDate ? new Date(deliveryDate).toISOString() : undefined,
+        deliveryDate: deliveryDate ? new Date(deliveryDate + 'T12:00:00').toISOString() : undefined,
         notes,
         customFields: finalCustomFields
       });
