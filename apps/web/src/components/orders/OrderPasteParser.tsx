@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { XIcon, FileTextIcon, CheckIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react';
 import { STANDARD_FIELDS } from '@nexacrm/shared';
 import { useAuthStore } from '../../stores/authStore';
+import { parseZonedDateInput } from '../../utils/dateUtils';
 
 interface OrderPasteParserProps {
   isOpen: boolean;
@@ -142,7 +143,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
       // 2. Create Order
       await api.post('/orders', {
         statusId,
-        deliveryDate: deliveryDate ? new Date(deliveryDate + 'T12:00:00').toISOString() : undefined,
+        deliveryDate: parseZonedDateInput(deliveryDate),
         notes,
         customFields: finalCustomFields
       });

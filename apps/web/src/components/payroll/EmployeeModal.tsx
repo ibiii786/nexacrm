@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
+import { formatZonedDate, parseZonedDateInput } from '../../utils/dateUtils';
 import { XIcon, Loader2Icon, CheckIcon } from 'lucide-react';
 
 interface EmployeeModalProps {
@@ -30,7 +31,7 @@ export function EmployeeModal({ isOpen, onClose, onSuccess, employee }: Employee
         email: employee.email || '',
         phone: employee.phone || '',
         role: employee.role || '',
-        joiningDate: employee.joiningDate ? new Date(employee.joiningDate).toISOString().split('T')[0] : '',
+        joiningDate: employee.joiningDate ? formatZonedDate(employee.joiningDate, 'yyyy-MM-dd') : '',
         baseSalary: employee.baseSalary?.toString() || '',
         paymentSchedule: employee.paymentSchedule || 'MONTHLY',
         isActive: employee.isActive ?? true,
@@ -55,8 +56,8 @@ export function EmployeeModal({ isOpen, onClose, onSuccess, employee }: Employee
     try {
       const payload = {
         ...formData,
+        joiningDate: parseZonedDateInput(formData.joiningDate) || null,
         baseSalary: formData.baseSalary ? parseFloat(formData.baseSalary) : null,
-        joiningDate: formData.joiningDate ? new Date(formData.joiningDate).toISOString() : null,
       };
 
       if (employee) {

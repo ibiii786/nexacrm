@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
+import { formatZonedDate, parseZonedDateInput } from '../../utils/dateUtils';
 import { XIcon, Loader2Icon, CheckIcon } from 'lucide-react';
 
 interface PayrollPeriodModalProps {
@@ -31,8 +32,8 @@ export function PayrollPeriodModal({ isOpen, onClose, onSuccess, period }: Payro
     if (period) {
       setFormData({
         employeeId: period.employeeId || '',
-        periodStart: period.periodStart ? new Date(period.periodStart).toISOString().split('T')[0] : '',
-        periodEnd: period.periodEnd ? new Date(period.periodEnd).toISOString().split('T')[0] : '',
+        periodStart: period.periodStart ? formatZonedDate(period.periodStart, 'yyyy-MM-dd') : '',
+        periodEnd: period.periodEnd ? formatZonedDate(period.periodEnd, 'yyyy-MM-dd') : '',
         netSalary: period.netSalary?.toString() || '',
         status: period.status || 'PAID',
       });
@@ -53,8 +54,8 @@ export function PayrollPeriodModal({ isOpen, onClose, onSuccess, period }: Payro
     try {
       const payload = {
         ...formData,
-        periodStart: new Date(formData.periodStart).toISOString(),
-        periodEnd: new Date(formData.periodEnd).toISOString(),
+        periodStart: parseZonedDateInput(formData.periodStart),
+        periodEnd: parseZonedDateInput(formData.periodEnd),
         netSalary: formData.netSalary ? parseFloat(formData.netSalary) : null,
       };
 

@@ -5,6 +5,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { TrashIcon } from 'lucide-react';
+import { formatZonedDateTime } from '../../utils/dateUtils';
 
 interface OrdersTableProps {
   orders: any[];
@@ -208,8 +209,8 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{order.creator?.name}</td>
-                  <td className="px-6 py-4 text-slate-500 text-xs">
-                    {new Date(order.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                    {formatZonedDateTime(order.createdAt, 'MMM d, yyyy h:mm a')}
                   </td>
                 </tr>
               );

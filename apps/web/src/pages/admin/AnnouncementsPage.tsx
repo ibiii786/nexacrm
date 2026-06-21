@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { PlusIcon, TrashIcon, Megaphone, Eye } from 'lucide-react';
+import { formatZonedDateTime } from '../../utils/dateUtils';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 interface Announcement {
@@ -44,7 +44,7 @@ function AnnouncementReadModal({ isOpen, onClose, announcement }: AnnouncementRe
                 {announcement.priority}
               </span>
               <span className="text-sm text-slate-500 dark:text-slate-400">
-                Posted {format(new Date(announcement.createdAt), 'MMM d, yyyy h:mm a')}
+                Posted {formatZonedDateTime(announcement.createdAt, 'MMM d, yyyy h:mm a')}
               </span>
             </div>
           </div>

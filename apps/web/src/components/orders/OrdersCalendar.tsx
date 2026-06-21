@@ -7,11 +7,11 @@ import {
   startOfWeek, 
   endOfWeek, 
   isSameMonth, 
-  isSameDay, 
   addDays 
 } from 'date-fns';
 import { ChevronLeftIcon, ChevronRightIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { formatZonedDate, isSameZonedDay, getZonedToday } from '../../utils/dateUtils';
 
 interface OrdersCalendarProps {
   orders: any[];
@@ -45,7 +45,7 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
       const cloneDay = day;
       
       // Find orders for this day
-      const dayOrders = orders.filter(o => o.deliveryDate && isSameDay(new Date(o.deliveryDate), cloneDay));
+      const dayOrders = orders.filter(o => o.deliveryDate && isSameZonedDay(o.deliveryDate, cloneDay));
 
       days.push(
         <div 
@@ -61,7 +61,7 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
           } ${dayOrders.length > 0 ? "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50" : ""}`}
         >
           <div className="flex justify-end">
-            <span className={`text-sm font-medium ${isSameDay(day, new Date()) ? 'bg-primary text-white w-6 h-6 flex items-center justify-center rounded-full' : ''}`}>
+            <span className={`text-sm font-medium ${isSameZonedDay(day, getZonedToday()) ? 'bg-primary text-white w-6 h-6 flex items-center justify-center rounded-full' : ''}`}>
               {formattedDate}
             </span>
           </div>
@@ -100,7 +100,7 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
     <div className="h-full flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
       <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-800">
         <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-          {format(currentDate, "MMMM yyyy")}
+          {formatZonedDate(currentDate, "MMMM yyyy")}
         </h2>
         <div className="flex gap-2">
           <button 
@@ -144,14 +144,14 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Orders for {format(selectedDay, 'MMMM d, yyyy')}
+                Orders for {formatZonedDate(selectedDay)}
               </h3>
               <button onClick={() => setSelectedDay(null)} className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors">
                 <X size={20} />
               </button>
             </div>
             <div className="overflow-y-auto p-4 space-y-2 flex-1">
-              {orders.filter(o => o.deliveryDate && isSameDay(new Date(o.deliveryDate), selectedDay)).map(order => {
+              {orders.filter(o => o.deliveryDate && isSameZonedDay(o.deliveryDate, selectedDay)).map(order => {
                 const status = statuses.find(s => s.id === order.statusId);
                 const customFields = order.customFields || {};
                 const customerName = customFields.customerName || 'Unknown Customer';

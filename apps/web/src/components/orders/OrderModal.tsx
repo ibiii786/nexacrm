@@ -4,6 +4,7 @@ import { XIcon, FileTextIcon, CheckIcon, Loader2Icon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STANDARD_FIELDS } from '@nexacrm/shared';
 import { useAuthStore } from '../../stores/authStore';
+import { formatZonedDate, parseZonedDateInput } from '../../utils/dateUtils';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -33,8 +34,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
       if (order) {
         setStatusId(order.statusId);
         if (order.deliveryDate) {
-          const d = new Date(order.deliveryDate);
-          setDeliveryDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+          setDeliveryDate(formatZonedDate(order.deliveryDate, 'yyyy-MM-dd'));
         } else {
           setDeliveryDate('');
         }
@@ -99,7 +99,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
     try {
       const payload = {
         statusId,
-        deliveryDate: deliveryDate ? new Date(deliveryDate + 'T12:00:00').toISOString() : undefined,
+        deliveryDate: parseZonedDateInput(deliveryDate),
         notes,
         customFields
       };
@@ -178,7 +178,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
                     displayValue = isEditMode ? order?.orderNumber : 'Auto-generated';
                   } else if (field.name === 'orderDate') {
                     displayValue = isEditMode && order?.createdAt 
-                      ? new Date(order.createdAt).toLocaleDateString() 
+                      ? formatZonedDate(order.createdAt) 
                       : 'Auto-generated';
                   }
                 }

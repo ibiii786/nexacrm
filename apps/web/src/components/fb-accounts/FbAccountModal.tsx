@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
+import { formatZonedDate, parseZonedDateInput } from '../../utils/dateUtils';
 import { XIcon, Loader2Icon, CheckIcon } from 'lucide-react';
 
 interface FbAccountModalProps {
@@ -34,7 +35,7 @@ export function FbAccountModal({ isOpen, onClose, onSuccess, account }: FbAccoun
         displayName: account.displayName || '',
         linkedEmail: account.linkedEmail || '',
         status: account.status || 'ACTIVE',
-        creationDate: account.creationDate ? new Date(account.creationDate).toISOString().split('T')[0] : '',
+        creationDate: account.creationDate ? formatZonedDate(account.creationDate, 'yyyy-MM-dd') : '',
         assignedTo: account.assignedTo || '',
         vaultNote: '', // Never populate vault note on edit
       });
@@ -58,7 +59,7 @@ export function FbAccountModal({ isOpen, onClose, onSuccess, account }: FbAccoun
         displayName: formData.displayName,
         linkedEmail: formData.linkedEmail,
         status: formData.status,
-        creationDate: formData.creationDate ? new Date(formData.creationDate).toISOString() : null,
+        creationDate: parseZonedDateInput(formData.creationDate) || null,
         assignedTo: formData.assignedTo || null,
       };
 

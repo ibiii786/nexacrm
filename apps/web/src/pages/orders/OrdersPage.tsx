@@ -7,7 +7,7 @@ import { OrdersTable } from './OrdersTable';
 import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
 import { OrdersKanban } from '../../components/orders/OrdersKanban';
 import { OrdersCalendar } from '../../components/orders/OrdersCalendar';
-
+import { getZonedToday, getZonedStartOfDayISO, getZonedEndOfDayISO } from '../../utils/dateUtils';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths } from 'date-fns';
 
 export default function OrdersPage() {
@@ -15,8 +15,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('list');
-  const defaultEndDate = new Date().toISOString().split('T')[0];
-  const defaultStartDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const defaultEndDate = getZonedToday().toISOString().split('T')[0];
+  const defaultStartDate = new Date(getZonedToday().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState(defaultStartDate);
@@ -24,7 +24,7 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isParserOpen, setIsParserOpen] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarDate, setCalendarDate] = useState(getZonedToday());
 
   useEffect(() => {
     if (searchParams.get('create') === 'true') {
@@ -52,8 +52,8 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      let currentStartDate = startDate;
-      let currentEndDate = endDate ? new Date(endDate + 'T23:59:59').toISOString() : undefined;
+      let currentStartDate = startDate ? getZonedStartOfDayISO(startDate) : undefined;
+      let currentEndDate = endDate ? getZonedEndOfDayISO(endDate) : undefined;
       let currentLimit = 50;
       let currentPage = page;
 
@@ -248,7 +248,7 @@ export default function OrdersPage() {
             currentDate={calendarDate}
             onNextMonth={() => setCalendarDate(addMonths(calendarDate, 1))}
             onPrevMonth={() => setCalendarDate(subMonths(calendarDate, 1))}
-            onToday={() => setCalendarDate(new Date())}
+            onToday={() => setCalendarDate(getZonedToday())}
           />
         )}
       </div>

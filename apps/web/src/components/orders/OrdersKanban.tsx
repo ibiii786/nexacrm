@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
+import toast from 'react-hot-toast';
+import { formatZonedDate } from '../../utils/dateUtils';
 
 interface OrdersKanbanProps {
   orders: any[];
@@ -38,8 +40,10 @@ export function OrdersKanban({ orders, statuses, onOrderUpdated }: OrdersKanbanP
           statusId
         });
         onOrderUpdated();
+        toast.success('Order status updated');
       } catch (error) {
         console.error('Failed to update order status', error);
+        toast.error('Failed to update status');
       }
     }
     setDraggedOrderId(null);
@@ -78,7 +82,7 @@ export function OrdersKanban({ orders, statuses, onOrderUpdated }: OrdersKanbanP
                   </Link>
                   {order.deliveryDate && (
                     <span className="text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded">
-                      Due {new Date(order.deliveryDate).toLocaleDateString()}
+                      Due {formatZonedDate(order.deliveryDate)}
                     </span>
                   )}
                 </div>

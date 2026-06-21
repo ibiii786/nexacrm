@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
-import { ShieldAlert, Search } from 'lucide-react';
+import { ShieldAlert, Search, Clock } from 'lucide-react';
+import { formatZonedDateTime } from '../../utils/dateUtils';
 
 export default function AuditLogPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -107,8 +107,11 @@ export default function AuditLogPage() {
             ) : (
               logs.map(log => (
                 <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-sm">
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                    {format(new Date(log.createdAt), 'MMM d, yyyy HH:mm:ss')}
+                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
+                      <Clock size={14} className="text-slate-400" />
+                      {formatZonedDateTime(log.createdAt, 'MMM d, yyyy HH:mm:ss')}
+                    </div>
                   </td>
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                     <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">

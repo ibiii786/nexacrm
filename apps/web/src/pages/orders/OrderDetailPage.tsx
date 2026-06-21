@@ -6,6 +6,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { OrderModal } from '../../components/orders/OrderModal';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
+import { formatZonedDate, formatZonedDateTime } from '../../utils/dateUtils';
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -103,10 +104,10 @@ export default function OrderDetailPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <CalendarIcon size={16} /> 
-              {order.deliveryDate ? `Due ${new Date(order.deliveryDate).toLocaleDateString()}` : 'No due date'}
+              {order.deliveryDate ? `Due ${formatZonedDate(order.deliveryDate)}` : 'No due date'}
             </div>
             <div className="flex items-center gap-1.5">
-              <ClockIcon size={16} /> Created {new Date(order.createdAt).toLocaleDateString()}
+              <ClockIcon size={16} /> Created {formatZonedDateTime(order.createdAt)}
             </div>
           </div>
         </div>
@@ -176,7 +177,7 @@ export default function OrderDetailPage() {
                         Changed <span className="font-medium">{log.fieldName}</span> from "{log.oldValue}" to "{log.newValue}"
                       </p>
                     )}
-                    <p className="text-xs text-slate-400 mt-1">{new Date(log.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-slate-400 mt-1">{formatZonedDateTime(log.createdAt)}</p>
                   </div>
                 </div>
               ))}

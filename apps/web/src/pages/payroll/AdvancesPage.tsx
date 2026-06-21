@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
+import { formatZonedDate, parseZonedDateInput, getZonedToday } from '../../utils/dateUtils';
 import { Plus, Edit2, Trash2, Calendar, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -48,7 +49,7 @@ export default function AdvancesPage() {
         employeeId,
         amount: Number(amount),
         reason,
-        date: date ? new Date(date).toISOString() : new Date().toISOString()
+        date: parseZonedDateInput(date) || getZonedToday().toISOString()
       };
 
       if (editingAdvance) {
@@ -82,7 +83,7 @@ export default function AdvancesPage() {
     setEmployeeId(advance.employeeId);
     setAmount(advance.amount.toString());
     setReason(advance.reason || '');
-    setDate(new Date(advance.date).toISOString().split('T')[0]);
+    setDate(formatZonedDate(advance.date, 'yyyy-MM-dd'));
     setIsModalOpen(true);
   };
 
@@ -96,7 +97,7 @@ export default function AdvancesPage() {
     setEmployeeId('');
     setAmount('');
     setReason('');
-    setDate(new Date().toISOString().split('T')[0]);
+    setDate(formatZonedDate(getZonedToday(), 'yyyy-MM-dd'));
   };
 
   if (loading) return <div>Loading...</div>;
@@ -147,7 +148,7 @@ export default function AdvancesPage() {
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-slate-400" />
-                    {new Date(advance.date).toLocaleDateString()}
+                    {formatZonedDate(advance.date)}
                   </div>
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">

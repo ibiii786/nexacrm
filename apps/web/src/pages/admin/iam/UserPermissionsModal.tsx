@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import toast from 'react-hot-toast';
+import { formatZonedDateTime, getZonedToday } from '../../../utils/dateUtils';
+import { Clock } from 'lucide-react';
 
 interface UserPermissionsModalProps {
   isOpen: boolean;
@@ -124,7 +126,7 @@ export function UserPermissionsModal({ isOpen, onClose, userId }: UserPermission
                 ) : (
                   <ul className="space-y-2">
                     {userPermissions.map((up) => {
-                      const isExpired = up.expiresAt && new Date(up.expiresAt) < new Date();
+                      const isExpired = up.expiresAt && new Date(up.expiresAt) < getZonedToday();
                       return (
                         <li key={up.id} className="flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                           <div>
@@ -133,8 +135,9 @@ export function UserPermissionsModal({ isOpen, onClose, userId }: UserPermission
                             </div>
                             <div className="text-xs text-slate-500">
                               {up.expiresAt ? (
-                                <span className={isExpired ? 'text-red-500 font-semibold' : 'text-orange-500'}>
-                                  Expires: {new Date(up.expiresAt).toLocaleString()} {isExpired && '(Expired)'}
+                                <span className={`flex items-center gap-1 mt-1 ${isExpired ? 'text-red-500 font-semibold' : 'text-orange-500'}`}>
+                                  <Clock size={12} />
+                                  Expires: {formatZonedDateTime(up.expiresAt)} {isExpired && '(Expired)'}
                                 </span>
                               ) : (
                                 <span className="text-green-600 dark:text-green-400">Permanent</span>

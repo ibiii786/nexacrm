@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { formatZonedDate } from '../../utils/dateUtils';
 
 interface OrdersTrendChartProps {
   data: { date: string; count: number }[];
@@ -12,7 +12,7 @@ export function OrdersTrendChart({ data }: OrdersTrendChartProps) {
   // Format dates for display
   const formattedData = data.map(item => ({
     ...item,
-    displayDate: format(parseISO(item.date), 'MMM d')
+    displayDate: formatZonedDate(item.date, 'MMM d')
   }));
 
   return (

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Lock, Unlock, Eye, X, ArrowLeft, Trash2, Plus } from 'lucide-react';
+import { Lock, Unlock, Eye, X, ArrowLeft, Trash2, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { formatZonedDate, formatZonedDateTime } from '../../utils/dateUtils';
 
 export default function FbAccountDetail() {
   const { id } = useParams();
@@ -161,10 +162,11 @@ export default function FbAccountDetail() {
                 <p className="font-medium text-slate-900 dark:text-white">{account.linkedEmail || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">Creation Date</p>
-                <p className="font-medium text-slate-900 dark:text-white">
-                  {account.creationDate ? new Date(account.creationDate).toLocaleDateString() : 'N/A'}
-                </p>
+                <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Creation Date</dt>
+                <dd className="text-sm text-slate-900 dark:text-white font-medium flex items-center gap-2">
+                  <CalendarIcon size={14} className="text-slate-400" />
+                  {account.creationDate ? formatZonedDate(account.creationDate) : 'N/A'}
+                </dd>
               </div>
               <div>
                 <p className="text-slate-500 dark:text-slate-400">Assigned To</p>
@@ -178,10 +180,10 @@ export default function FbAccountDetail() {
             <div className="space-y-4">
               {account.statusLogs?.map((log: any) => (
                 <div key={log.id} className="text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-900 dark:text-white">{log.newStatus}</span>
-                    <span className="text-slate-500 dark:text-slate-400 text-xs">
-                      {new Date(log.changedAt).toLocaleString()}
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-sm font-medium text-slate-900 dark:text-white capitalize">{log.field.replace(/([A-Z])/g, ' $1').trim()}</span>
+                    <span className="text-xs text-slate-500">
+                      {formatZonedDateTime(log.changedAt)}
                     </span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 mt-1">

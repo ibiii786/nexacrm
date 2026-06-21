@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Download, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayrollPeriodModal } from '../../components/payroll/PayrollPeriodModal';
+import { formatZonedDate } from '../../utils/dateUtils';
 
 export default function PayrollPeriodsPage() {
   const [periods, setPeriods] = useState<any[]>([]);
@@ -126,7 +127,7 @@ export default function PayrollPeriodsPage() {
                 <tr key={period.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{period.employee.name}</td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                    {new Date(period.periodStart).toLocaleDateString()} - {new Date(period.periodEnd).toLocaleDateString()}
+                    {formatZonedDate(period.periodStart)} - {formatZonedDate(period.periodEnd)}
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono">
                     ${Number(period.netSalary || 0).toLocaleString()}
