@@ -200,23 +200,34 @@ export default function OrderDetailPage() {
             </div>
             
             <div className="space-y-3">
-              {order.attachments?.map((file: any) => (
-                <div key={file.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                  <div className="flex-1 min-w-0 mr-4">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{file.filename}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{(file.fileSize / 1024).toFixed(1)} KB</p>
+              {order.attachments?.map((file: any) => {
+                const fileUrl = `${(import.meta as any).env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/${file.filePath.replace(/\\/g, '/')}`;
+                const isImage = file.mimeType?.startsWith('image/') || file.filename.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                
+                return (
+                  <div key={file.id} className="flex flex-col p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    {isImage && (
+                      <a href={fileUrl} target="_blank" rel="noreferrer" className="block mb-3 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <img src={fileUrl} alt={file.filename} className="w-full h-auto max-h-48 object-contain" />
+                      </a>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0 mr-4">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate" title={file.filename}>{file.filename}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{(file.fileSize / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <a href={fileUrl} target="_blank" rel="noreferrer" data-testid="order-detail-download-attachment" className="p-1 text-slate-400 hover:text-primary transition-colors">
+                          <DownloadIcon size={16} />
+                        </a>
+                        <button onClick={() => confirmDeleteAttachment(file.id)} data-testid="order-detail-delete-attachment" className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+                          <TrashIcon size={16} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {/* @ts-ignore */}
-                    <a href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/${file.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" data-testid="order-detail-download-attachment" className="text-slate-400 hover:text-primary">
-                      <DownloadIcon size={16} />
-                    </a>
-                    <button onClick={() => confirmDeleteAttachment(file.id)} data-testid="order-detail-delete-attachment" className="text-slate-400 hover:text-red-500">
-                      <TrashIcon size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {(!order.attachments || order.attachments.length === 0) && (
                 <p className="text-sm text-slate-500 text-center py-4">No files attached.</p>
               )}
