@@ -592,3 +592,13 @@ etSalary\ in the UI, the backend now respects it rather than forcing it to \ \.
 - I verified that the encrypted vault note genuinely requires explicit reveal-with-password-confirmation. The \b.controller.ts\ safely strips the \aultNoteEncrypted\ property from all standard GET/POST/PUT responses. The only way to retrieve the decrypted note is via the \POST /fb-accounts/:id/reveal\ endpoint, which strictly verifies the requesting user's actual system password before performing decryption.
 - In the edit modal (\FbAccountModal.tsx\), the \aultNote\ field is initialized as empty, so the note is never accidentally exposed or sent back to the client during an edit flow.
 
+
+
+### Stage 16 — Auth/Profile/Audit Log/Announcements Pages (Final Pass)
+**Status:** PASS
+**What I did:** Audited Login.tsx, ForgotPasswordPage.tsx, ResetPasswordPage.tsx, ProfilePage.tsx, AuditLogPage.tsx, AnnouncementsPage.tsx, MyPermissions.tsx. Additionally, I performed the requested full cross-check across all stages (9-16) to ensure compatibility with Half 1 fixes (e.g., the new 'Undecided' order status).
+**Issues found & fixed:**
+- **None.** All Auth/Profile pages correctly use type password for inputs, validate inputs, and handle authentication endpoints securely.
+- **Cross-Check Compatibility:** I verified that the new 'Undecided' order status added in Half 1 does NOT interact badly with anything fixed in Half 2. No pages (including OrdersPage.tsx, Dashboard.tsx, and the backend dashboard.service.ts) hardcode a list of statuses. The system dynamically queries the Status table and aggregates metrics using prisma.order.groupBy so the 'Undecided' status will naturally display correctly everywhere with its exact DB-defined color and name.
+
+
