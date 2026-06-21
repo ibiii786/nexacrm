@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { DashboardService } from '../services/dashboard.service';
-import { sendSuccess } from '../utils/responseHelpers';
+import { sendSuccess, sendError } from '../utils/responseHelpers';
 
 export class DashboardController {
   static async getAdminStats(req: Request, res: Response, next: NextFunction) {

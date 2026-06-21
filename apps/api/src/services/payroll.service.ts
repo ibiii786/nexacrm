@@ -92,7 +92,7 @@ export class PayrollService {
 
     // Basic net salary calculation
     const grossSalary = data.grossSalary !== undefined ? data.grossSalary : (employee?.baseSalary || 0);
-    const explicitDeductions = data.deductions ? Object.values(data.deductions).reduce((acc: any, val: any) => acc + Number(val), 0) : 0;
+    const explicitDeductions: number = data.deductions ? Number(Object.values(data.deductions).reduce((acc: any, val: any) => acc + Number(val), 0)) : 0;
     const deductionsTotal = explicitDeductions + advanceTotal;
     
     // If the frontend explicitly passed a netSalary, respect it, otherwise calculate it
