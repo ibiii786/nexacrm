@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   format, 
-  addMonths, 
-  subMonths, 
   startOfMonth, 
   endOfMonth, 
   startOfWeek, 
@@ -12,7 +10,8 @@ import {
   isSameDay, 
   addDays 
 } from 'date-fns';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface OrdersCalendarProps {
   orders: any[];
@@ -24,6 +23,9 @@ interface OrdersCalendarProps {
 }
 
 export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onPrevMonth, onToday }: OrdersCalendarProps) {
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const navigate = useNavigate();
+
   // Generate calendar grid
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
@@ -48,11 +50,15 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
       days.push(
         <div 
           key={day.toISOString()} 
-          className={`min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-800 ${
+          onClick={() => {
+            if (dayOrders.length > 0) setSelectedDay(cloneDay);
+          }}
+          title={dayOrders.length > 0 ? `${dayOrders.length} order${dayOrders.length === 1 ? '' : 's'}` : undefined}
+          className={`min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-800 transition-colors ${
             !isSameMonth(day, monthStart)
               ? "bg-slate-50 dark:bg-slate-900/50 text-slate-400"
               : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
-          }`}
+          } ${dayOrders.length > 0 ? "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50" : ""}`}
         >
           <div className="flex justify-end">
             <span className={`text-sm font-medium ${isSameDay(day, new Date()) ? 'bg-primary text-white w-6 h-6 flex items-center justify-center rounded-full' : ''}`}>
@@ -66,6 +72,7 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
                 <Link
                   key={order.id}
                   to={`/orders/${order.id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="px-2 py-1 text-xs rounded truncate text-white hover:opacity-90 transition-opacity block"
                   style={{ backgroundColor: status?.color || '#94a3b8' }}
                   title={`${order.orderNumber} - ${status?.name}`}
@@ -128,6 +135,65 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {rows}
       </div>
+
+      {selectedDay && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] sm:pt-[20vh] px-4" onClick={() => setSelectedDay(null)}>
+          <div 
+            className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Orders for {format(selectedDay, 'MMMM d, yyyy')}
+              </h3>
+              <button onClick={() => setSelectedDay(null)} className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4 space-y-2 flex-1">
+              {orders.filter(o => o.deliveryDate && isSameDay(new Date(o.deliveryDate), selectedDay)).map(order => {
+                const status = statuses.find(s => s.id === order.statusId);
+                const customFields = order.customFields || {};
+                const customerName = customFields.customerName || 'Unknown Customer';
+                const price = customFields.price ? Number(customFields.price).toFixed(2) : '0.00';
+                
+                return (
+                  <button
+                    key={order.id}
+                    onClick={() => {
+                      setSelectedDay(null);
+                      navigate(`/orders/${order.id}`);
+                    }}
+                    className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {order.orderNumber}
+                          </p>
+                          <span 
+                            className="px-2 py-0.5 text-xs rounded-full text-white"
+                            style={{ backgroundColor: status?.color || '#94a3b8' }}
+                          >
+                            {status?.name || 'Unknown'}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                          ${price}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
+                        Customer: {customerName}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
