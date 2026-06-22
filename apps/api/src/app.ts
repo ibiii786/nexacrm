@@ -29,7 +29,7 @@ app.use(helmet({
 }));
 
 // Allowed origins: configured FRONTEND_URL + any Vercel deployment under this project
-const VERCEL_URL_REGEX = /^https:\/\/nexacrm[\w-]*\.vercel\.app$/;
+const VERCEL_URL_REGEX = /^https:\/\/(nexacrm|web|dist)[\w-]*\.vercel\.app$/;
 
 // CORS middleware
 app.use(

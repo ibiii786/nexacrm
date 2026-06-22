@@ -30,7 +30,7 @@ export class AuthController {
       await AuditService.log('LOGIN', 'User', user.id, user.id, { userAgent }, req);
 
       const permissions = await PermissionsService.getEffectivePermissions(user.id);
-      const userWithPermissions = { ...user, permissions };
+      const userWithPermissions = { ...user, effectivePermissions: permissions };
 
       return sendSuccess(res, { user: userWithPermissions, accessToken });
     } catch (error: any) {
@@ -98,7 +98,7 @@ export class AuthController {
     try {
       const user = (req as any).user;
       const permissions = await PermissionsService.getEffectivePermissions(user.id);
-      return sendSuccess(res, { user: { ...user, permissions } });
+      return sendSuccess(res, { user: { ...user, effectivePermissions: permissions } });
     } catch (error) {
       next(error);
     }

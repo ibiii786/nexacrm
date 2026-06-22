@@ -31,9 +31,9 @@ jest.mock('../../config/redis', () => ({
   setex: jest.fn(),
 }));
 
-jest.mock('isomorphic-dompurify', () => ({
+jest.mock('sanitize-html', () => ({
   __esModule: true,
-  default: { sanitize: (str: string) => str },
+  default: (str: string) => str,
 }));
 
 jest.mock('../../services/orderAuditLog.service', () => ({

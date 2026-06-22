@@ -27,3 +27,5 @@ Thumbs.db
 
 # Prisma
 apps/api/prisma/migrations/*.sql.bak
+
+.vercel

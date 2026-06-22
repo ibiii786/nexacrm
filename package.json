@@ -12,6 +12,7 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "postinstall": "cd apps/api && npx prisma generate",
     "db:migrate": "cd apps/api && npx prisma migrate dev",
     "db:seed": "cd apps/api && npx prisma db seed",
     "db:push": "cd apps/api && npx prisma db push"

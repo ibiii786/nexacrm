@@ -2,8 +2,11 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
+import os from 'os';
+
 // Setup local multer storage
-const uploadDir = path.join(process.cwd(), 'uploads');
+const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+const uploadDir = isVercel ? path.join(os.tmpdir(), 'uploads') : path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

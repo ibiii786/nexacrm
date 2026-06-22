@@ -10,10 +10,11 @@ import { formatZonedDateTime } from '../../utils/dateUtils';
 interface OrdersTableProps {
   orders: any[];
   statuses?: any[];
+  fields?: any[];
   onOrderUpdated?: () => void;
 }
 
-export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTableProps) {
+export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated }: OrdersTableProps) {
   const { user } = useAuthStore();
   const parentRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -143,19 +144,19 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
                   className="rounded border-slate-300 text-primary focus:ring-primary"
                 />
               </th>
-              <th className="px-6 py-4 font-medium">Order #</th>
-              <th className="px-6 py-4 font-medium">Customer</th>
-              <th className="px-6 py-4 font-medium w-48">Products</th>
-              <th className="px-6 py-4 font-medium">Payment</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium">Created By</th>
-              <th className="px-6 py-4 font-medium">Created At</th>
+              <th className="px-6 py-4 font-medium min-w-[100px]">Order #</th>
+              {fields.map(f => (
+                <th key={f.id} className="px-6 py-4 font-medium min-w-[150px]">{f.label}</th>
+              ))}
+              <th className="px-6 py-4 font-medium min-w-[100px]">Status</th>
+              <th className="px-6 py-4 font-medium min-w-[150px]">Created By</th>
+              <th className="px-6 py-4 font-medium min-w-[150px]">Created At</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {before > 0 && (
               <tr>
-                <td colSpan={8} style={{ height: `${before}px` }} />
+                <td colSpan={fields.length + 5} style={{ height: `${before}px` }} />
               </tr>
             )}
             {virtualItems.map((virtualRow) => {
@@ -180,26 +181,13 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
                       {order.orderNumber}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-slate-800 dark:text-slate-200 font-medium">
-                    {order.customFields?.customerName || '-'}
-                    {order.customFields?.customerPhone && (
-                      <div className="text-xs text-slate-500 font-normal mt-0.5">{order.customFields.customerPhone}</div>
-                    )}
-                    {order.customFields?.deliveryAddress && (
-                      <div className="text-xs text-slate-500 font-normal mt-0.5 max-w-[200px] truncate" title={order.customFields.deliveryAddress}>
-                        {order.customFields.deliveryAddress}
+                  {fields.map(f => (
+                    <td key={f.id} className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                      <div className="line-clamp-2" title={order.customFields?.[f.name]}>
+                        {order.customFields?.[f.name] || '-'}
                       </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                    <div className="line-clamp-2" title={order.customFields?.productsOrdered}>
-                      {order.customFields?.productsOrdered || '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                    {order.customFields?.paymentStatus || '-'}
-                    {order.customFields?.price ? ` ($${order.customFields.price})` : ''}
-                  </td>
+                    </td>
+                  ))}
                   <td className="px-6 py-4">
                     <span 
                       className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -217,12 +205,12 @@ export function OrdersTable({ orders, statuses = [], onOrderUpdated }: OrdersTab
             })}
             {after > 0 && (
               <tr>
-                <td colSpan={8} style={{ height: `${after}px` }} />
+                <td colSpan={fields.length + 5} style={{ height: `${after}px` }} />
               </tr>
             )}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={fields.length + 5} className="px-6 py-12 text-center text-slate-500">
                   No orders found
                 </td>
               </tr>

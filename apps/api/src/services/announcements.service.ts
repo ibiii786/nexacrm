@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 import { settingsService } from './settings.service';
 import { notificationsService } from './notifications.service';
 
@@ -42,7 +42,7 @@ export class AnnouncementsService {
     const announcement = await prisma.announcement.create({
       data: {
         title: data.title,
-        content: DOMPurify.sanitize(data.content),
+        content: sanitizeHtml(data.content),
         isActive: data.isActive ?? true,
         createdBy: userId,
       },
@@ -72,7 +72,7 @@ export class AnnouncementsService {
   async updateAnnouncement(id: string, data: UpdateAnnouncementInput) {
     const sanitizedData = { ...data };
     if (sanitizedData.content) {
-      sanitizedData.content = DOMPurify.sanitize(sanitizedData.content);
+      sanitizedData.content = sanitizeHtml(sanitizedData.content);
     }
 
     return prisma.announcement.update({

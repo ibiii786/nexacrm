@@ -202,7 +202,7 @@ export default function OrderDetailPage() {
             <div className="space-y-3">
               {order.attachments?.map((file: any) => {
                 const fileName = file.filePath.split(/[\\/]/).pop();
-                const fileUrl = `${(import.meta as any).env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${fileName}`;
+                const fileUrl = `${(import.meta as any).env.VITE_API_URL?.replace('/api', '') || (import.meta as any).env.PROD ? '' : 'http://localhost:3001'}/uploads/${fileName}`;
                 // Check filename and filePath for image extensions
                 const isImage = file.mimeType?.startsWith('image/') || 
                                 file.filename?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) || 

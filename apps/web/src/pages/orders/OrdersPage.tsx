@@ -14,6 +14,7 @@ export default function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
+  const [fields, setFields] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('list');
   const defaultEndDate = getZonedToday().toISOString().split('T')[0];
   const defaultStartDate = new Date(getZonedToday().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -38,7 +39,7 @@ export default function OrdersPage() {
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    fetchStatuses();
+    fetchMetadata();
   }, []);
 
   // Reset page to 1 when filters change
@@ -113,10 +114,19 @@ export default function OrdersPage() {
       });
   };
 
-  const fetchStatuses = async () => {
+  const fetchMetadata = async () => {
     try {
-      const { data } = await api.get('/statuses');
-      setStatuses(data.data);
+      const [statusesRes, fieldsRes] = await Promise.all([
+        api.get('/statuses'),
+        api.get('/fields')
+      ]);
+      setStatuses(statusesRes.data.data);
+      const visibleFields = fieldsRes.data.data.filter((f: any) => 
+        f.isVisible && 
+        !f.isArchived && 
+        !['orderStatus', 'deliveryDate', 'notes', 'orderNumber', 'orderDate', 'createdBy'].includes(f.name)
+      );
+      setFields(visibleFields);
     } catch (error) {
       console.error(error);
     }
@@ -213,7 +223,7 @@ export default function OrdersPage() {
         {viewMode === 'list' && (
           <>
             <div className="flex-1 min-h-0">
-              <OrdersTable orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
+              <OrdersTable orders={orders} statuses={statuses} fields={fields} onOrderUpdated={fetchOrders} />
             </div>
             {(page > 1 || page < totalPages) && (
               <div className="p-4 flex justify-between items-center bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0">
