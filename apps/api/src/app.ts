@@ -10,6 +10,8 @@ import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
+const FRONTEND_URL = env.FRONTEND_URL || 'https://nexacrm-8mxj96j66-ibiii786s-projects.vercel.app';
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -18,7 +20,7 @@ app.use(helmet({
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", env.FRONTEND_URL],
+      connectSrc: ["'self'", FRONTEND_URL],
       fontSrc: ["'self'", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -27,6 +29,8 @@ app.use(helmet({
   },
   crossOriginEmbedderPolicy: false,
 }));
+
+// CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -35,10 +39,13 @@ app.use(
       if (env.NODE_ENV === 'development' && /^https?:\/\/localhost:\d+$/.test(origin)) {
         return callback(null, true);
       }
-      if (origin === env.FRONTEND_URL) {
+
+      // Check against FRONTEND_URL
+      if (origin === FRONTEND_URL) {
         return callback(null, true);
       }
-      callback(new Error('Not allowed by CORS'));
+
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     },
     credentials: true,
   })
