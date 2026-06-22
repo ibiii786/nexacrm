@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install && npm run build --workspace=@nexacrm/shared && cd apps/api && npx prisma generate --schema=prisma/schema.prisma",
+  "installCommand": "npm install --include=dev && npm run build --workspace=@nexacrm/shared && cd apps/api && npx prisma generate --schema=prisma/schema.prisma",
   "builds": [
     {
       "src": "apps/api/api/index.ts",
