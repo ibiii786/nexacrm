@@ -23,6 +23,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./src/*"],
       "@nexacrm/shared": [
         "../../packages/shared/src/index.ts"
       ],

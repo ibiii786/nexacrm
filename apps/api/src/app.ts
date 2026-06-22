@@ -10,8 +10,6 @@ import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
-const FRONTEND_URL = env.FRONTEND_URL || 'https://nexacrm-8mxj96j66-ibiii786s-projects.vercel.app';
-
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -20,7 +18,7 @@ app.use(helmet({
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", FRONTEND_URL],
+      connectSrc: ["'self'", env.FRONTEND_URL, 'https://*.vercel.app'],
       fontSrc: ["'self'", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -30,21 +28,27 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
+// Allowed origins: configured FRONTEND_URL + any Vercel deployment under this project
+const VERCEL_URL_REGEX = /^https:\/\/nexacrm[\w-]*\.vercel\.app$/;
+
 // CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow any localhost port in development, otherwise check FRONTEND_URL
+      // Allow requests with no origin (e.g. curl, Postman, server-to-server)
       if (!origin) return callback(null, true);
-      if (env.NODE_ENV === 'development' && /^https?:\/\/localhost:\d+$/.test(origin)) {
+      // Allow any localhost port in development
+      if (/^https?:\/\/localhost:\d+$/.test(origin)) {
         return callback(null, true);
       }
-
-      // Check against FRONTEND_URL
-      if (origin === FRONTEND_URL) {
+      // Allow FRONTEND_URL from environment
+      if (env.FRONTEND_URL && origin === env.FRONTEND_URL) {
         return callback(null, true);
       }
-
+      // Allow any Vercel deployment URL for this project
+      if (VERCEL_URL_REGEX.test(origin)) {
+        return callback(null, true);
+      }
       callback(new Error(`Not allowed by CORS: ${origin}`));
     },
     credentials: true,

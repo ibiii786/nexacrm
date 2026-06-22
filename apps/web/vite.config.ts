@@ -6,7 +6,17 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@nexacrm/shared': path.resolve(__dirname, '../../packages/shared/src')
+      '@': path.resolve(__dirname, './src'),
+      '@nexacrm/shared': path.resolve(__dirname, '../../packages/shared/src'),
+    },
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
 });
