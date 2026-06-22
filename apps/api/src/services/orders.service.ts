@@ -4,7 +4,7 @@ import { StatusesService } from './statuses.service';
 import { OrderAuditLogService } from './orderAuditLog.service';
 import { notificationsService } from './notifications.service';
 import { settingsService } from './settings.service';
-import sanitizeHtml from 'sanitize-html';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Custom error class for edit window expiration.
@@ -61,7 +61,7 @@ function validateFieldValue(field: any, value: any): any {
       val = Boolean(val);
       break;
     default: // TEXT, EMAIL, URL, SELECT, etc.
-      if (typeof val === 'string') val = sanitizeHtml(val);
+      if (typeof val === 'string') val = DOMPurify.sanitize(val);
   }
   
   return val;
@@ -265,7 +265,7 @@ export class OrdersService {
         createdBy: data.createdBy,
         deliveryDate: data.deliveryDate,
         customFields: validatedCustomFields,
-        notes: data.notes ? sanitizeHtml(data.notes) : undefined,
+        notes: data.notes ? DOMPurify.sanitize(data.notes) : undefined,
       },
       include: {
         status: true
@@ -342,7 +342,7 @@ export class OrdersService {
 
     // Handle notes
     if (data.notes !== undefined) {
-      updateData.notes = data.notes ? sanitizeHtml(data.notes) : null;
+      updateData.notes = data.notes ? DOMPurify.sanitize(data.notes) : null;
     }
 
     // Validate and merge custom fields
