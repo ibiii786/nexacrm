@@ -1,14 +1,5 @@
 {
   "installCommand": "npm install",
   "buildCommand": "npm run build --workspace=apps/web",
-  "outputDirectory": "apps/web/dist",
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "outputDirectory": "apps/web/dist"
 }
