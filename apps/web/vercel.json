@@ -3,6 +3,7 @@
   "buildCommand": "cd ../.. && npm run build --workspace=@nexacrm/shared && cd apps/web && npx vite build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://nexacrm-api.vercel.app/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
