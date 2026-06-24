@@ -68,6 +68,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// TEMPORARY MIGRATION ROUTE
+app.get('/api/system/migrate', (req, res) => {
+  try {
+    const { execSync } = require('child_process');
+    const out1 = execSync('npx prisma migrate deploy', { encoding: 'utf-8' });
+    const out2 = execSync('npx prisma db seed', { encoding: 'utf-8' });
+    res.json({ success: true, migrate: out1, seed: out2 });
+  } catch (err: any) {
+    res.status(500).json({ error: String(err), stdout: err.stdout?.toString(), stderr: err.stderr?.toString() });
+  }
+});
+
 // API routes
 app.use('/api', routes);
 
