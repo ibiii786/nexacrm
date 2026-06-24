@@ -4,13 +4,22 @@ import { AttachmentsService } from '../services/attachments.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
 import { parsePasteText } from '../utils/pasteParser';
 import { ExportService } from '../services/export.service';
+import { PermissionsService } from '../services/permissions.service';
 import prisma from '../config/database';
 
 
 export class OrdersController {
   static async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = (req as any).user;
       const { statusId, search, startDate, endDate, page, limit } = req.query;
+
+      let canViewAll = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+      if (!canViewAll) {
+        const perms = await PermissionsService.getEffectivePermissions(user.id);
+        if (perms.includes('orders:view_all')) canViewAll = true;
+      }
+
       const result = await OrdersService.getOrders({
         statusId: statusId as string,
         search: search as string,
@@ -18,6 +27,8 @@ export class OrdersController {
         endDate: endDate as string,
         page: page ? parseInt(page as string, 10) : undefined,
         limit: limit ? parseInt(limit as string, 10) : undefined,
+        viewingUserId: user.id,
+        canViewAll,
       });
       return sendSuccess(res, result.orders, result.meta);
     } catch (error) {
@@ -27,14 +38,24 @@ export class OrdersController {
 
   static async exportOrdersExcel(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = (req as any).user;
       const { statusId, search, startDate, endDate } = req.query;
+
+      let canViewAll = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+      if (!canViewAll) {
+        const perms = await PermissionsService.getEffectivePermissions(user.id);
+        if (perms.includes('orders:view_all')) canViewAll = true;
+      }
+
       const result = await OrdersService.getOrders({
         statusId: statusId as string,
         search: search as string,
         startDate: startDate as string,
         endDate: endDate as string,
         // No pagination for export to export all matching records
-        limit: 10000, 
+        limit: 10000,
+        viewingUserId: user.id,
+        canViewAll, 
       });
 
       res.setHeader('Content-Disposition', 'attachment; filename="orders_export.xlsx"');

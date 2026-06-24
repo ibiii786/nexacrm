@@ -11,11 +11,11 @@ export function AppearanceSettings() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await api.get('/settings');
+        const res = await api.get('/user-settings');
         setTheme(res.data.data.theme || 'light');
         setPrimaryColor(res.data.data.primaryColor || '#4f46e5');
       } catch (error) {
-        toast.error('Failed to load settings');
+        toast.error('Failed to load user settings');
       } finally {
         setLoading(false);
       }
@@ -26,8 +26,8 @@ export function AppearanceSettings() {
   const handleThemeChange = async (newTheme: string) => {
     setTheme(newTheme);
     try {
-      await api.put('/settings', { theme: newTheme });
-      await useAuthStore.getState().fetchSettings();
+      await api.put('/user-settings', { theme: newTheme });
+      await useAuthStore.getState().fetchUserSettings();
       toast.success('Theme preference saved');
       
       // Update HTML class
@@ -45,8 +45,8 @@ export function AppearanceSettings() {
     setPrimaryColor(newColor);
     document.documentElement.style.setProperty('--primary', newColor);
     try {
-      await api.put('/settings', { primaryColor: newColor });
-      await useAuthStore.getState().fetchSettings();
+      await api.put('/user-settings', { primaryColor: newColor });
+      await useAuthStore.getState().fetchUserSettings();
       toast.success('Primary color updated');
     } catch (error) {
       toast.error('Failed to update primary color');

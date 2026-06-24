@@ -261,7 +261,8 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
               </div>
 
               {/* Dynamic Fields for the selected status */}
-              {statusFields
+              {[...statusFields]
+                .sort((a, b) => a.position - b.position)
                 .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
                 .map(field => {
                   const standardDef = STANDARD_FIELDS.find(sf => sf.name === field.name);

@@ -4,6 +4,7 @@ import { XIcon, FileTextIcon, CheckIcon, Loader2Icon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STANDARD_FIELDS } from '@nexacrm/shared';
 import { useAuthStore } from '../../stores/authStore';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { formatZonedDate, parseZonedDateInput } from '../../utils/dateUtils';
 
 interface OrderModalProps {
@@ -23,6 +24,11 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
   const [deliveryDate, setDeliveryDate] = useState('');
   const [customFields, setCustomFields] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
+  
+  // Confirmation Dialog State
+  const [showPriceConfirm, setShowPriceConfirm] = useState(false);
+  const [updatePriceChecked, setUpdatePriceChecked] = useState(true);
+  const [pendingPayload, setPendingPayload] = useState<any>(null);
   
   // Metadata
   const [statuses, setStatuses] = useState<any[]>([]);
@@ -105,6 +111,31 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
       };
 
       if (isEditMode) {
+        const finalPaidField = statusFields.find(f => f.name === 'finalPaidAmount');
+        const priceField = statusFields.find(f => f.name === 'price');
+        
+        if (finalPaidField && priceField) {
+          const newFinalPaid = customFields[finalPaidField.id];
+          const oldFinalPaid = order?.customFields?.finalPaidAmount;
+          
+          if (newFinalPaid && newFinalPaid !== oldFinalPaid) {
+            setPendingPayload(payload);
+            setShowPriceConfirm(true);
+            return;
+          }
+        }
+      }
+
+      await executeSubmit(payload);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || 'Failed to prepare order submission');
+      setIsSubmitting(false);
+    }
+  };
+
+  const executeSubmit = async (payload: any) => {
+    try {
+      if (isEditMode) {
         await api.put(`/orders/${order.id}`, payload);
         toast.success('Order updated successfully');
       } else {
@@ -118,7 +149,29 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
       toast.error(err.response?.data?.error?.message || 'Failed to create order');
     } finally {
       setIsSubmitting(false);
+      setShowPriceConfirm(false);
+      setPendingPayload(null);
     }
+  };
+
+  const handleConfirmPriceUpdate = async () => {
+    if (!pendingPayload) return;
+    
+    if (updatePriceChecked) {
+      const finalPaidField = statusFields.find(f => f.name === 'finalPaidAmount');
+      const priceField = statusFields.find(f => f.name === 'price');
+      if (finalPaidField && priceField) {
+        pendingPayload.customFields[priceField.id] = pendingPayload.customFields[finalPaidField.id];
+      }
+    }
+    
+    await executeSubmit(pendingPayload);
+  };
+
+  const handleCancelPriceUpdate = () => {
+    setShowPriceConfirm(false);
+    setPendingPayload(null);
+    setIsSubmitting(false);
   };
 
   if (!isOpen) return null;
@@ -164,7 +217,8 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
             </div>
 
             {/* Dynamic Fields for the selected status */}
-            {statusFields
+            {[...statusFields]
+              .sort((a, b) => a.position - b.position)
               .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
               .map(field => {
                 const standardDef = STANDARD_FIELDS.find(sf => sf.name === field.name);
@@ -238,6 +292,31 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showPriceConfirm}
+        onOpenChange={(open) => !open && handleCancelPriceUpdate()}
+        title="Update Total Price?"
+        description="You have entered a Final Paid Amount. Do you want to update the original Price to match this actual paid price?"
+        confirmText="Yes, Save Order"
+        cancelText="Cancel"
+        onConfirm={handleConfirmPriceUpdate}
+        onCancel={handleCancelPriceUpdate}
+        isDestructive={false}
+      >
+        <div className="mt-4 flex items-center space-x-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+          <input
+            type="checkbox"
+            id="updatePrice"
+            checked={updatePriceChecked}
+            onChange={(e) => setUpdatePriceChecked(e.target.checked)}
+            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+          />
+          <label htmlFor="updatePrice" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+            Update original price to match final paid amount
+          </label>
+        </div>
+      </ConfirmDialog>
     </div>
   );
 }

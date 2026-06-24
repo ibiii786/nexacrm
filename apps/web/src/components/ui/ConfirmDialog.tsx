@@ -15,6 +15,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   isDestructive?: boolean;
+  children?: React.ReactNode;
 }
 
 export function ConfirmDialog({
@@ -29,6 +30,7 @@ export function ConfirmDialog({
   cancelText = 'Cancel',
   onConfirm,
   isDestructive = true,
+  children,
 }: ConfirmDialogProps) {
   // Unify the open state from either prop
   const isVisible = open ?? isOpen ?? false;
@@ -53,6 +55,11 @@ export function ConfirmDialog({
             <AlertDialogPrimitive.Description className="text-sm text-slate-500 dark:text-slate-400">
               {displayText}
             </AlertDialogPrimitive.Description>
+            {children && (
+              <div className="mt-4">
+                {children}
+              </div>
+            )}
           </div>
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
             <AlertDialogPrimitive.Cancel asChild>

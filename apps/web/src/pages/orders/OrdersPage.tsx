@@ -249,12 +249,13 @@ export default function OrdersPage() {
           </>
         )}
         {viewMode === 'board' && (
-          <OrdersKanban orders={orders} statuses={statuses} onOrderUpdated={fetchOrders} />
+          <OrdersKanban orders={orders} statuses={statuses} fields={fields} onOrderUpdated={fetchOrders} />
         )}
         {viewMode === 'calendar' && (
           <OrdersCalendar 
             orders={orders} 
             statuses={statuses} 
+            fields={fields}
             currentDate={calendarDate}
             onNextMonth={() => setCalendarDate(addMonths(calendarDate, 1))}
             onPrevMonth={() => setCalendarDate(subMonths(calendarDate, 1))}

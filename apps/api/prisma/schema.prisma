@@ -46,6 +46,7 @@ model User {
   notifications   Notification[]
   updatedSettings Setting[]
   systemAudits    SystemAuditLog[]
+  userSettings    UserSetting[]
 
   // IAM
   groupMemberships   GroupMember[]
@@ -266,6 +267,7 @@ model Announcement {
   title     String   @db.VarChar
   content   String   @db.Text
   isActive  Boolean  @default(true) @map("is_active")
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz
   createdBy String?  @map("created_by") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
@@ -300,6 +302,19 @@ model Setting {
   updater User? @relation(fields: [updatedBy], references: [id])
 
   @@map("settings")
+}
+
+model UserSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  key       String   @db.VarChar
+  value     String   @db.Text
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@map("user_settings")
 }
 
 model SystemAuditLog {

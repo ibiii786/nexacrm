@@ -6,6 +6,7 @@ import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { TrashIcon } from 'lucide-react';
 import { formatZonedDateTime } from '../../utils/dateUtils';
+import { formatCustomField } from '../../utils/formatters';
 
 interface OrdersTableProps {
   orders: any[];
@@ -184,7 +185,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                   {fields.map(f => (
                     <td key={f.id} className="px-6 py-4 text-slate-600 dark:text-slate-400">
                       <div className="line-clamp-2" title={order.customFields?.[f.name]}>
-                        {order.customFields?.[f.name] || '-'}
+                        {formatCustomField(f.name, order.customFields?.[f.name])}
                       </div>
                     </td>
                   ))}

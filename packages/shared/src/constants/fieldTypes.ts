@@ -130,4 +130,12 @@ export const STANDARD_FIELDS: StandardField[] = [
     isSystem: true, // Auto-set, readonly
     position: 11,
   },
+  {
+    name: 'finalPaidAmount',
+    label: 'Final Paid Amount',
+    type: FieldType.NUMBER,
+    isRequired: false,
+    isSystem: false,
+    position: 12,
+  },
 ];

@@ -12,17 +12,19 @@ import {
 import { ChevronLeftIcon, ChevronRightIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatZonedDate, isSameZonedDay, getZonedToday } from '../../utils/dateUtils';
+import { formatCustomField } from '../../utils/formatters';
 
 interface OrdersCalendarProps {
   orders: any[];
   statuses: any[];
+  fields?: any[];
   currentDate: Date;
   onNextMonth: () => void;
   onPrevMonth: () => void;
   onToday: () => void;
 }
 
-export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onPrevMonth, onToday }: OrdersCalendarProps) {
+export function OrdersCalendar({ orders, statuses, fields = [], currentDate, onNextMonth, onPrevMonth, onToday }: OrdersCalendarProps) {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const navigate = useNavigate();
 
@@ -154,8 +156,6 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
               {orders.filter(o => o.deliveryDate && isSameZonedDay(o.deliveryDate, selectedDay)).map(order => {
                 const status = statuses.find(s => s.id === order.statusId);
                 const customFields = order.customFields || {};
-                const customerName = customFields.customerName || 'Unknown Customer';
-                const price = customFields.price ? Number(customFields.price).toFixed(2) : '0.00';
                 
                 return (
                   <button
@@ -179,13 +179,24 @@ export function OrdersCalendar({ orders, statuses, currentDate, onNextMonth, onP
                             {status?.name || 'Unknown'}
                           </span>
                         </div>
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                          ${price}
-                        </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
-                        Customer: {customerName}
-                      </p>
+                      
+                      {fields.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {fields.map(f => {
+                            const val = customFields[f.name];
+                            if (!val) return null;
+                            return (
+                              <div key={f.id} className="flex text-xs">
+                                <span className="text-slate-500 dark:text-slate-400 w-24 shrink-0">{f.label}:</span>
+                                <span className="text-slate-700 dark:text-slate-300 truncate" title={String(val)}>
+                                  {formatCustomField(f.name, val)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </button>
                 );

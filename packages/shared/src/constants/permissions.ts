@@ -3,6 +3,7 @@
 export const PERMISSIONS = {
   // Orders
   ORDERS_CREATE: 'orders:create',
+  ORDERS_VIEW_ALL: 'orders:view_all',
   ORDERS_EDIT_OWN: 'orders:edit_own',
   ORDERS_EDIT_ANY: 'orders:edit_any',
   ORDERS_DELETE_OWN: 'orders:delete_own',
@@ -46,6 +47,7 @@ export const ALL_PERMISSIONS: PermissionName[] = Object.values(PERMISSIONS);
 // Permission descriptions for UI display
 export const PERMISSION_DESCRIPTIONS: Record<PermissionName, string> = {
   [PERMISSIONS.ORDERS_CREATE]: 'Create new orders',
+  [PERMISSIONS.ORDERS_VIEW_ALL]: 'Can view all orders, not just own',
   [PERMISSIONS.ORDERS_EDIT_OWN]: 'Edit own orders (within edit window)',
   [PERMISSIONS.ORDERS_EDIT_ANY]: 'Edit any order regardless of owner',
   [PERMISSIONS.ORDERS_DELETE_OWN]: 'Delete own orders (within edit window)',
@@ -69,6 +71,7 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionName, string> = {
 export const PERMISSION_MODULES: Record<string, PermissionName[]> = {
   Orders: [
     PERMISSIONS.ORDERS_CREATE,
+    PERMISSIONS.ORDERS_VIEW_ALL,
     PERMISSIONS.ORDERS_EDIT_OWN,
     PERMISSIONS.ORDERS_EDIT_ANY,
     PERMISSIONS.ORDERS_DELETE_OWN,

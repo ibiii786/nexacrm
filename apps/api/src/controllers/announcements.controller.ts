@@ -6,7 +6,8 @@ import { z } from 'zod';
 const createSchema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
-  isActive: z.boolean().optional()
+  isActive: z.boolean().optional(),
+  expiresAt: z.coerce.date().optional()
 });
 
 const updateSchema = z.object({
@@ -17,14 +18,16 @@ const updateSchema = z.object({
 
 export class AnnouncementsController {
   async getAnnouncements(req: Request, res: Response) {
-    // If user is Admin/SuperAdmin, they can see inactive announcements too if they want
-    // But default endpoint might just fetch all for admin, and only active for users
-    // Let's rely on a query param
-    const onlyActive = req.query.all !== 'true';
-    const limitParam = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
-    const limit = limitParam && !isNaN(limitParam) ? limitParam : undefined;
-    
-    const announcements = await announcementsService.getAllAnnouncements(onlyActive, limit);
+    const currentUser = (req as any).user;
+    const isAdminOrSuper = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
+
+    const announcements = await announcementsService.getAllAnnouncements({
+      onlyActive: !isAdminOrSuper,
+      includeExpired: isAdminOrSuper,
+      // For regular users and admins who are not super admin, apply new-user date filter
+      userCreatedAt: isAdminOrSuper ? undefined : new Date(currentUser.createdAt),
+    });
+
     return sendSuccess(res, announcements);
   }
 

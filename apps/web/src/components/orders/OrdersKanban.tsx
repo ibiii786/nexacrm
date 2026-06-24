@@ -3,14 +3,16 @@ import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { formatZonedDate } from '../../utils/dateUtils';
+import { formatCustomField } from '../../utils/formatters';
 
 interface OrdersKanbanProps {
   orders: any[];
   statuses: any[];
+  fields?: any[];
   onOrderUpdated: () => void;
 }
 
-export function OrdersKanban({ orders, statuses, onOrderUpdated }: OrdersKanbanProps) {
+export function OrdersKanban({ orders, statuses, fields = [], onOrderUpdated }: OrdersKanbanProps) {
   const [draggedOrderId, setDraggedOrderId] = useState<string | null>(null);
 
   const boardColumns = statuses.map(status => ({
@@ -89,6 +91,23 @@ export function OrdersKanban({ orders, statuses, onOrderUpdated }: OrdersKanbanP
                 <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2">
                   {order.notes || 'No notes provided'}
                 </div>
+                
+                {fields.length > 0 && (
+                  <div className="mt-3 space-y-1 border-t border-slate-100 dark:border-slate-700/50 pt-2">
+                    {fields.map(f => {
+                      const val = order.customFields?.[f.name];
+                      if (!val) return null;
+                      return (
+                        <div key={f.id} className="flex justify-between text-xs">
+                          <span className="text-slate-500 dark:text-slate-400">{f.label}:</span>
+                          <span className="text-slate-700 dark:text-slate-300 font-medium truncate ml-2 max-w-[120px]" title={String(val)}>
+                            {formatCustomField(f.name, val)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))}
             {column.orders.length === 0 && (

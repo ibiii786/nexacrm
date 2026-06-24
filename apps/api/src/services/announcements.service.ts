@@ -16,13 +16,36 @@ export interface UpdateAnnouncementInput {
 }
 
 export class AnnouncementsService {
-  async getAllAnnouncements(onlyActive = false, limit?: number) {
-    const where = onlyActive ? { isActive: true } : {};
-    
+  async getAllAnnouncements(options: {
+    onlyActive?: boolean;
+    includeExpired?: boolean;
+    userId?: string;
+    userCreatedAt?: Date;
+  } = {}) {
+    const { onlyActive = false, includeExpired = false, userCreatedAt } = options;
+
+    const where: any = {};
+
+    if (onlyActive) where.isActive = true;
+
+    if (!includeExpired) {
+      // Exclude expired announcements (expiresAt is in the past)
+      where.OR = [
+        { expiresAt: null },
+        { expiresAt: { gt: new Date() } }
+      ];
+    }
+
+    // New user visibility: only show announcements from the same calendar day as userCreatedAt onwards
+    if (userCreatedAt) {
+      const startOfUserCreationDay = new Date(userCreatedAt);
+      startOfUserCreationDay.setHours(0, 0, 0, 0);
+      where.createdAt = { gte: startOfUserCreationDay };
+    }
+
     return prisma.announcement.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: limit,
       include: {
         creator: { select: { id: true, name: true } },
       },
@@ -38,12 +61,16 @@ export class AnnouncementsService {
     });
   }
 
-  async createAnnouncement(data: CreateAnnouncementInput, userId: string) {
+  async createAnnouncement(data: CreateAnnouncementInput & { expiresAt?: Date }, userId: string) {
+    const defaultExpiryDays = 30;
+    const expiresAt = data.expiresAt ?? new Date(Date.now() + defaultExpiryDays * 24 * 60 * 60 * 1000);
+
     const announcement = await prisma.announcement.create({
       data: {
         title: data.title,
         content: sanitizeHtml(data.content),
         isActive: data.isActive ?? true,
+        expiresAt,
         createdBy: userId,
       },
       include: {

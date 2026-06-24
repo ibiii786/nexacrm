@@ -24,10 +24,10 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
-        const endpoint = isAdmin ? '/dashboard/admin' : '/dashboard/user';
+        const canViewAll = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('orders:view_all');
+        const endpoint = canViewAll ? '/dashboard/admin' : '/dashboard/user';
         const res = await api.get(endpoint);
-        if (!isAdmin) {
+        if (!canViewAll) {
           setData(res.data.data);
         } else {
           setData(res.data.data);
@@ -45,7 +45,7 @@ export default function Dashboard() {
     fetchDashboard();
   }, [user]);
 
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+  const canViewAll = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('orders:view_all');
 
   if (loading) {
     return (
@@ -96,10 +96,10 @@ export default function Dashboard() {
 
         <SinceYouWereGoneBanner 
           newOrdersCount={data?.newEntriesSinceLastLogin?.length || 0} 
-          isAdmin={isAdmin}
+          isAdmin={canViewAll}
         />
 
-        {isAdmin ? (
+        {canViewAll ? (
           <>
             {/* Admin Dashboard */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

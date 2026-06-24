@@ -7,6 +7,7 @@ import { OrderModal } from '../../components/orders/OrderModal';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
 import { formatZonedDate, formatZonedDateTime } from '../../utils/dateUtils';
+import { formatCustomField } from '../../utils/formatters';
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -142,7 +143,7 @@ export default function OrderDetailPage() {
               {Object.entries(order.customFields || {}).map(([key, value]) => (
                 <div key={key}>
                   <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</dt>
-                  <dd className="mt-1 text-sm text-slate-900 dark:text-white font-medium">{String(value)}</dd>
+                  <dd className="mt-1 text-sm text-slate-900 dark:text-white font-medium">{formatCustomField(key, value)}</dd>
                 </div>
               ))}
               {Object.keys(order.customFields || {}).length === 0 && (

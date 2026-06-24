@@ -12,6 +12,7 @@ interface Announcement {
   priority: string;
   isActive: boolean;
   createdAt: string;
+  expiresAt: string | null;
 }
 
 interface AnnouncementModalProps {
@@ -68,7 +69,7 @@ function AnnouncementReadModal({ isOpen, onClose, announcement }: AnnouncementRe
 }
 
 function AnnouncementModal({ isOpen, onClose, onSuccess }: AnnouncementModalProps) {
-  const [formData, setFormData] = useState({ title: '', content: '', priority: 'LOW' });
+  const [formData, setFormData] = useState({ title: '', content: '', priority: 'LOW', expiresAt: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -77,9 +78,12 @@ function AnnouncementModal({ isOpen, onClose, onSuccess }: AnnouncementModalProp
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await api.post('/announcements', formData);
+      await api.post('/announcements', {
+        ...formData,
+        expiresAt: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : undefined
+      });
       toast.success('Announcement created');
-      setFormData({ title: '', content: '', priority: 'LOW' });
+      setFormData({ title: '', content: '', priority: 'LOW', expiresAt: '' });
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -123,6 +127,16 @@ function AnnouncementModal({ isOpen, onClose, onSuccess }: AnnouncementModalProp
               <option value="MEDIUM">Medium</option>
               <option value="HIGH">High</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Expires At (Optional)</label>
+            <input
+              type="date"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              value={formData.expiresAt}
+              onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+            />
+            <p className="text-xs text-slate-500 mt-1">Leave empty for default 30 days expiry.</p>
           </div>
           <div className="mt-6 flex justify-end gap-3">
             <button type="button" onClick={onClose}
@@ -204,13 +218,15 @@ export default function AnnouncementsPage() {
               <th className="px-6 py-4 font-medium">Title</th>
               <th className="px-6 py-4 font-medium">Content</th>
               <th className="px-6 py-4 font-medium">Priority</th>
-              <th className="px-6 py-4 font-medium">Status</th>
+              <th className="px-6 py-4 font-medium">Status / Expiry</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-            {announcements.map((a) => (
-              <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+            {announcements.map((a) => {
+              const isExpired = a.expiresAt ? new Date(a.expiresAt) < new Date() : false;
+              return (
+              <tr key={a.id} className={`transition-colors ${isExpired ? 'opacity-60 bg-slate-100 dark:bg-slate-800/40' : 'hover:bg-slate-50 dark:hover:bg-slate-800/20'}`}>
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{a.title}</td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400 truncate max-w-xs">{a.content}</td>
                 <td className="px-6 py-4">
@@ -223,13 +239,25 @@ export default function AnnouncementsPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    a.isActive
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400'
-                  }`}>
-                    {a.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                  <div className="flex flex-col gap-1 items-start">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      a.isActive
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400'
+                    }`}>
+                      {a.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                    {isExpired && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                        Expired
+                      </span>
+                    )}
+                    {!isExpired && a.expiresAt && (
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        Expires: {formatZonedDateTime(a.expiresAt, 'MMM d, yyyy')}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-right flex justify-end gap-2">
                   <button
@@ -246,7 +274,8 @@ export default function AnnouncementsPage() {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {announcements.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">

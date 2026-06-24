@@ -75,8 +75,15 @@ export class OrdersService {
     endDate?: string;
     page?: number;
     limit?: number;
+    viewingUserId?: string;
+    canViewAll?: boolean;
   }) {
     const where: any = { deletedAt: null };
+    
+    if (params?.viewingUserId && !params?.canViewAll) {
+      where.createdBy = params.viewingUserId;
+    }
+
     if (params?.statusId) where.statusId = params.statusId;
     if (params?.search) {
       where.OR = [
