@@ -247,42 +247,88 @@ function splitLine(line: string): { key: string; value: string } | null {
  * Returns mapped fields, unknown fields, and freeform notes.
  */
 export function parsePasteText(rawText: string, fields: FieldDefinition[]): ParseResult {
-  const mappedFields: Record<string, string> = {};
+  const mappedFields: Record<string, string[]> = {}; // Now stores arrays
   const unknownFields: Array<{ candidateName: string; candidateValue: string }> = [];
   const noteLines: string[] = [];
 
   const lines = rawText.split(/\r?\n/);
+  let lastMatchedFieldId: string | null = null;
 
   for (const line of lines) {
     const trimmedLine = line.trim();
-    if (!trimmedLine) continue; // Skip blank lines
+    if (!trimmedLine) {
+      lastMatchedFieldId = null; // Blank line resets continuation
+      continue;
+    }
 
     const parsed = splitLine(trimmedLine);
 
     if (!parsed) {
-      // No delimiter found — treat as freeform note
-      noteLines.push(trimmedLine);
+      // No delimiter — could be a continuation of the previous field
+      if (lastMatchedFieldId) {
+        // Append as additional value to the last matched field
+        mappedFields[lastMatchedFieldId] = mappedFields[lastMatchedFieldId] || [];
+        mappedFields[lastMatchedFieldId].push(trimmedLine);
+      } else {
+        noteLines.push(trimmedLine);
+      }
       continue;
     }
 
-    // Empty value (e.g. "Phone:") — skip
     if (!parsed.value) continue;
 
     const matchedField = matchField(parsed.key, fields);
 
     if (matchedField) {
-      // Normalize value based on field type
-      mappedFields[matchedField.id] = normalizeValue(parsed.value, matchedField.type);
+      // WhatsApp auto-detection logic
+      if (matchedField.type === 'PHONE' || matchedField.name === 'customerPhone') {
+        const rawValue = parsed.value;
+        const parts = rawValue.split(/[|,\/]/).map(p => p.trim());
+
+        for (const part of parts) {
+          const isWhatsApp = /whatsapp/i.test(part);
+          const number = part.replace(/whatsapp/i, '').trim();
+
+          if (isWhatsApp) {
+            const whatsappField = fields.find(f =>
+              f.name.toLowerCase().includes('whatsapp') ||
+              f.label.toLowerCase().includes('whatsapp')
+            );
+            if (whatsappField) {
+              mappedFields[whatsappField.id] = mappedFields[whatsappField.id] || [];
+              mappedFields[whatsappField.id].push(normalizeValue(number, whatsappField.type));
+              continue;
+            }
+          }
+
+          // Regular phone number — add to the matched field
+          mappedFields[matchedField.id] = mappedFields[matchedField.id] || [];
+          mappedFields[matchedField.id].push(normalizeValue(part, matchedField.type));
+        }
+        lastMatchedFieldId = matchedField.id;
+        continue; // Skip the default push below
+      }
+
+      mappedFields[matchedField.id] = mappedFields[matchedField.id] || [];
+      mappedFields[matchedField.id].push(normalizeValue(parsed.value, matchedField.type));
+      lastMatchedFieldId = matchedField.id;
     } else {
       unknownFields.push({
         candidateName: parsed.key,
         candidateValue: parsed.value,
       });
+      lastMatchedFieldId = null;
     }
   }
 
+  // Convert arrays to strings: join multiple values with ' | '
+  const finalMappedFields: Record<string, string> = {};
+  for (const [fieldId, values] of Object.entries(mappedFields)) {
+    finalMappedFields[fieldId] = values.join(' | ');
+  }
+
   return {
-    mappedFields,
+    mappedFields: finalMappedFields,
     unknownFields,
     notes: noteLines.join('\n'),
   };

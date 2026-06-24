@@ -145,6 +145,14 @@ export class OrdersService {
     });
   }
 
+  static async getOrderParsedText(id: string): Promise<string | null> {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { parsedRawText: true },
+    });
+    return order?.parsedRawText ?? null;
+  }
+
   static async getOrderCopyText(id: string) {
     const order = await this.getOrderById(id);
     if (!order) return null;
@@ -192,6 +200,7 @@ export class OrdersService {
     customFields: any;
     notes?: string;
     createdBy: string;
+    parsedRawText?: string;
   }) {
     // 1. Generate sequential order number
     const orderNumber = await OrderSequenceService.generateNextOrderNumber();
@@ -273,6 +282,7 @@ export class OrdersService {
         deliveryDate: data.deliveryDate,
         customFields: validatedCustomFields,
         notes: data.notes ? sanitizeHtml(data.notes) : undefined,
+        parsedRawText: data.parsedRawText ?? null,
       },
       include: {
         status: true

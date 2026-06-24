@@ -8,6 +8,7 @@ export const PERMISSIONS = {
   ORDERS_EDIT_ANY: 'orders:edit_any',
   ORDERS_DELETE_OWN: 'orders:delete_own',
   ORDERS_DELETE_ANY: 'orders:delete_any',
+  ORDERS_MANAGE_STATUS: 'orders:manage_status',
 
   // Status management
   STATUS_CREATE: 'status:create',
@@ -52,6 +53,7 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionName, string> = {
   [PERMISSIONS.ORDERS_EDIT_ANY]: 'Edit any order regardless of owner',
   [PERMISSIONS.ORDERS_DELETE_OWN]: 'Delete own orders (within edit window)',
   [PERMISSIONS.ORDERS_DELETE_ANY]: 'Delete any order regardless of owner',
+  [PERMISSIONS.ORDERS_MANAGE_STATUS]: 'Can set and change order statuses',
   [PERMISSIONS.STATUS_CREATE]: 'Create new order statuses',
   [PERMISSIONS.STATUS_MANAGE]: 'Edit, reorder, and archive any status',
   [PERMISSIONS.FIELDS_CREATE]: 'Add new custom fields to orders',
@@ -76,6 +78,7 @@ export const PERMISSION_MODULES: Record<string, PermissionName[]> = {
     PERMISSIONS.ORDERS_EDIT_ANY,
     PERMISSIONS.ORDERS_DELETE_OWN,
     PERMISSIONS.ORDERS_DELETE_ANY,
+    PERMISSIONS.ORDERS_MANAGE_STATUS,
   ],
   Statuses: [
     PERMISSIONS.STATUS_CREATE,

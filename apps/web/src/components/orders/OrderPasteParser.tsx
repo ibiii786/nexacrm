@@ -145,7 +145,8 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
         statusId,
         deliveryDate: parseZonedDateInput(deliveryDate),
         notes,
-        customFields: finalCustomFields
+        customFields: finalCustomFields,
+        parsedRawText: rawText
       });
 
       onOrderCreated();
@@ -233,21 +234,23 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
             )}
 
             <form id="order-form" onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status *</label>
-                <select
-                  data-testid="order-status-select"
-                  value={statusId}
-                  onChange={e => setStatusId(e.target.value)}
-                  className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                  required
-                >
-                  <option value="" disabled>Select a status</option>
-                  {statuses.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
+              {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('orders:manage_status')) && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status *</label>
+                  <select
+                    data-testid="order-status-select"
+                    value={statusId}
+                    onChange={e => setStatusId(e.target.value)}
+                    className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                    required
+                  >
+                    <option value="" disabled>Select a status</option>
+                    {statuses.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Delivery Date</label>

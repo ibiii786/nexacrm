@@ -66,6 +66,22 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleCopyParsedText = async () => {
+    try {
+      const { data } = await api.get(`/orders/${id}/parsed-text`, { responseType: 'text' });
+      const textToCopy = typeof data === 'string' ? data : data.data || data;
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success('Original order details copied');
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        toast.error('No original parsed text available for this order');
+      } else {
+        console.error('Failed to copy parsed text', error);
+        toast.error('Failed to copy details');
+      }
+    }
+  };
+
   const handleCopyOrder = async () => {
     try {
       const { data } = await api.get(`/orders/${id}/copy-text`);
@@ -115,11 +131,19 @@ export default function OrderDetailPage() {
         
         <div className="flex gap-3">
           <button 
-            onClick={handleCopyOrder}
+            onClick={handleCopyParsedText}
             data-testid="order-detail-copy-button" 
             className="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-500/20 font-medium"
           >
             Copy Details
+          </button>
+          
+          <button 
+            onClick={handleCopyOrder}
+            data-testid="order-detail-copy-full-button" 
+            className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 font-medium"
+          >
+            Copy Full Details
           </button>
 
           {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('orders:edit_own') || (user as any)?.effectivePermissions?.includes('orders:edit_any')) && (

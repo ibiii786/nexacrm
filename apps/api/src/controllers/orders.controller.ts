@@ -89,10 +89,36 @@ export class OrdersController {
     }
   }
 
+  static async getParsedText(req: Request, res: Response, next: NextFunction) {
+    try {
+      const text = await OrdersService.getOrderParsedText((req.params.id as string));
+      if (text === null) return sendError(res, 'NOT_FOUND', 'No parsed text stored for this order', 404);
+      res.setHeader('Content-Type', 'text/plain');
+      return res.status(200).send(text);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async createOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const createdBy = (req as any).user.id;
-      const { statusId, deliveryDate, customFields, notes } = req.body;
+      const currentUser = (req as any).user;
+      const createdBy = currentUser.id;
+      let { statusId, deliveryDate, customFields, notes, parsedRawText } = req.body;
+
+      const isAdminOrSuper = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
+
+      if (!isAdminOrSuper) {
+        const permissions = await PermissionsService.getEffectivePermissions(currentUser.id);
+        const canManageStatus = permissions.includes('orders:manage_status');
+
+        if (!canManageStatus) {
+          // Force default status regardless of what was sent
+          const defaultStatus = await prisma.status.findFirst({ where: { isDefault: true, deletedAt: null } });
+          if (!defaultStatus) return sendError(res, 'CONFIG_ERROR', 'No default status configured', 500);
+          statusId = defaultStatus.id;
+        }
+      }
 
       if (!statusId) return sendError(res, 'VALIDATION_ERROR', 'statusId is required');
 
@@ -101,7 +127,8 @@ export class OrdersController {
         deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
         customFields: customFields || {},
         notes,
-        createdBy
+        createdBy,
+        parsedRawText
       });
 
       return sendSuccess(res, order, undefined, 201);
@@ -117,6 +144,16 @@ export class OrdersController {
     try {
       const user = (req as any).user;
       const { statusId, deliveryDate, customFields, notes } = req.body;
+
+      if (statusId !== undefined) {
+        const isAdminOrSuper = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+        if (!isAdminOrSuper) {
+          const permissions = await PermissionsService.getEffectivePermissions(user.id);
+          if (!permissions.includes('orders:manage_status')) {
+            return sendError(res, 'FORBIDDEN', 'You do not have permission to change order status', 403);
+          }
+        }
+      }
 
       const order = await OrdersService.updateOrder((req.params.id as string), {
         statusId,

@@ -56,6 +56,11 @@ router.get(
   OrdersController.getOrderCopyText
 );
 
+router.get(
+  '/:id/parsed-text',
+  OrdersController.getParsedText
+);
+
 router.put(
   '/:id',
   authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),
