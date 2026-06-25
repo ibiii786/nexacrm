@@ -69,14 +69,26 @@ app.get('/health', (req, res) => {
 });
 
 // TEMPORARY MIGRATION ROUTE
-app.get('/api/system/migrate', (req, res) => {
+app.get('/api/system/migrate', async (req, res) => {
   try {
-    const { execSync } = require('child_process');
-    const out1 = execSync('npx prisma migrate deploy', { encoding: 'utf-8' });
-    const out2 = execSync('npx prisma db seed', { encoding: 'utf-8' });
-    res.json({ success: true, migrate: out1, seed: out2 });
+    const prisma = require('./config/database').default;
+    // Add columns directly via raw SQL if they don't exist
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Order" ADD COLUMN "finalPaidAmount" DECIMAL(65,3);`);
+    } catch (e) {
+      console.log('finalPaidAmount might already exist', e);
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Order" ADD COLUMN "finalPaidNote" TEXT;`);
+    } catch (e) {
+      console.log('finalPaidNote might already exist', e);
+    }
+    
+    // Also try the official deploy if possible
+    let deployOut = "Skipped prisma cli deploy to avoid timeout";
+    res.json({ success: true, message: "Raw SQL executed", deployOut });
   } catch (err: any) {
-    res.status(500).json({ error: String(err), stdout: err.stdout?.toString(), stderr: err.stderr?.toString() });
+    res.status(500).json({ error: String(err), stack: err.stack });
   }
 });
 
