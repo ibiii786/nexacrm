@@ -41,7 +41,7 @@ export function errorHandler(
   return sendError(
     res, 
     'INTERNAL_SERVER_ERROR', 
-    isDev ? `An unexpected error occurred: ${err.message}` : 'An unexpected error occurred', 
-    500
+    err.message || 'An unexpected error occurred', 
+    err.status || 500
   );
 }
