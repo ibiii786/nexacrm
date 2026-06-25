@@ -24,8 +24,6 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
   const [deliveryDate, setDeliveryDate] = useState('');
   const [customFields, setCustomFields] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
-  const [finalPaidAmount, setFinalPaidAmount] = useState<string>('');
-  const [finalPaidNote, setFinalPaidNote] = useState<string>('');
   
   // Confirmation Dialog State
   const [showPriceConfirm, setShowPriceConfirm] = useState(false);
@@ -47,8 +45,6 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
           setDeliveryDate('');
         }
         setNotes(order.notes || '');
-        setFinalPaidAmount(order.finalPaidAmount?.toString() || '');
-        setFinalPaidNote(order.finalPaidNote || '');
         // For custom fields, map existing keys to field IDs if possible, or just pass them as is.
         // Actually, order.customFields uses field NAMES.
         // We'll populate it below once statusFields are loaded.
@@ -100,8 +96,6 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
     setCustomFields({});
     setDeliveryDate('');
     setNotes('');
-    setFinalPaidAmount('');
-    setFinalPaidNote('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,26 +103,25 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
     setIsSubmitting(true);
 
     try {
+      const finalPaidAmountField = statusFields.find(f => f.name === 'finalPaidAmount');
+      const currentFinalPaidAmount = finalPaidAmountField ? customFields[finalPaidAmountField.id] : undefined;
+
       const payload = {
         statusId,
         deliveryDate: parseZonedDateInput(deliveryDate),
         notes,
         customFields,
-        finalPaidAmount: finalPaidAmount ? parseFloat(finalPaidAmount) : undefined,
-        finalPaidNote: finalPaidNote || undefined
+        finalPaidAmount: currentFinalPaidAmount ? parseFloat(currentFinalPaidAmount) : undefined,
       };
 
-      if (isEditMode) {
-        const priceField = statusFields.find(f => f.name === 'price');
+      const priceField = statusFields.find(f => f.name === 'price');
+      if (priceField && currentFinalPaidAmount) {
+        const oldFinalPaid = order?.finalPaidAmount?.toString();
         
-        if (priceField && finalPaidAmount) {
-          const oldFinalPaid = order?.finalPaidAmount?.toString();
-          
-          if (finalPaidAmount !== oldFinalPaid) {
-            setPendingPayload(payload);
-            setShowPriceConfirm(true);
-            return;
-          }
+        if (currentFinalPaidAmount !== oldFinalPaid) {
+          setPendingPayload(payload);
+          setShowPriceConfirm(true);
+          return;
         }
       }
 
@@ -278,31 +271,6 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
               />
             </div>
 
-            {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
-              <>
-                <hr className="border-slate-200 dark:border-slate-700" />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Final Paid Amount (Admin Only)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={finalPaidAmount}
-                    onChange={e => setFinalPaidAmount(e.target.value)}
-                    className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Final Paid Note (Optional)</label>
-                  <input
-                    type="text"
-                    value={finalPaidNote}
-                    onChange={e => setFinalPaidNote(e.target.value)}
-                    placeholder="e.g. customer requested discount"
-                    className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                  />
-                </div>
-              </>
-            )}
           </form>
         </div>
 

@@ -94,7 +94,7 @@ function App() {
         <Route path="/announcements" element={<AnnouncementsPage />} />
 
         {/* User & System Settings */}
-        <Route path="/settings" element={<RequirePermission permissions={['settings:access']}><SettingsPage /></RequirePermission>} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/my-permissions" element={<MyPermissions />} />
         {/* Payroll Routes */}

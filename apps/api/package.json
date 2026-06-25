@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "cd ../../packages/shared && npm run build && cd ../../apps/api && npx prisma generate && tsc --skipLibCheck --noEmit && tsc",
+    "build": "cd ../../packages/shared && npm run build && cd ../../apps/api && npx prisma generate && tsc",
     "start": "npx prisma migrate deploy && npx prisma db seed && node dist/index.js",
     "test": "jest --passWithNoTests",
     "typecheck": "tsc --noEmit"

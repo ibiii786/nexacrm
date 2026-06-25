@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuthStore } from '../../../stores/authStore';
 import { GeneralSettings } from './tabs/GeneralSettings';
 import { FieldsSettings } from './tabs/FieldsSettings';
 import { StatusesSettings } from './tabs/StatusesSettings';
@@ -8,13 +9,18 @@ import { NotificationSettings } from './tabs/NotificationSettings';
 import { Settings, CheckSquare, Palette, List, ToggleRight, Bell } from 'lucide-react';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('general');
+  const user = useAuthStore((state) => state.user);
+  const hasSettingsAccess = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || (user as any)?.effectivePermissions?.includes('settings:access');
+
+  const [activeTab, setActiveTab] = useState(hasSettingsAccess ? 'general' : 'appearance');
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Settings },
-    { id: 'fields', label: 'Custom Fields', icon: CheckSquare },
-    { id: 'statuses', label: 'Statuses', icon: List },
-    { id: 'modules', label: 'Modules', icon: ToggleRight },
+    ...(hasSettingsAccess ? [
+      { id: 'general', label: 'General', icon: Settings },
+      { id: 'fields', label: 'Custom Fields', icon: CheckSquare },
+      { id: 'statuses', label: 'Statuses', icon: List },
+      { id: 'modules', label: 'Modules', icon: ToggleRight },
+    ] : []),
     { id: 'appearance', label: 'Appearance', icon: Palette },
     { id: 'notifications', label: 'Notifications', icon: Bell },
   ];

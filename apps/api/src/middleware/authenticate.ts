@@ -37,6 +37,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       email: user.email,
       name: user.name,
       role: user.role,
+      createdAt: user.createdAt,
     };
 
     next();

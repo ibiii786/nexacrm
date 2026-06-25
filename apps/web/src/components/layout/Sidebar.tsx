@@ -157,10 +157,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Bottom Section (Settings for Admin & Collapse Toggle) */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
-          {isAdmin && (
-            <NavLink
-              to="/settings"
-              title={isCollapsed ? 'Settings' : undefined}
+          <NavLink
+            to="/settings"
+            title={isCollapsed ? 'Settings' : undefined}
               onClick={() => { if (window.innerWidth < 1024) onClose(); }}
               className={({ isActive }) => 
                 `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
@@ -172,8 +171,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
               <Settings size={20} className="flex-shrink-0" />
               {!isCollapsed && <span>Settings</span>}
-            </NavLink>
-          )}
+          </NavLink>
           
           {/* Collapse Toggle for Desktop */}
           <button
