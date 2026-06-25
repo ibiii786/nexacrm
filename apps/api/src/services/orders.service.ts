@@ -201,6 +201,8 @@ export class OrdersService {
     notes?: string;
     createdBy: string;
     parsedRawText?: string;
+    finalPaidAmount?: number;
+    finalPaidNote?: string;
   }) {
     // 1. Generate sequential order number
     const orderNumber = await OrderSequenceService.generateNextOrderNumber();
@@ -283,6 +285,8 @@ export class OrdersService {
         customFields: validatedCustomFields,
         notes: data.notes ? sanitizeHtml(data.notes) : undefined,
         parsedRawText: data.parsedRawText ?? null,
+        finalPaidAmount: data.finalPaidAmount,
+        finalPaidNote: data.finalPaidNote,
       },
       include: {
         status: true
@@ -307,6 +311,8 @@ export class OrdersService {
     notes?: string;
     updatedBy: string;
     userRole: string;
+    finalPaidAmount?: number;
+    finalPaidNote?: string;
   }) {
     const existingOrder = await prisma.order.findUnique({
       where: { id },
@@ -360,6 +366,20 @@ export class OrdersService {
     // Handle notes
     if (data.notes !== undefined) {
       updateData.notes = data.notes ? sanitizeHtml(data.notes) : null;
+    }
+
+    if (data.finalPaidAmount !== undefined) {
+      updateData.finalPaidAmount = data.finalPaidAmount;
+      auditLogs.push({
+        action: 'FINAL_PAID_AMOUNT_CHANGED',
+        fieldName: 'finalPaidAmount',
+        oldValue: existingOrder.finalPaidAmount?.toString() || null,
+        newValue: data.finalPaidAmount?.toString() || null
+      });
+    }
+
+    if (data.finalPaidNote !== undefined) {
+      updateData.finalPaidNote = data.finalPaidNote ? sanitizeHtml(data.finalPaidNote) : null;
     }
 
     // Validate and merge custom fields

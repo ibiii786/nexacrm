@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { formatZonedDate } from '../../utils/dateUtils';
-import { formatCustomField } from '../../utils/formatters';
+import { formatCustomField, getFieldValue } from '../../utils/formatters';
 
 interface OrdersKanbanProps {
   orders: any[];
@@ -95,7 +95,7 @@ export function OrdersKanban({ orders, statuses, fields = [], onOrderUpdated }: 
                 {fields.length > 0 && (
                   <div className="mt-3 space-y-1 border-t border-slate-100 dark:border-slate-700/50 pt-2">
                     {fields.map(f => {
-                      const val = order.customFields?.[f.name];
+                      const val = getFieldValue(order, f.name);
                       if (!val) return null;
                       return (
                         <div key={f.id} className="flex justify-between text-xs">

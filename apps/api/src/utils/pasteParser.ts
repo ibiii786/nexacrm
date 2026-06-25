@@ -140,7 +140,8 @@ const SYNONYMS: Record<string, string[]> = {
   deliveryAddress: ['address', 'shipping', 'location', 'ship', 'dest'],
   productsOrdered: ['product', 'item', 'order', 'goods'],
   price: ['price', 'total', 'amount', 'cost', 'sum', 'pay'],
-  notes: ['note', 'remark', 'comment', 'instruction', 'extra']
+  notes: ['note', 'remark', 'comment', 'instruction', 'extra'],
+  finalPaidAmount: ['final paid', 'actual paid', 'paid amount', 'amount paid', 'final price', 'actual price', 'settled']
 };
 
 /**

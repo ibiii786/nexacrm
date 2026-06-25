@@ -12,7 +12,7 @@ import {
 import { ChevronLeftIcon, ChevronRightIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatZonedDate, isSameZonedDay, getZonedToday } from '../../utils/dateUtils';
-import { formatCustomField } from '../../utils/formatters';
+import { formatCustomField, getFieldValue } from '../../utils/formatters';
 
 interface OrdersCalendarProps {
   orders: any[];
@@ -155,7 +155,6 @@ export function OrdersCalendar({ orders, statuses, fields = [], currentDate, onN
             <div className="overflow-y-auto p-4 space-y-2 flex-1">
               {orders.filter(o => o.deliveryDate && isSameZonedDay(o.deliveryDate, selectedDay)).map(order => {
                 const status = statuses.find(s => s.id === order.statusId);
-                const customFields = order.customFields || {};
                 
                 return (
                   <button
@@ -184,7 +183,7 @@ export function OrdersCalendar({ orders, statuses, fields = [], currentDate, onN
                       {fields.length > 0 && (
                         <div className="mt-2 space-y-1">
                           {fields.map(f => {
-                            const val = customFields[f.name];
+                            const val = getFieldValue(order, f.name);
                             if (!val) return null;
                             return (
                               <div key={f.id} className="flex text-xs">

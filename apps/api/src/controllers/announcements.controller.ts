@@ -43,7 +43,7 @@ export class AnnouncementsController {
   }
 
   async createAnnouncement(req: Request, res: Response) {
-    const data = createSchema.parse(req.body);
+    const data = createSchema.parse(req.body) as any;
     const userId = (req as any).user.id;
     
     const announcement = await announcementsService.createAnnouncement(data, userId);

@@ -215,6 +215,8 @@ model Order {
   customFields  Json      @default("{}") @map("custom_fields") @db.JsonB
   notes         String?   @db.Text
   parsedRawText String?   @map("parsed_raw_text") @db.Text
+  finalPaidAmount Decimal? @map("final_paid_amount") @db.Decimal(10, 2)
+  finalPaidNote   String?  @map("final_paid_note") @db.Text
 
   status      Status          @relation(fields: [statusId], references: [id])
   creator     User            @relation("OrderCreator", fields: [createdBy], references: [id])

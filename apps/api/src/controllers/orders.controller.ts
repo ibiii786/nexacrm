@@ -104,7 +104,7 @@ export class OrdersController {
     try {
       const currentUser = (req as any).user;
       const createdBy = currentUser.id;
-      let { statusId, deliveryDate, customFields, notes, parsedRawText } = req.body;
+      let { statusId, deliveryDate, customFields, notes, parsedRawText, finalPaidAmount, finalPaidNote } = req.body;
 
       const isAdminOrSuper = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
 
@@ -128,7 +128,9 @@ export class OrdersController {
         customFields: customFields || {},
         notes,
         createdBy,
-        parsedRawText
+        parsedRawText,
+        finalPaidAmount: isAdminOrSuper ? finalPaidAmount : undefined,
+        finalPaidNote: isAdminOrSuper ? finalPaidNote : undefined,
       });
 
       return sendSuccess(res, order, undefined, 201);
@@ -143,7 +145,7 @@ export class OrdersController {
   static async updateOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { statusId, deliveryDate, customFields, notes } = req.body;
+      const { statusId, deliveryDate, customFields, notes, finalPaidAmount, finalPaidNote } = req.body;
 
       if (statusId !== undefined) {
         const isAdminOrSuper = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
@@ -162,6 +164,8 @@ export class OrdersController {
         notes,
         updatedBy: user.id,
         userRole: user.role,
+        finalPaidAmount: (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? finalPaidAmount : undefined,
+        finalPaidNote: (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? finalPaidNote : undefined,
       });
 
       return sendSuccess(res, order);
@@ -276,6 +280,14 @@ export class OrdersController {
       const fields = await prisma.field.findMany({
         where: { isVisible: true, isArchived: false },
         select: { id: true, name: true, label: true, type: true },
+      });
+
+      // Inject native fields that parser should recognize
+      fields.push({
+        id: 'finalPaidAmount',
+        name: 'finalPaidAmount',
+        label: 'Final Paid Amount',
+        type: 'NUMBER'
       });
 
       const result = parsePasteText(rawText, fields);
