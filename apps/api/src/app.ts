@@ -74,14 +74,29 @@ app.get('/api/system/migrate', async (req, res) => {
     const prisma = require('./config/database').default;
     // Add columns directly via raw SQL if they don't exist
     try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "Order" ADD COLUMN "finalPaidAmount" DECIMAL(65,3);`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "orders" ADD COLUMN "finalPaidAmount" DECIMAL(65,3);`);
     } catch (e) {
       console.log('finalPaidAmount might already exist', e);
     }
     try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "Order" ADD COLUMN "finalPaidNote" TEXT;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "orders" ADD COLUMN "finalPaidNote" TEXT;`);
     } catch (e) {
       console.log('finalPaidNote might already exist', e);
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "orders" ADD COLUMN "parsed_raw_text" TEXT;`);
+    } catch (e) {
+      console.log('parsed_raw_text might already exist', e);
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "orders" ADD COLUMN "final_paid_amount" DECIMAL(65,3);`);
+    } catch (e) {
+      console.log('final_paid_amount might already exist', e);
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "orders" ADD COLUMN "final_paid_note" TEXT;`);
+    } catch (e) {
+      console.log('final_paid_note might already exist', e);
     }
     
     // Also try the official deploy if possible
