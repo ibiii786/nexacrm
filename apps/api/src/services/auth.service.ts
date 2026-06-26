@@ -174,59 +174,6 @@ export class AuthService {
     }
   }
 
-
-  static async forgotPassword(email: string) {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !user.isActive || user.deletedAt) {
-      // Don't leak user existence
-      return;
-    }
-
-    // Generate reset token
-    const token = crypto.randomBytes(32).toString('hex');
-    const resetTokenExp = new Date();
-    resetTokenExp.setHours(resetTokenExp.getHours() + 1); // 1 hour expiry
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetToken: token,
-        resetTokenExp
-      }
-    });
-    const resetLink = `${env.FRONTEND_URL}/reset-password?token=${token}`;
-    // Email sending removed. Normally we'd email resetLink here.
-  }
-
-  static async resetPassword(token: string, newPasswordPlain: string) {
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExp: {
-          gt: new Date()
-        }
-      }
-    });
-
-    if (!user) {
-      throw new Error('INVALID_TOKEN');
-    }
-
-    const passwordHash = await argon2.hash(newPasswordPlain);
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordHash,
-        resetToken: null,
-        resetTokenExp: null
-      }
-    });
-
-    // Revoke all existing sessions to force login with new password
-    await this.revokeAllUserSessions(user.id);
-  }
-
   /**
    * Generates a reset token and sends a password reset email.
    */
@@ -271,7 +218,7 @@ export class AuthService {
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         resetToken: null,
         resetTokenExp: null,
       },

@@ -16,7 +16,11 @@ const envSchema = z.object({
 
   ENCRYPTION_KEY: z.string().min(32, 'ENCRYPTION_KEY must be at least 32 characters'),
 
-
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
 
   SUPER_ADMIN_EMAIL: z.string().email().default('admin@nexacrm.com'),
   SUPER_ADMIN_PASSWORD: z.string().min(8).default('NexaAdmin123!'),
