@@ -2,6 +2,7 @@ import * as argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { env } from '../config/env';
+import { emailService } from './email.service';
 import prisma from '../config/database';
 
 import { logger } from '../config/logger';
@@ -184,8 +185,6 @@ export class AuthService {
       return;
     }
 
-    const { emailService } = await import('./email.service');
-    const crypto = await import('crypto');
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExp = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
