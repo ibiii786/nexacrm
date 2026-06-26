@@ -16,7 +16,7 @@ import ProfilePage from './pages/profile/ProfilePage';
 import PayrollDashboard from './pages/payroll/PayrollDashboard';
 import EmployeesPage from './pages/payroll/EmployeesPage';
 import PayrollPeriodsPage from './pages/payroll/PayrollPeriodsPage';
-import AdvancesPage from './pages/payroll/AdvancesPage';
+import CommissionsPage from './pages/payroll/CommissionsPage';
 import FbAccountsPage from './pages/fb-accounts/FbAccountsPage';
 import FbAccountDetail from './pages/fb-accounts/FbAccountDetail';
 import AuditLogPage from './pages/admin/AuditLogPage';
@@ -96,7 +96,7 @@ function App() {
         <Route path="/payroll" element={<PayrollDashboard />} />
         <Route path="/payroll/employees" element={<EmployeesPage />} />
         <Route path="/payroll/periods" element={<PayrollPeriodsPage />} />
-        <Route path="/payroll/advances" element={<AdvancesPage />} />
+        <Route path="/payroll/commissions" element={<CommissionsPage />} />
 
         {/* FB Accounts Routes */}
         <Route path="/fb-accounts" element={<FbAccountsPage />} />

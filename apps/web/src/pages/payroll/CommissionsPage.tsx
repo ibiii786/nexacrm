@@ -6,12 +6,12 @@ import { Plus, Edit2, Trash2, Calendar, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 
-export default function AdvancesPage() {
-  const [advances, setAdvances] = useState<any[]>([]);
+export default function CommissionsPage() {
+  const [commissions, setCommissions] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAdvance, setEditingAdvance] = useState<any>(null);
+  const [editingCommission, setEditingCommission] = useState<any>(null);
   const navigate = useNavigate();
 
   // Form state
@@ -20,12 +20,12 @@ export default function AdvancesPage() {
   const [reason, setReason] = useState('');
   const [date, setDate] = useState('');
 
-  const fetchAdvances = async () => {
+  const fetchCommissions = async () => {
     try {
-      const res = await api.get('/payroll/advances');
-      setAdvances(res.data.data);
+      const res = await api.get('/payroll/commissions');
+      setCommissions(res.data.data);
     } catch (error) {
-      toast.error('Failed to load advances');
+      toast.error('Failed to load commissions');
     }
   };
 
@@ -39,7 +39,7 @@ export default function AdvancesPage() {
   };
 
   useEffect(() => {
-    Promise.all([fetchAdvances(), fetchEmployees()]).finally(() => setLoading(false));
+    Promise.all([fetchCommissions(), fetchEmployees()]).finally(() => setLoading(false));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,38 +52,38 @@ export default function AdvancesPage() {
         date: parseZonedDateInput(date) || getZonedToday().toISOString()
       };
 
-      if (editingAdvance) {
-        await api.put(`/payroll/advances/${editingAdvance.id}`, payload);
-        toast.success('Advance updated successfully');
+      if (editingCommission) {
+        await api.put(`/payroll/commissions/${editingCommission.id}`, payload);
+        toast.success('Commission updated successfully');
       } else {
-        await api.post('/payroll/advances', payload);
-        toast.success('Advance created successfully');
+        await api.post('/payroll/commissions', payload);
+        toast.success('Commission created successfully');
       }
       setIsModalOpen(false);
       resetForm();
-      fetchAdvances();
+      fetchCommissions();
     } catch (error) {
-      toast.error('Failed to save advance');
+      toast.error('Failed to save commission');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this advance?')) return;
+    if (!confirm('Are you sure you want to delete this commission?')) return;
     try {
-      await api.delete(`/payroll/advances/${id}`);
-      toast.success('Advance deleted successfully');
-      fetchAdvances();
+      await api.delete(`/payroll/commissions/${id}`);
+      toast.success('Commission deleted successfully');
+      fetchCommissions();
     } catch (error) {
-      toast.error('Failed to delete advance');
+      toast.error('Failed to delete commission');
     }
   };
 
-  const openEditModal = (advance: any) => {
-    setEditingAdvance(advance);
-    setEmployeeId(advance.employeeId);
-    setAmount(advance.amount.toString());
-    setReason(advance.reason || '');
-    setDate(formatZonedDate(advance.date, 'yyyy-MM-dd'));
+  const openEditModal = (commission: any) => {
+    setEditingCommission(commission);
+    setEmployeeId(commission.employeeId);
+    setAmount(commission.amount.toString());
+    setReason(commission.reason || '');
+    setDate(formatZonedDate(commission.date, 'yyyy-MM-dd'));
     setIsModalOpen(true);
   };
 
@@ -93,7 +93,7 @@ export default function AdvancesPage() {
   };
 
   const resetForm = () => {
-    setEditingAdvance(null);
+    setEditingCommission(null);
     setEmployeeId('');
     setAmount('');
     setReason('');
@@ -114,8 +114,8 @@ export default function AdvancesPage() {
             <ArrowLeft size={24} />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Payroll Advances</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-1">Manage salary advances for employees.</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Payroll Commissions</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">Manage salary commissions for employees.</p>
           </div>
         </div>
         <button 
@@ -123,7 +123,7 @@ export default function AdvancesPage() {
           className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
         >
           <Plus size={18} />
-          New Advance
+          New Commission
         </button>
       </div>
 
@@ -139,38 +139,38 @@ export default function AdvancesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-            {advances.map(advance => (
-              <tr key={advance.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+            {commissions.map(commission => (
+              <tr key={commission.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <td className="px-6 py-4">
-                  <div className="font-medium text-slate-900 dark:text-white">{advance.employee?.name}</div>
-                  <div className="text-sm text-slate-500">{advance.employee?.role}</div>
+                  <div className="font-medium text-slate-900 dark:text-white">{commission.employee?.name}</div>
+                  <div className="text-sm text-slate-500">{commission.employee?.role}</div>
                 </td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-slate-400" />
-                    {formatZonedDate(advance.date)}
+                    {formatZonedDate(commission.date)}
                   </div>
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                  ${advance.amount.toLocaleString()}
+                  ${commission.amount.toLocaleString()}
                 </td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                  {advance.reason}
+                  {commission.reason}
                 </td>
                 <td className="px-6 py-4 text-right space-x-2">
-                  <button onClick={() => openEditModal(advance)} className="p-2 text-slate-400 hover:text-primary transition-colors">
+                  <button onClick={() => openEditModal(commission)} className="p-2 text-slate-400 hover:text-primary transition-colors">
                     <Edit2 size={18} />
                   </button>
-                  <button onClick={() => handleDelete(advance.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                  <button onClick={() => handleDelete(commission.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
                     <Trash2 size={18} />
                   </button>
                 </td>
               </tr>
             ))}
-            {advances.length === 0 && (
+            {commissions.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                  No advances found.
+                  No commissions found.
                 </td>
               </tr>
             )}
@@ -183,7 +183,7 @@ export default function AdvancesPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 rounded-xl p-6 shadow-xl w-full max-w-md z-50 border border-slate-200 dark:border-slate-800">
             <Dialog.Title className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-              {editingAdvance ? 'Edit Advance' : 'New Advance'}
+              {editingCommission ? 'Edit Commission' : 'New Commission'}
             </Dialog.Title>
             
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -248,7 +248,7 @@ export default function AdvancesPage() {
                   type="submit"
                   className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
                 >
-                  {editingAdvance ? 'Save Changes' : 'Create Advance'}
+                  {editingCommission ? 'Save Changes' : 'Create Commission'}
                 </button>
               </div>
             </form>

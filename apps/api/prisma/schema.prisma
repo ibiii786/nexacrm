@@ -55,7 +55,7 @@ model User {
   // Payroll / FB
   createdEmployees Employee[]
   createdPayroll   PayrollPeriod[]
-  createdAdvances  Advance[]
+  createdCommissions Commission[]
   assignedFbAccs   FbAccount[]          @relation("FbAccountAssignee")
   createdFbAccs    FbAccount[]          @relation("FbAccountCreator")
   fbStatusChanges  FbAccountStatusLog[]
@@ -309,7 +309,7 @@ model Employee {
 
   creator        User?           @relation(fields: [createdBy], references: [id])
   payrollPeriods PayrollPeriod[]
-  advances       Advance[]
+  commissions       Commission[]
 
   @@map("employees")
 }
@@ -328,12 +328,12 @@ model PayrollPeriod {
 
   employee Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   creator  User?     @relation(fields: [createdBy], references: [id])
-  advances Advance[]
+  commissions Commission[]
 
   @@map("payroll_periods")
 }
 
-model Advance {
+model Commission {
   id              String    @id @default(uuid()) @db.Uuid
   employeeId      String    @map("employee_id") @db.Uuid
   amount          Decimal?  @db.Decimal(10, 2)
@@ -346,7 +346,7 @@ model Advance {
   payrollPeriod PayrollPeriod? @relation(fields: [payrollPeriodId], references: [id])
   creator       User?          @relation(fields: [createdBy], references: [id])
 
-  @@map("advances")
+  @@map("commissions")
 }
 
 model FbAccount {

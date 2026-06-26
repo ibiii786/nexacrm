@@ -91,9 +91,9 @@ export default function PayrollDashboard() {
           <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary mb-2">Payroll Periods</h3>
           <p className="text-slate-500 text-sm">Generate payslips and process salaries.</p>
         </Link>
-        <Link to="/payroll/advances" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm hover:border-primary dark:hover:border-primary transition-all group block">
-          <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary mb-2">Advances</h3>
-          <p className="text-slate-500 text-sm">Manage salary advances and deductions.</p>
+        <Link to="/payroll/commissions" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm hover:border-primary dark:hover:border-primary transition-all group block">
+          <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary mb-2">Commissions</h3>
+          <p className="text-slate-500 text-sm">Manage employee commissions and bonuses.</p>
         </Link>
       </div>
     </div>

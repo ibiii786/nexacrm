@@ -102,45 +102,45 @@ export class PayrollController {
     }
   }
 
-  // === ADVANCES ===
+  // === COMMISSIONS ===
 
-  async getAdvances(req: Request, res: Response, next: NextFunction) {
+  async getCommissions(req: Request, res: Response, next: NextFunction) {
     try {
       const filters: any = {
         employeeId: req.query.employeeId as string,
       };
       if (!filters.employeeId) delete filters.employeeId;
 
-      const advances = await payrollService.getAdvances(filters);
-      res.json({ success: true, data: advances });
+      const commissions = await payrollService.getCommissions(filters);
+      res.json({ success: true, data: commissions });
     } catch (error) {
       next(error);
     }
   }
 
-  async createAdvance(req: Request, res: Response, next: NextFunction) {
+  async createCommission(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user!.id;
-      const advance = await payrollService.createAdvance(req.body, userId);
-      res.status(201).json({ success: true, data: advance });
+      const commission = await payrollService.createCommission(req.body, userId);
+      res.status(201).json({ success: true, data: commission });
     } catch (error) {
       next(error);
     }
   }
 
-  async updateAdvance(req: Request, res: Response, next: NextFunction) {
+  async updateCommission(req: Request, res: Response, next: NextFunction) {
     try {
-      const advance = await payrollService.updateAdvance(req.params.id as string, req.body);
-      res.json({ success: true, data: advance });
+      const commission = await payrollService.updateCommission(req.params.id as string, req.body);
+      res.json({ success: true, data: commission });
     } catch (error) {
       next(error);
     }
   }
 
-  async deleteAdvance(req: Request, res: Response, next: NextFunction) {
+  async deleteCommission(req: Request, res: Response, next: NextFunction) {
     try {
-      await payrollService.deleteAdvance(req.params.id as string);
-      res.json({ success: true, message: 'Advance deleted' });
+      await payrollService.deleteCommission(req.params.id as string);
+      res.json({ success: true, message: 'Commission deleted' });
     } catch (error) {
       next(error);
     }

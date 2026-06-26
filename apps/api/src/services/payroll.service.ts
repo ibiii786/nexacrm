@@ -62,7 +62,7 @@ export class PayrollService {
       where: filters,
       include: {
         employee: true,
-        advances: true,
+        commissions: true,
       },
       orderBy: { periodStart: 'desc' },
     });
@@ -73,7 +73,7 @@ export class PayrollService {
       where: { id },
       include: {
         employee: true,
-        advances: true,
+        commissions: true,
       },
     });
   }
@@ -81,8 +81,8 @@ export class PayrollService {
   async createPayrollPeriod(data: any, createdBy: string) {
     const employee = await prisma.employee.findUnique({ where: { id: data.employeeId } });
     
-    // Fetch unassigned advances in this period
-    const advances = await prisma.advance.findMany({
+    // Fetch unassigned commissions in this period
+    const commissions = await prisma.commission.findMany({
       where: {
         employeeId: data.employeeId,
         date: { gte: new Date(data.periodStart), lte: new Date(data.periodEnd) },
@@ -90,12 +90,12 @@ export class PayrollService {
       }
     });
     
-    const advanceTotal = advances.reduce((sum, adv) => sum + Number(adv.amount || 0), 0);
+    const commissionTotal = commissions.reduce((sum, comm) => sum + Number(comm.amount || 0), 0);
 
     // Basic net salary calculation
     const grossSalary = data.grossSalary !== undefined ? data.grossSalary : (employee?.baseSalary || 0);
     const explicitDeductions: number = data.deductions ? Number(Object.values(data.deductions).reduce((acc: any, val: any) => acc + Number(val), 0)) : 0;
-    const deductionsTotal = explicitDeductions + advanceTotal;
+    const deductionsTotal = explicitDeductions + commissionTotal;
     
     // If the frontend explicitly passed a netSalary, respect it, otherwise calculate it
     const netSalary = data.netSalary !== undefined && data.netSalary !== null 
@@ -108,7 +108,7 @@ export class PayrollService {
         periodStart: new Date(data.periodStart),
         periodEnd: new Date(data.periodEnd),
         grossSalary: grossSalary,
-        deductions: data.deductions || { advances: advanceTotal },
+        deductions: data.deductions || { commissions: commissionTotal },
         netSalary: netSalary,
         status: data.status || 'PENDING',
         paidAt: data.status === 'PAID' ? new Date() : null,
@@ -119,10 +119,10 @@ export class PayrollService {
       }
     });
 
-    // Link advances to this period
-    if (advances.length > 0) {
-      await prisma.advance.updateMany({
-        where: { id: { in: advances.map(a => a.id) } },
+    // Link commissions to this period
+    if (commissions.length > 0) {
+      await prisma.commission.updateMany({
+        where: { id: { in: commissions.map(c => c.id) } },
         data: { payrollPeriodId: period.id }
       });
     }
@@ -168,10 +168,10 @@ export class PayrollService {
     return prisma.payrollPeriod.delete({ where: { id } });
   }
 
-  // === ADVANCES ===
+  // === COMMISSIONS ===
 
-  async getAdvances(filters?: { employeeId?: string }) {
-    return prisma.advance.findMany({
+  async getCommissions(filters?: { employeeId?: string }) {
+    return prisma.commission.findMany({
       where: filters,
       include: {
         employee: true,
@@ -181,8 +181,8 @@ export class PayrollService {
     });
   }
 
-  async createAdvance(data: any, createdBy: string) {
-    return prisma.advance.create({
+  async createCommission(data: any, createdBy: string) {
+    return prisma.commission.create({
       data: {
         employeeId: data.employeeId,
         amount: data.amount,
@@ -194,8 +194,8 @@ export class PayrollService {
     });
   }
 
-  async updateAdvance(id: string, data: any) {
-    return prisma.advance.update({
+  async updateCommission(id: string, data: any) {
+    return prisma.commission.update({
       where: { id },
       data: {
         amount: data.amount,
@@ -206,8 +206,8 @@ export class PayrollService {
     });
   }
 
-  async deleteAdvance(id: string) {
-    return prisma.advance.delete({ where: { id } });
+  async deleteCommission(id: string) {
+    return prisma.commission.delete({ where: { id } });
   }
 
   // === DASHBOARD ===

@@ -27,11 +27,11 @@ router.put('/periods/:id', payrollController.updatePayrollPeriod.bind(payrollCon
 router.delete('/periods/:id', payrollController.deletePayrollPeriod.bind(payrollController));
 router.get('/periods/:id/pdf', payrollController.exportSalarySlipPdf.bind(payrollController));
 
-// Advances
-router.get('/advances', payrollController.getAdvances.bind(payrollController));
-router.post('/advances', payrollController.createAdvance.bind(payrollController));
-router.put('/advances/:id', payrollController.updateAdvance.bind(payrollController));
-router.delete('/advances/:id', payrollController.deleteAdvance.bind(payrollController));
+// Commissions
+router.get('/commissions', payrollController.getCommissions.bind(payrollController));
+router.post('/commissions', payrollController.createCommission.bind(payrollController));
+router.put('/commissions/:id', payrollController.updateCommission.bind(payrollController));
+router.delete('/commissions/:id', payrollController.deleteCommission.bind(payrollController));
 
 // Exports
 router.get('/export/excel', payrollController.exportPayrollSummaryExcel.bind(payrollController));

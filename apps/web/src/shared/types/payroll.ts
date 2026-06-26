@@ -67,7 +67,7 @@ export interface PayrollPeriodUpdateInput {
   paidAt?: string;
 }
 
-export interface Advance {
+export interface Commission {
   id: string;
   employeeId: string;
   amount: number;
@@ -78,7 +78,7 @@ export interface Advance {
   employee?: Employee;
 }
 
-export interface AdvanceCreateInput {
+export interface CommissionCreateInput {
   employeeId: string;
   amount: number;
   reason?: string;
