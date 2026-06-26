@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
 // @ts-ignore
-const API_URL = import.meta.env.PROD ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
+export const API_URL = import.meta.env.PROD ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -46,8 +46,9 @@ api.interceptors.response.use(
 
         const { accessToken } = response.data.data;
 
-        // Update the access token in memory
-        useAuthStore.getState().setAuth(useAuthStore.getState().user!, accessToken);
+        // After successful refresh, just update the token:
+        useAuthStore.setState({ accessToken });
+        localStorage.setItem('token', accessToken);
 
         // Update the original request's authorization header and retry
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;

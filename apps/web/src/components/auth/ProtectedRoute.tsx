@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { api } from '../../lib/api';
+import { api, API_URL } from '../../lib/api';
 import { Layout } from '../layout/Layout';
+import axios from 'axios';
 
 export function ProtectedRoute() {
   const { isAuthenticated, isLoading, setLoading, clearAuth } = useAuthStore();
@@ -12,32 +13,43 @@ export function ProtectedRoute() {
     let mounted = true;
 
     const checkAuth = async () => {
-      if (!isAuthenticated) {
-        try {
-          // Attempt to get user info (this will trigger silent refresh if needed)
-          const response = await api.get('/auth/me');
-          if (mounted) {
-            // We don't have the token here directly, but the interceptor handles it
-            // Let's just set isAuthenticated to true if the request succeeds
-            // The access token is usually returned in the refresh, not the /me route, 
-            // but our axios instance handles token updates transparently
-            // Fetch settings before rendering routes
-            await useAuthStore.getState().fetchSettings();
-            
-            useAuthStore.setState({ 
-              isAuthenticated: true, 
-              user: response.data.data.user,
-              isLoading: false 
-            });
-          }
-        } catch (error) {
-          if (mounted) {
-            clearAuth();
-          }
-        }
-      } else {
+      // If we already have auth state in memory (e.g. navigating between routes), skip
+      if (isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Step 1: Attempt to get a fresh access token via the HttpOnly refresh cookie.
+        // This covers the hard-refresh case where the in-memory access token is gone.
+        const refreshResponse = await axios.post(
+          `${API_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        const { accessToken } = refreshResponse.data.data;
+
+        // Step 2: Fetch the current user with the new access token
+        const meResponse = await api.get('/auth/me', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+
+        // Step 3: Restore auth state
         if (mounted) {
-          setLoading(false);
+          await useAuthStore.getState().fetchSettings();
+          useAuthStore.setState({
+            accessToken,
+            isAuthenticated: true,
+            user: meResponse.data.data.user,
+            isLoading: false,
+          });
+          // Persist new access token
+          localStorage.setItem('token', accessToken);
+        }
+      } catch (error) {
+        // Refresh failed — token expired or no session. Send to login.
+        if (mounted) {
+          clearAuth();
         }
       }
     };
