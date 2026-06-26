@@ -225,5 +225,60 @@ export class AuthService {
 
     // Revoke all existing sessions to force login with new password
     await this.revokeAllUserSessions(user.id);
+  /**
+   * Generates a reset token and sends a password reset email.
+   */
+  static async forgotPassword(email: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.isActive || user.deletedAt) {
+      // Do not reveal if the user exists
+      return;
+    }
+
+    const { emailService } = await import('./email.service');
+    const crypto = await import('crypto');
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExp = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken, resetTokenExp },
+    });
+
+    await emailService.sendPasswordResetEmail(user.email, resetToken);
+  }
+
+  /**
+   * Resets the password using a valid reset token.
+   */
+  static async resetPassword(token: string, newPassword: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExp: { gt: new Date() },
+      },
+    });
+
+    if (!user || !user.isActive || user.deletedAt) {
+      throw new Error('INVALID_TOKEN');
+    }
+
+    const hashedPassword = await argon2.hash(newPassword);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExp: null,
+      },
+    });
+
+    // Revoke all existing sessions for security
+    await prisma.session.updateMany({
+      where: { userId: user.id },
+      data: { revokedAt: new Date() },
+    });
   }
 }
