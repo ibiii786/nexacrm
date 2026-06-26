@@ -13,8 +13,6 @@ export class SettingsService {
       language: 'en',
       editWindowMinutes: '30',
       sessionTimeoutMinutes: '30',
-      isPayrollEnabled: 'false',
-      isFbAccountsEnabled: 'false',
       theme: 'light',
       emailNotificationsEnabled: 'true',
       emailNotifyOrderStatusChanged: 'true',

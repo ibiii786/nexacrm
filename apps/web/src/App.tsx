@@ -23,8 +23,7 @@ import AuditLogPage from './pages/admin/AuditLogPage';
 import AnnouncementsPage from './pages/admin/AnnouncementsPage';
 
 function App() {
-  const isPayrollEnabled = useAuthStore(state => state.settings?.isPayrollEnabled) === 'true';
-  const isFbAccountsEnabled = useAuthStore(state => state.settings?.isFbAccountsEnabled) === 'true';
+
   const theme = useAuthStore(state => state.settings?.theme) || 'light';
   const sessionTimeoutMinutes = parseInt(useAuthStore(state => state.settings?.sessionTimeoutMinutes) || '30', 10);
   const clearAuth = useAuthStore(state => state.clearAuth);
@@ -94,22 +93,14 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/my-permissions" element={<MyPermissions />} />
         {/* Payroll Routes */}
-        {isPayrollEnabled && (
-          <>
-            <Route path="/payroll" element={<PayrollDashboard />} />
-            <Route path="/payroll/employees" element={<EmployeesPage />} />
-            <Route path="/payroll/periods" element={<PayrollPeriodsPage />} />
-            <Route path="/payroll/advances" element={<AdvancesPage />} />
-          </>
-        )}
+        <Route path="/payroll" element={<PayrollDashboard />} />
+        <Route path="/payroll/employees" element={<EmployeesPage />} />
+        <Route path="/payroll/periods" element={<PayrollPeriodsPage />} />
+        <Route path="/payroll/advances" element={<AdvancesPage />} />
 
         {/* FB Accounts Routes */}
-        {isFbAccountsEnabled && (
-          <>
-            <Route path="/fb-accounts" element={<FbAccountsPage />} />
-            <Route path="/fb-accounts/:id" element={<FbAccountDetail />} />
-          </>
-        )}
+        <Route path="/fb-accounts" element={<FbAccountsPage />} />
+        <Route path="/fb-accounts/:id" element={<FbAccountDetail />} />
 
         {/* Default redirect for authenticated users */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

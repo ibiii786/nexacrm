@@ -27,15 +27,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
-  // Read module toggles from user context or system settings
-  // Since we haven't added these to the authStore explicitly yet, we can check a generic settings object or fetch them
-  // For now, let's assume they are stored in the user object or we can use the useAuthStore state if we add them.
-  // Actually, wait, let me add settings to authStore, or simply fetch them here.
-  // We can add them to authStore or a new settingsStore. Let's create a settings store or just use local state with useEffect for now if not available.
-  // Alternatively, the AuthStore can hold global settings. Let's assume authStore has them or we just read from API.
-  // We'll update the store later, for now let's just assume we'll fetch them or they are in the authStore.
-  const isPayrollEnabled = useAuthStore(state => state.settings?.isPayrollEnabled) === 'true';
-  const isFbAccountsEnabled = useAuthStore(state => state.settings?.isFbAccountsEnabled) === 'true';
+
 
   const mainNavItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -53,8 +45,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   ];
 
   const optionalModules = [
-    ...(isPayrollEnabled ? [{ name: 'Payroll', path: '/payroll', icon: CreditCard }] : []),
-    ...(isFbAccountsEnabled ? [{ name: 'FB Accounts', path: '/fb-accounts', icon: Facebook }] : []),
+    { name: 'Payroll', path: '/payroll', icon: CreditCard },
+    { name: 'FB Accounts', path: '/fb-accounts', icon: Facebook }
   ];
 
   const NavItem = ({ item }: { item: any }) => (
