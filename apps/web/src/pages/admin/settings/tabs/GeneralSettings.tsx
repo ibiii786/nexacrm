@@ -112,11 +112,17 @@ export function GeneralSettings() {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Edit Window (minutes)
             </label>
-            <input 
-              type="number" 
+            <select 
               {...register('editWindowMinutes')}
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-            />
+            >
+              <option value="15">15 Minutes</option>
+              <option value="30">30 Minutes</option>
+              <option value="60">1 Hour</option>
+              <option value="1440">1 Day</option>
+              <option value="10080">1 Week</option>
+              <option value="43200">1 Month</option>
+            </select>
             <p className="mt-1 text-xs text-slate-500">How long users can edit their own orders after creation.</p>
             {errors.editWindowMinutes && <p className="mt-1 text-sm text-red-600">{errors.editWindowMinutes.message}</p>}
           </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayrollPeriodModal } from '../../components/payroll/PayrollPeriodModal';
 import { formatZonedDate } from '../../utils/dateUtils';
@@ -51,6 +51,17 @@ export default function PayrollPeriodsPage() {
       link.remove();
     } catch (error) {
       toast.error('Failed to download PDF');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this payroll period?')) return;
+    try {
+      await api.delete(`/payroll/periods/${id}`);
+      toast.success('Payroll period deleted successfully');
+      fetchPeriods();
+    } catch (error) {
+      toast.error('Failed to delete payroll period');
     }
   };
 
@@ -130,7 +141,7 @@ export default function PayrollPeriodsPage() {
                     {formatZonedDate(period.periodStart)} - {formatZonedDate(period.periodEnd)}
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono">
-                    ${Number(period.netSalary || 0).toLocaleString()}
+                    {period.employee?.currency || 'PKR'} {Number(period.netSalary || 0).toLocaleString()}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -151,6 +162,13 @@ export default function PayrollPeriodsPage() {
                       className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       Download PDF
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDelete(period.id); }}
+                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                      title="Delete"
+                    >
+                      <Trash2 size={18} />
                     </button>
                   </td>
                 </tr>

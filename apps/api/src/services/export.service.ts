@@ -138,18 +138,20 @@ export class ExportService {
     doc.text(`Status: ${period.status}`);
     doc.moveDown();
 
-    doc.text(`Gross Salary: $${Number(period.grossSalary || 0).toFixed(2)}`);
+    const currency = period.employee?.currency || 'PKR';
+    doc.text(`Gross Salary: ${currency} ${Number(period.grossSalary || 0).toFixed(2)}`);
     
     const deductions = period.deductions as Record<string, any>;
     if (deductions && Object.keys(deductions).length > 0) {
-      doc.text('Deductions:');
+      doc.text('Deductions & Commissions:');
       for (const [key, val] of Object.entries(deductions)) {
-        doc.text(`  - ${key}: $${Number(val).toFixed(2)}`);
+        const displayKey = key === 'advances' ? 'commissions' : key;
+        doc.text(`  - ${displayKey}: ${currency} ${Number(val).toFixed(2)}`);
       }
     }
 
     doc.moveDown();
-    doc.fontSize(14).text(`Net Salary: $${Number(period.netSalary || 0).toFixed(2)}`, { underline: true });
+    doc.fontSize(14).text(`Net Salary: ${currency} ${Number(period.netSalary || 0).toFixed(2)}`, { underline: true });
 
     doc.end();
     return stream;

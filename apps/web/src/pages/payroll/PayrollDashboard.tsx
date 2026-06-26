@@ -63,7 +63,7 @@ export default function PayrollDashboard() {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Paid This Month</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">${stats.paidThisMonth.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">PKR {stats.paidThisMonth.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function PayrollDashboard() {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Payroll</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">${stats.pendingPayroll.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">PKR {stats.pendingPayroll.toLocaleString()}</p>
               </div>
             </div>
           </div>

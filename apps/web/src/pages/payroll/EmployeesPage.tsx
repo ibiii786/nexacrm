@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { EmployeeModal } from '../../components/payroll/EmployeeModal';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function EmployeesPage() {
@@ -48,6 +48,18 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this employee?')) return;
+    try {
+      await api.delete(`/payroll/employees/${id}`);
+      toast.success('Employee deleted successfully');
+      fetchEmployeesList();
+    } catch (error) {
+      toast.error('Failed to delete employee');
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -79,6 +91,7 @@ export default function EmployeesPage() {
               <th className="px-6 py-4 font-medium">Role</th>
               <th className="px-6 py-4 font-medium">Base Salary</th>
               <th className="px-6 py-4 font-medium">Status</th>
+              <th className="px-6 py-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -104,6 +117,15 @@ export default function EmployeesPage() {
                     }`}>
                       {emp.isActive ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button 
+                      onClick={(e) => handleDelete(emp.id, e)}
+                      className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                      title="Delete Employee"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </td>
                 </tr>
               ))

@@ -152,7 +152,7 @@ export default function CommissionsPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                  ${commission.amount.toLocaleString()}
+                  {commission.employee?.currency || 'PKR'} {commission.amount.toLocaleString()}
                 </td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                   {commission.reason}
@@ -203,7 +203,7 @@ export default function CommissionsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount ($)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount</label>
                 <input 
                   type="number"
                   required

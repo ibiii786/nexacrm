@@ -24,18 +24,18 @@ import AnnouncementsPage from './pages/admin/AnnouncementsPage';
 
 function App() {
 
-  const theme = useAuthStore(state => state.settings?.theme) || 'light';
+  const appearance = useAuthStore(state => state.userSettings?.appearance) || 'light';
   const sessionTimeoutMinutes = parseInt(useAuthStore(state => state.settings?.sessionTimeoutMinutes) || '30', 10);
   const clearAuth = useAuthStore(state => state.clearAuth);
   
   // Apply theme on load or change
   useEffect(() => {
-    if (theme === 'dark') {
+    if (appearance === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [theme]);
+  }, [appearance]);
 
   // Apply primary color
   const primaryColor = useAuthStore(state => state.settings?.primaryColor) || '#4f46e5'; // Default indigo-600

@@ -5,8 +5,7 @@ import { FieldsSettings } from './tabs/FieldsSettings';
 import { StatusesSettings } from './tabs/StatusesSettings';
 
 import { AppearanceSettings } from './tabs/AppearanceSettings';
-import { NotificationSettings } from './tabs/NotificationSettings';
-import { Settings, CheckSquare, Palette, List, Bell } from 'lucide-react';
+import { Settings, CheckSquare, Palette, List } from 'lucide-react';
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -21,7 +20,6 @@ export default function SettingsPage() {
       { id: 'statuses', label: 'Statuses', icon: List },
     ] : []),
     { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
   ];
 
   return (
@@ -64,7 +62,6 @@ export default function SettingsPage() {
             {activeTab === 'statuses' && <StatusesSettings />}
 
             { activeTab === 'appearance' && <AppearanceSettings />}
-            { activeTab === 'notifications' && <NotificationSettings />}
           </div>
         </div>
       </div>
