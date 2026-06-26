@@ -21,7 +21,7 @@ export function authorize(requiredPermissions: PermissionName[]) {
         return next();
       }
 
-      // Resolve effective permissions from Redis/DB
+      // Resolve effective permissions from DB
       const effectivePermissions = await PermissionsService.getEffectivePermissions(user.id);
 
       const hasPermission = requiredPermissions.some(perm => 

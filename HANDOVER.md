@@ -1,16 +1,13 @@
 # NexaCRM — Handover State
 
 ## Last Updated
-[current date] — Optimization Stage 5 Completed
+[current date] — Optimization Stage 6 Completed
 
 ## What Was Just Completed
-Stage 5:
-- Copied all types, schemas, and constants from `packages/shared/src/` into both `apps/api/src/shared/` and `apps/web/src/shared/`.
-- Updated all import paths across both apps to use relative imports instead of the `@nexacrm/shared` workspace dependency.
-- Uninstalled `@nexacrm/shared` from both `apps/api` and `apps/web`.
-- Deleted the `packages/` directory at the root.
-- Removed `packages/*` from the root `package.json` workspaces array.
-- Verified TypeScript compilation (`npx tsc --noEmit`) passes cleanly in both `apps/api` and `apps/web`.
+Stage 6:
+- Reviewed `apps/api/src/routes/auth.routes.ts` and `apps/api/src/controllers/auth.controller.ts`. Confirmed that no `/register` or `/signup` endpoints exist. User creation is strictly limited to ADMIN and SUPER_ADMIN via `users.service.ts` (as verified).
+- Confirmed that `/forgot-password` and `/reset-password` endpoints exist and correctly rely only on standard DB/auth flows.
+- Reviewed `apps/api/src/middleware/authorize.ts` and confirmed it checks against standard permission lists resolved from the database. Cleaned up a stale comment referencing Redis.
 
 ## What Is Next
-Stage 6: Simplify auth flows.
+Stage 7: Strip Groups & Policies entirely from the backend.
