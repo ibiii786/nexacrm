@@ -2,12 +2,16 @@ import app from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';
 import prisma from './config/database';
+import { startAssignmentsCron } from './cron/assignments.cron';
 
 async function bootstrap() {
   try {
     // Test database connection
     await prisma.$connect();
     logger.info('Database connected successfully');
+
+    // Start background cron jobs
+    startAssignmentsCron();
 
     // Start Express server
     const server = app.listen(env.PORT, () => {
