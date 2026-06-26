@@ -4,8 +4,6 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { RequirePermission } from './components/auth/RequirePermission';
 import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/login';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import Dashboard from './pages/dashboard';
 import UsersPage from './pages/admin/iam/UsersPage';
 import MyPermissions from './pages/portal/MyPermissions';
@@ -66,8 +64,6 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
       
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>

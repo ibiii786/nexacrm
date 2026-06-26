@@ -116,18 +116,14 @@ export class AssignmentsService {
       }
     });
 
-    const sendEmail = (await settingsService.getSettingByKey('emailNotifyPermissionExpiring', 'true')) === 'true';
-    if (sendEmail) {
-      for (const e of expiring) {
-        notificationsService.createNotification({
-          userId: e.userId,
-          type: 'PERMISSION_EXPIRING',
-          title: `Permission Expiring Soon`,
-          body: `Your access to the permission "${e.permission.name}" will expire on ${e.expiresAt?.toLocaleDateString()}.`,
-          link: `/profile`,
-          sendEmailNotification: true,
-        }).catch(err => console.error(err));
-      }
+    for (const e of expiring) {
+      notificationsService.createNotification({
+        userId: e.userId,
+        type: 'PERMISSION_EXPIRING',
+        title: `Permission Expiring Soon`,
+        body: `Your access to the permission "${e.permission.name}" will expire on ${e.expiresAt?.toLocaleDateString()}.`,
+        link: `/profile`,
+      }).catch(err => console.error(err));
     }
     
     return expiring.length;

@@ -9,7 +9,6 @@ export interface CreateNotificationParams {
   title: string;
   body?: string;
   link?: string;
-  sendEmailNotification?: boolean;
 }
 
 export class NotificationsService {

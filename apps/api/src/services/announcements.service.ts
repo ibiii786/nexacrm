@@ -78,19 +78,15 @@ export class AnnouncementsService {
       },
     });
 
-    const sendEmail = (await settingsService.getSettingByKey('emailNotifyAnnouncementPosted', 'true')) === 'true';
-    if (sendEmail) {
-      const users = await prisma.user.findMany({ select: { id: true } });
-      for (const u of users) {
-        notificationsService.createNotification({
-          userId: u.id,
-          type: 'ANNOUNCEMENT_POSTED',
-          title: `New Announcement: ${data.title}`,
-          body: `A new announcement has been posted: ${data.title}`,
-          link: `/announcements`,
-          sendEmailNotification: true,
-        }).catch(e => console.error(e));
-      }
+    const users = await prisma.user.findMany({ select: { id: true } });
+    for (const u of users) {
+      notificationsService.createNotification({
+        userId: u.id,
+        type: 'ANNOUNCEMENT_POSTED',
+        title: `New Announcement: ${data.title}`,
+        body: `A new announcement has been posted: ${data.title}`,
+        link: `/announcements`,
+      }).catch(e => console.error(e));
     }
     
     return announcement;

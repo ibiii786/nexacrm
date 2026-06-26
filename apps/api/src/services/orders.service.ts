@@ -340,14 +340,12 @@ export class OrdersService {
 
       // Trigger Notification to the creator (if it wasn't the creator who updated it)
       if (existingOrder.createdBy !== data.updatedBy) {
-        const sendEmailNotification = (await settingsService.getSettingByKey('emailNotifyOrderStatusChanged', 'true')) === 'true';
         notificationsService.createNotification({
           userId: existingOrder.createdBy,
           type: 'ORDER_STATUS_CHANGED',
           title: `Order ${existingOrder.orderNumber} status changed`,
           body: `The status of your order ${existingOrder.orderNumber} was changed from ${existingOrder.status.name} to ${newStatus?.name || data.statusId}.`,
           link: `/orders/${id}`,
-          sendEmailNotification,
         }).catch(err => console.error('Failed to create notification', err));
       }
     }

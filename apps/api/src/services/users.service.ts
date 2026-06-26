@@ -123,17 +123,13 @@ export class UsersService {
       }
     });
 
-    const sendEmail = (await settingsService.getSettingByKey('emailNotifyAccountModified', 'true')) === 'true';
-    if (sendEmail) {
-      notificationsService.createNotification({
-        userId: id,
-        type: 'ACCOUNT_MODIFIED',
-        title: `Your account was updated`,
-        body: `Your account details or role have been updated by an administrator.`,
-        link: `/profile`,
-        sendEmailNotification: true,
-      }).catch(e => console.error(e));
-    }
+    notificationsService.createNotification({
+      userId: id,
+      type: 'ACCOUNT_MODIFIED',
+      title: `Your account was updated`,
+      body: `Your account details or role have been updated by an administrator.`,
+      link: `/profile`,
+    }).catch(e => console.error(e));
 
     return user;
   }

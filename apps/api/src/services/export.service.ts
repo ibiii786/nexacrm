@@ -145,8 +145,7 @@ export class ExportService {
     if (deductions && Object.keys(deductions).length > 0) {
       doc.text('Deductions & Commissions:');
       for (const [key, val] of Object.entries(deductions)) {
-        const displayKey = key === 'advances' ? 'commissions' : key;
-        doc.text(`  - ${displayKey}: ${currency} ${Number(val).toFixed(2)}`);
+        doc.text(`  - ${key}: ${currency} ${Number(val).toFixed(2)}`);
       }
     }
 

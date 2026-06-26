@@ -14,12 +14,6 @@ export class SettingsService {
       editWindowMinutes: '30',
       sessionTimeoutMinutes: '30',
       theme: 'light',
-      emailNotificationsEnabled: 'true',
-      emailNotifyOrderStatusChanged: 'true',
-      emailNotifyOrderAssigned: 'true',
-      emailNotifyAccountModified: 'true',
-      emailNotifyAnnouncementPosted: 'true',
-      emailNotifyPermissionExpiring: 'true',
     };
 
     const settingsMap = settings.reduce((acc: any, curr: any) => {
