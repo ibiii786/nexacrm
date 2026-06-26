@@ -168,10 +168,16 @@ export class UsersService {
 
     if (targetUser) {
       if (targetUser.role === 'SUPER_ADMIN') {
-        throw new Error('SUPER_ADMIN accounts cannot be deleted');
+        const err: any = new Error('SUPER_ADMIN accounts cannot be deleted');
+        err.statusCode = 403;
+        err.status = 403;
+        throw err;
       }
       if (deletedByRole === 'ADMIN' && targetUser.role === 'ADMIN') {
-        throw new Error('An ADMIN cannot delete another ADMIN account');
+        const err: any = new Error('An ADMIN cannot delete another ADMIN account');
+        err.statusCode = 403;
+        err.status = 403;
+        throw err;
       }
     }
 
