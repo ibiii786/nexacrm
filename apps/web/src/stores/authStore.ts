@@ -45,8 +45,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       
       // Apply appearance settings immediately
-      const theme = userSettingsRes.data.data.theme || 'light';
-      if (theme === 'dark') document.documentElement.classList.add('dark');
+      const appearance = userSettingsRes.data.data.appearance || 'light';
+      if (appearance === 'dark') document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
       
       const primaryColor = userSettingsRes.data.data.primaryColor || '#4f46e5';
@@ -93,8 +93,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const res = await api.get('/user-settings');
       set({ userSettings: res.data.data });
       
-      const theme = res.data.data.theme || 'light';
-      if (theme === 'dark') document.documentElement.classList.add('dark');
+      const appearance = res.data.data.appearance || 'light';
+      if (appearance === 'dark') document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
       
       const primaryColor = res.data.data.primaryColor || '#4f46e5';

@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../../stores/authStore';
 
 export function AppearanceSettings() {
-  const [theme, setTheme] = useState('light');
+  const [appearance, setAppearance] = useState('light');
   const [primaryColor, setPrimaryColor] = useState('#4f46e5');
   const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ export function AppearanceSettings() {
     const fetchSettings = async () => {
       try {
         const res = await api.get('/user-settings');
-        setTheme(res.data.data.theme || 'light');
+        setAppearance(res.data.data.appearance || 'light');
         setPrimaryColor(res.data.data.primaryColor || '#4f46e5');
       } catch (error) {
         toast.error('Failed to load user settings');
@@ -23,21 +23,21 @@ export function AppearanceSettings() {
     fetchSettings();
   }, []);
 
-  const handleThemeChange = async (newTheme: string) => {
-    setTheme(newTheme);
+  const handleAppearanceChange = async (newAppearance: string) => {
+    setAppearance(newAppearance);
     try {
-      await api.put('/user-settings', { theme: newTheme });
+      await api.put('/user-settings', { appearance: newAppearance });
       await useAuthStore.getState().fetchUserSettings();
-      toast.success('Theme preference saved');
+      toast.success('Appearance preference saved');
       
       // Update HTML class
-      if (newTheme === 'dark') {
+      if (newAppearance === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
     } catch (error) {
-      toast.error('Failed to update theme');
+      toast.error('Failed to update appearance');
     }
   };
 
@@ -60,11 +60,11 @@ export function AppearanceSettings() {
       <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Appearance</h2>
       
       <div>
-        <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">Theme Preference</h3>
+        <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">Appearance Preference</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <button 
-            onClick={() => handleThemeChange('light')}
-            className={`border-2 rounded-lg p-4 text-center transition-colors ${theme === 'light' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
+            onClick={() => handleAppearanceChange('light')}
+            className={`border-2 rounded-lg p-4 text-center transition-colors ${appearance === 'light' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
           >
             <div className="w-full h-20 bg-slate-100 rounded-md mb-2 border border-slate-200 flex flex-col overflow-hidden">
               <div className="h-4 bg-white border-b border-slate-200"></div>
@@ -77,8 +77,8 @@ export function AppearanceSettings() {
           </button>
 
           <button 
-            onClick={() => handleThemeChange('dark')}
-            className={`border-2 rounded-lg p-4 text-center transition-colors ${theme === 'dark' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
+            onClick={() => handleAppearanceChange('dark')}
+            className={`border-2 rounded-lg p-4 text-center transition-colors ${appearance === 'dark' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
           >
             <div className="w-full h-20 bg-slate-900 rounded-md mb-2 border border-slate-800 flex flex-col overflow-hidden">
               <div className="h-4 bg-slate-950 border-b border-slate-800"></div>
