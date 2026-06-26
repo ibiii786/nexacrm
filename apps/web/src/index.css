@@ -3,6 +3,29 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --border: #e2e8f0;
+    --primary: #4f46e5;
+    --primary-foreground: #ffffff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+  }
+  
+  .dark {
+    --background: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --primary: #4f46e5;
+    --primary-foreground: #ffffff;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+  }
+
   body {
     @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-white transition-colors duration-200;
   }
