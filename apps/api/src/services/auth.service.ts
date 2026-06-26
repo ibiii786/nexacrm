@@ -225,6 +225,8 @@ export class AuthService {
 
     // Revoke all existing sessions to force login with new password
     await this.revokeAllUserSessions(user.id);
+  }
+
   /**
    * Generates a reset token and sends a password reset email.
    */
