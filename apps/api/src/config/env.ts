@@ -22,11 +22,7 @@ const envSchema = z.object({
   SMTP_PASS: z.string().default(''),
   EMAIL_FROM: z.string().default('NexaCRM <noreply@nexacrm.com>'),
 
-  R2_ACCOUNT_ID: z.string().default(''),
-  R2_ACCESS_KEY_ID: z.string().default(''),
-  R2_SECRET_ACCESS_KEY: z.string().default(''),
-  R2_BUCKET_NAME: z.string().default('nexacrm-uploads'),
-  R2_PUBLIC_URL: z.string().default(''),
+
 
   SUPER_ADMIN_EMAIL: z.string().email().default('admin@nexacrm.com'),
   SUPER_ADMIN_PASSWORD: z.string().min(8).default('NexaAdmin123!'),
