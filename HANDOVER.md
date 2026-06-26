@@ -1,13 +1,14 @@
 # NexaCRM — Handover State
 
 ## Last Updated
-[current date] — Optimization Stage 3 Completed
+[current date] — Optimization Stage 4 Completed
 
 ## What Was Just Completed
-Stage 3:
-- Created `apps/api/src/cron/assignments.cron.ts`.
-- Implemented a native `setInterval` loop to delete expired `UserPermission` records every 10 minutes.
-- Updated `apps/api/src/index.ts` to import and call `startAssignmentsCron()` immediately after the database connection is established.
+Stage 4:
+- Conducted a global audit of the `apps/api/src/services` and `apps/api/src` directories to confirm no remaining Redis or caching logic exists in the data access layers.
+- Confirmed that files like `settings.service.ts` query Prisma directly with no cache layer.
+- Confirmed that `users.service.ts` relies on the `PermissionsService.invalidateUserCache` which was cleanly stubbed out as a no-op in Stage 2.
+- Verified TypeScript compilation (`npx tsc --noEmit`) passes successfully, proving all caching dependencies have been purged.
 
 ## What Is Next
-Stage 4: Drop caching logic globally in data access layers.
+Stage 5: Eliminate the redundant `packages/shared` workspace and consolidate types into `apps/api/` and `apps/web/`.
