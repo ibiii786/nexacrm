@@ -3,12 +3,6 @@ import app from '../../app';
 import { AuthService } from '../../services/auth.service';
 
 jest.mock('../../services/auth.service');
-jest.mock('../../config/redis', () => ({
-  get: jest.fn(),
-  set: jest.fn(),
-  setex: jest.fn(),
-  del: jest.fn(),
-}));
 jest.mock('../../config/database', () => ({
   user: {
     findUnique: jest.fn(),

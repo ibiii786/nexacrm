@@ -6,14 +6,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
 import { PERMISSIONS } from '../../shared';
 
-jest.mock('../../config/redis', () => ({
-  get: jest.fn().mockImplementation((key) => {
-    if (key.includes('11111111-1111-1111-1111-111111111111')) return Promise.resolve(JSON.stringify([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_CREATE]));
-    if (key.includes('22222222-2222-2222-2222-222222222222')) return Promise.resolve(JSON.stringify([PERMISSIONS.ORDERS_EDIT_OWN]));
-    return Promise.resolve(null);
-  }),
-  setex: jest.fn(),
-}));
+
 
 jest.mock('../../config/database', () => ({
   __esModule: true,
@@ -25,8 +18,22 @@ jest.mock('../../config/database', () => ({
         return Promise.resolve({ id: args.where.id, isActive: true, deletedAt: null, role });
       }),
     },
-    userPolicy: { findMany: jest.fn().mockResolvedValue([]) },
-    groupMember: { findMany: jest.fn().mockResolvedValue([]) }
+    userPermission: { 
+      findMany: jest.fn().mockImplementation((args) => {
+        if (args.where.userId === '11111111-1111-1111-1111-111111111111') {
+          return Promise.resolve([
+            { permission: { name: PERMISSIONS.ORDERS_EDIT_OWN } },
+            { permission: { name: PERMISSIONS.ORDERS_CREATE } }
+          ]);
+        }
+        if (args.where.userId === '22222222-2222-2222-2222-222222222222') {
+          return Promise.resolve([
+            { permission: { name: PERMISSIONS.ORDERS_EDIT_OWN } }
+          ]);
+        }
+        return Promise.resolve([]);
+      })
+    }
   }
 }));
 

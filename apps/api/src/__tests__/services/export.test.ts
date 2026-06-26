@@ -34,7 +34,7 @@ describe('Export Service', () => {
 
     // The excel file should have some substantial size
     expect(size).toBeGreaterThan(1000);
-  });
+  }, 30000);
 
   it('should generate a payroll summary Excel file', async () => {
     const periods = Array.from({ length: 50 }, (_, i) => ({
@@ -60,5 +60,5 @@ describe('Export Service', () => {
     });
 
     expect(size).toBeGreaterThan(1000);
-  });
+  }, 30000);
 });

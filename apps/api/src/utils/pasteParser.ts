@@ -265,14 +265,7 @@ export function parsePasteText(rawText: string, fields: FieldDefinition[]): Pars
     const parsed = splitLine(trimmedLine);
 
     if (!parsed) {
-      // No delimiter — could be a continuation of the previous field
-      if (lastMatchedFieldId) {
-        // Append as additional value to the last matched field
-        mappedFields[lastMatchedFieldId] = mappedFields[lastMatchedFieldId] || [];
-        mappedFields[lastMatchedFieldId].push(trimmedLine);
-      } else {
-        noteLines.push(trimmedLine);
-      }
+      noteLines.push(trimmedLine);
       continue;
     }
 

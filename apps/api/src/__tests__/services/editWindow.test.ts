@@ -25,11 +25,7 @@ jest.mock('../../config/database', () => ({
   },
 }));
 
-jest.mock('../../config/redis', () => ({
-  get: jest.fn(),
-  set: jest.fn(),
-  setex: jest.fn(),
-}));
+
 
 jest.mock('sanitize-html', () => ({
   __esModule: true,
