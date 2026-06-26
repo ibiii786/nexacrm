@@ -49,8 +49,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const iamNavItems = [
     { name: 'Users', path: '/admin/users', icon: Users },
-    { name: 'Groups', path: '/admin/groups', icon: Users }, // Replace with Group icon if desired
-    { name: 'Permissions', path: '/admin/permissions', icon: ShieldCheck },
     ...(user?.role === 'SUPER_ADMIN' ? [{ name: 'Audit Log', path: '/admin/audit-log', icon: ShieldAlert }] : []),
   ];
 

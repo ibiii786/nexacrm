@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
-import { PlusIcon, TrashIcon, BanIcon, ShieldPlusIcon } from 'lucide-react';
+import { PlusIcon, TrashIcon, BanIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { UserModal } from './UserModal';
-import { UserPermissionsModal } from './UserPermissionsModal';
-
 interface User {
   id: string;
   name: string;
@@ -20,7 +18,6 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-  const [permissionsModal, setPermissionsModal] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
 
   useEffect(() => {
     fetchUsers();
@@ -120,13 +117,6 @@ export default function UsersPage() {
                     <BanIcon size={18} />
                   </button>
                   <button 
-                    onClick={() => setPermissionsModal({ open: true, userId: user.id })}
-                    className="text-blue-500 hover:text-blue-700 transition-colors"
-                    title="Manage Permissions"
-                  >
-                    <ShieldPlusIcon size={18} />
-                  </button>
-                  <button 
                     onClick={() => confirmDelete(user.id)}
                     className="text-red-500 hover:text-red-600 transition-colors"
                     title="Delete User"
@@ -155,16 +145,11 @@ export default function UsersPage() {
         onCancel={() => setDeleteDialog({ open: false, userId: null })}
       />
 
+
       <UserModal 
         isOpen={isUserModalOpen} 
         onClose={() => setIsUserModalOpen(false)} 
         onSuccess={fetchUsers} 
-      />
-
-      <UserPermissionsModal
-        isOpen={permissionsModal.open}
-        onClose={() => setPermissionsModal({ open: false, userId: null })}
-        userId={permissionsModal.userId}
       />
     </div>
   );

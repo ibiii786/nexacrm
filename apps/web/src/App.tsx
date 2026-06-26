@@ -8,8 +8,6 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import Dashboard from './pages/dashboard';
 import UsersPage from './pages/admin/iam/UsersPage';
-import GroupsPage from './pages/admin/iam/GroupsPage';
-import PermissionsPage from './pages/admin/iam/PermissionsPage';
 import MyPermissions from './pages/portal/MyPermissions';
 import OrdersPage from './pages/orders/OrdersPage';
 import OrderDetailPage from './pages/orders/OrderDetailPage';
@@ -88,8 +86,6 @@ function App() {
         
         {/* Admin IAM Routes */}
         <Route path="/admin/users" element={<RequirePermission permissions={['users:view']}><UsersPage /></RequirePermission>} />
-        <Route path="/admin/groups" element={<RequirePermission permissions={['users:view']}><GroupsPage /></RequirePermission>} />
-        <Route path="/admin/permissions" element={<RequirePermission permissions={['users:manage']}><PermissionsPage /></RequirePermission>} />
         <Route path="/admin/audit-log" element={<RequirePermission permissions={['audit:view']}><AuditLogPage /></RequirePermission>} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
 
