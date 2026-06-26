@@ -49,11 +49,8 @@ model User {
   userSettings    UserSetting[]
 
   // IAM
-  groupMemberships   GroupMember[]
   userPermissions    UserPermission[] @relation("UserPermissionAssignee")
   grantedPermissions UserPermission[] @relation("UserPermissionGrantor")
-  createdGroups      Group[]          @relation("GroupCreator")
-  addedGroupMembers  GroupMember[]    @relation("GroupMemberAdder")
 
   // Payroll / FB
   createdEmployees Employee[]
@@ -89,50 +86,11 @@ model Permission {
   module      String? @db.VarChar
 
   userPermissions  UserPermission[]
-  groupPermissions GroupPermission[]
 
   @@map("permissions")
 }
 
-model Group {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar
-  description String?
-  createdBy   String?  @map("created_by") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  creator     User?             @relation("GroupCreator", fields: [createdBy], references: [id])
-  members     GroupMember[]
-  permissions GroupPermission[]
-
-  @@map("groups")
-}
-
-model GroupMember {
-  groupId String   @map("group_id") @db.Uuid
-  userId  String   @map("user_id") @db.Uuid
-  addedAt DateTime @default(now()) @map("added_at") @db.Timestamptz
-  addedBy String?  @map("added_by") @db.Uuid
-
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  adder User? @relation("GroupMemberAdder", fields: [addedBy], references: [id])
-
-  @@id([groupId, userId])
-  @@map("group_members")
-}
-
-model GroupPermission {
-  groupId      String   @map("group_id") @db.Uuid
-  permissionId String   @map("permission_id") @db.Uuid
-  addedAt      DateTime @default(now()) @map("added_at") @db.Timestamptz
-
-  group      Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([groupId, permissionId])
-  @@map("group_permissions")
-}
 
 model UserPermission {
   id           String    @id @default(uuid()) @db.Uuid

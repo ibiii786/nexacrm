@@ -92,7 +92,7 @@ export class UsersController {
         return sendError(res, 'FORBIDDEN', 'Only a Super Admin can delete another Super Admin', 403);
       }
 
-      await UsersService.deleteUser((req.params.id as string));
+      await UsersService.deleteUser((req.params.id as string), (req as any).user.role);
       
       await AuditService.log('DELETE_USER', 'User', (req.params.id as string), (req as any).user.id, null, req);
 

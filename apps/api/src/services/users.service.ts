@@ -160,7 +160,21 @@ export class UsersService {
     await AuthService.revokeAllUserSessions(id);
   }
 
-  static async deleteUser(id: string) {
+  static async deleteUser(id: string, deletedByRole?: string) {
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true }
+    });
+
+    if (targetUser) {
+      if (targetUser.role === 'SUPER_ADMIN') {
+        throw new Error('SUPER_ADMIN accounts cannot be deleted');
+      }
+      if (deletedByRole === 'ADMIN' && targetUser.role === 'ADMIN') {
+        throw new Error('An ADMIN cannot delete another ADMIN account');
+      }
+    }
+
     // Soft delete via Prisma $extends configuration
     await prisma.user.delete({
       where: { id }
