@@ -19,6 +19,7 @@ export function EmployeeModal({ isOpen, onClose, onSuccess, employee }: Employee
     role: '',
     joiningDate: '',
     baseSalary: '',
+    currency: 'PKR',
     paymentSchedule: 'MONTHLY',
     isActive: true,
   });
@@ -33,6 +34,7 @@ export function EmployeeModal({ isOpen, onClose, onSuccess, employee }: Employee
         role: employee.role || '',
         joiningDate: employee.joiningDate ? formatZonedDate(employee.joiningDate, 'yyyy-MM-dd') : '',
         baseSalary: employee.baseSalary?.toString() || '',
+        currency: employee.currency || 'PKR',
         paymentSchedule: employee.paymentSchedule || 'MONTHLY',
         isActive: employee.isActive ?? true,
       });
@@ -44,6 +46,7 @@ export function EmployeeModal({ isOpen, onClose, onSuccess, employee }: Employee
         role: '',
         joiningDate: '',
         baseSalary: '',
+        currency: 'PKR',
         paymentSchedule: 'MONTHLY',
         isActive: true,
       });
@@ -148,13 +151,23 @@ export function EmployeeModal({ isOpen, onClose, onSuccess, employee }: Employee
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Base Salary</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.baseSalary}
-                  onChange={e => setFormData({ ...formData, baseSalary: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
-                />
+                <div className="flex">
+                  <select
+                    value={formData.currency}
+                    onChange={e => setFormData({ ...formData, currency: e.target.value })}
+                    className="px-3 py-2 border border-r-0 border-slate-300 dark:border-slate-700 rounded-l-md bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
+                  >
+                    <option value="PKR">PKR</option>
+                    <option value="CAD">CAD</option>
+                  </select>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.baseSalary}
+                    onChange={e => setFormData({ ...formData, baseSalary: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-r-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Schedule</label>

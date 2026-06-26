@@ -302,6 +302,7 @@ model Employee {
   role            String?   @db.VarChar
   joiningDate     DateTime? @map("joining_date") @db.Date
   baseSalary      Decimal?  @map("base_salary") @db.Decimal(10, 2)
+  currency        String    @default("PKR") @db.VarChar
   paymentSchedule String?   @map("payment_schedule") @db.VarChar
   isActive        Boolean   @default(true) @map("is_active")
   createdBy       String?   @map("created_by") @db.Uuid

@@ -97,7 +97,7 @@ export default function EmployeesPage() {
                 >
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{emp.name}</td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{emp.role || '-'}</td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">${Number(emp.baseSalary || 0).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{emp.currency || 'PKR'} {Number(emp.baseSalary || 0).toLocaleString()}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       emp.isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
