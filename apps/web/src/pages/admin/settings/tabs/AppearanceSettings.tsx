@@ -5,7 +5,6 @@ import { useAuthStore } from '../../../../stores/authStore';
 
 export function AppearanceSettings() {
   const [appearance, setAppearance] = useState('light');
-  const [primaryColor, setPrimaryColor] = useState('#4f46e5');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,7 +12,6 @@ export function AppearanceSettings() {
       try {
         const res = await api.get('/user-settings');
         setAppearance(res.data.data.appearance || 'light');
-        setPrimaryColor(res.data.data.primaryColor || '#4f46e5');
       } catch (error) {
         toast.error('Failed to load user settings');
       } finally {
@@ -41,17 +39,7 @@ export function AppearanceSettings() {
     }
   };
 
-  const handleColorChange = async (newColor: string) => {
-    setPrimaryColor(newColor);
-    document.documentElement.style.setProperty('--primary', newColor);
-    try {
-      await api.put('/user-settings', { primaryColor: newColor });
-      await useAuthStore.getState().fetchUserSettings();
-      toast.success('Primary color updated');
-    } catch (error) {
-      toast.error('Failed to update primary color');
-    }
-  };
+
 
   if (loading) return <div>Loading...</div>;
 
@@ -92,32 +80,7 @@ export function AppearanceSettings() {
         </div>
       </div>
 
-      <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-        <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">Primary Brand Color</h3>
-        <div className="flex items-center gap-4">
-          <input
-            type="color"
-            value={primaryColor}
-            onChange={(e) => handleColorChange(e.target.value)}
-            className="w-12 h-12 rounded cursor-pointer border-0 p-0"
-          />
-          <div className="text-sm text-slate-600 dark:text-slate-400">
-            Select the primary color used for buttons, links, and highlights across the app.
-          </div>
-        </div>
-        <div className="mt-4 flex gap-2">
-          {/* Preset Colors */}
-          {['#4f46e5', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'].map(color => (
-            <button
-              key={color}
-              onClick={() => handleColorChange(color)}
-              className="w-8 h-8 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{ backgroundColor: color, borderColor: primaryColor === color ? '#cbd5e1' : 'transparent', '--tw-ring-color': color } as any}
-              title={color}
-            />
-          ))}
-        </div>
-      </div>
+
     </div>
   );
 }

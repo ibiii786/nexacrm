@@ -36,7 +36,10 @@ export function ProtectedRoute() {
 
         // Step 3: Restore auth state
         if (mounted) {
-          await useAuthStore.getState().fetchSettings();
+          await Promise.all([
+            useAuthStore.getState().fetchSettings(),
+            useAuthStore.getState().fetchUserSettings()
+          ]);
           useAuthStore.setState({
             accessToken,
             isAuthenticated: true,

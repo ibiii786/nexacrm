@@ -44,13 +44,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         userSettings: userSettingsRes.data.data 
       });
       
-      // Apply appearance settings immediately
       const appearance = userSettingsRes.data.data.appearance || 'light';
       if (appearance === 'dark') document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
-      
-      const primaryColor = userSettingsRes.data.data.primaryColor || '#4f46e5';
-      document.documentElement.style.setProperty('--primary', primaryColor);
       
     } catch (error) {
       console.error('Failed to fetch settings', error);
@@ -96,9 +92,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       const appearance = res.data.data.appearance || 'light';
       if (appearance === 'dark') document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
-      
-      const primaryColor = res.data.data.primaryColor || '#4f46e5';
-      document.documentElement.style.setProperty('--primary', primaryColor);
     } catch (error) {
       console.error('Failed to fetch user settings', error);
     }

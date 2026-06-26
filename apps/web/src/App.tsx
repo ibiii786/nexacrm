@@ -37,13 +37,7 @@ function App() {
     }
   }, [appearance]);
 
-  // Apply primary color
-  const primaryColor = useAuthStore(state => state.settings?.primaryColor) || '#4f46e5'; // Default indigo-600
-  useEffect(() => {
-    document.documentElement.style.setProperty('--primary', primaryColor);
-  }, [primaryColor]);
 
-  // Handle Session Timeout (Idle detection)
   const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
