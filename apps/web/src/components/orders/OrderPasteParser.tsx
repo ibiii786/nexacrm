@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { XIcon, FileTextIcon, CheckIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react';
-import { STANDARD_FIELDS } from '@nexacrm/shared';
+import { STANDARD_FIELDS } from '../../shared';
 import { useAuthStore } from '../../stores/authStore';
 import { parseZonedDateInput } from '../../utils/dateUtils';
 

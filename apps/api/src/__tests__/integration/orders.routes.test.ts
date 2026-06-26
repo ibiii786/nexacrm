@@ -4,7 +4,7 @@ import { OrdersService } from '../../services/orders.service';
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
 
-import { PERMISSIONS } from '@nexacrm/shared';
+import { PERMISSIONS } from '../../shared';
 
 jest.mock('../../services/orders.service');
 jest.mock('../../config/redis', () => ({

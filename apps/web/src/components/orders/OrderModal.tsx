@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { XIcon, FileTextIcon, CheckIcon, Loader2Icon } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STANDARD_FIELDS } from '@nexacrm/shared';
+import { STANDARD_FIELDS } from '../../shared';
 import { useAuthStore } from '../../stores/authStore';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { formatZonedDate, parseZonedDateInput } from '../../utils/dateUtils';

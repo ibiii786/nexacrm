@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User } from '@nexacrm/shared';
+import { User } from '../shared';
 import { api } from '../lib/api';
 
 interface AuthState {

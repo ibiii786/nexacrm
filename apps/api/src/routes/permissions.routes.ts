@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PermissionsController } from '../controllers/permissions.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
-import { PERMISSIONS } from '@nexacrm/shared';
+import { PERMISSIONS } from '../shared';
 
 const router = Router();
 

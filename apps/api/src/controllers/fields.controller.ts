@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { FieldsService } from '../services/fields.service';
 import { PermissionsService } from '../services/permissions.service';
 import { sendSuccess, sendError } from '../utils/responseHelpers';
-import { PERMISSIONS } from '@nexacrm/shared';
+import { PERMISSIONS } from '../shared';
 
 export class FieldsController {
   static async getFields(req: Request, res: Response, next: NextFunction) {

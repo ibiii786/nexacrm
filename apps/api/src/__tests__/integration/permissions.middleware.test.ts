@@ -4,7 +4,7 @@ import { authorize } from '../../middleware/authorize';
 import { authenticate } from '../../middleware/authenticate';
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
-import { PERMISSIONS } from '@nexacrm/shared';
+import { PERMISSIONS } from '../../shared';
 
 jest.mock('../../config/redis', () => ({
   get: jest.fn().mockImplementation((key) => {

@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ApiSuccessResponse, ApiErrorResponse } from '@nexacrm/shared';
+import { ApiSuccessResponse, ApiErrorResponse } from '../shared';
 
 /**
  * Standardized API response helpers (Section 12, Point 12)

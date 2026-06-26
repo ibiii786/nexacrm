@@ -10,7 +10,7 @@ import {
   STANDARD_FIELDS,
   DEFAULT_SETTINGS,
   DEFAULT_USER_PERMISSIONS,
-} from '@nexacrm/shared';
+} from '../src/shared';
 
 const prisma = new PrismaClient();
 

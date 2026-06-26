@@ -3,7 +3,7 @@ import { AuthController } from '../controllers/auth.controller';
 import { validateBody } from '../middleware/validateBody';
 import { authLimiter } from '../middleware/rateLimiter';
 import { authenticate } from '../middleware/authenticate';
-import { loginSchema } from '@nexacrm/shared';
+import { loginSchema } from '../shared';
 
 const router = Router();
 

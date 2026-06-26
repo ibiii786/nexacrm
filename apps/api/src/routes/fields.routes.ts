@@ -3,7 +3,7 @@ import { FieldsController } from '../controllers/fields.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { systemAuditLogger } from '../middleware/auditLogger';
-import { PERMISSIONS } from '@nexacrm/shared';
+import { PERMISSIONS } from '../shared';
 
 const router = Router();
 

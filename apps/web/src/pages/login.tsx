@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { loginSchema } from '@nexacrm/shared';
+import { loginSchema } from '../shared';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { Eye, EyeOff } from 'lucide-react';

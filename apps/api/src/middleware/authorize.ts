@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendError } from '../utils/responseHelpers';
-import { PermissionName } from '@nexacrm/shared';
+import { PermissionName } from '../shared';
 import { PermissionsService } from '../services/permissions.service';
 
 /**

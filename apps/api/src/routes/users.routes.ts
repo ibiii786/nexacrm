@@ -5,7 +5,7 @@ import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { validateBody } from '../middleware/validateBody';
 import { systemAuditLogger } from '../middleware/auditLogger';
-import { PERMISSIONS } from '@nexacrm/shared';
+import { PERMISSIONS } from '../shared';
 import { z } from 'zod';
 
 const userSchema = z.object({

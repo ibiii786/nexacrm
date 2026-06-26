@@ -1,4 +1,4 @@
-// @nexacrm/shared - Shared types, schemas, and constants
+// ./ - Shared types, schemas, and constants
 // This package is consumed by both apps/web and apps/api
 
 // Types
