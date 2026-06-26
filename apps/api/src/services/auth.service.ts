@@ -5,7 +5,7 @@ import { env } from '../config/env';
 import prisma from '../config/database';
 
 import { logger } from '../config/logger';
-import { sendEmail } from '../utils/email';
+
 
 export interface TokenPayload {
   userId: string;
@@ -195,13 +195,7 @@ export class AuthService {
       }
     });
     const resetLink = `${env.FRONTEND_URL}/reset-password?token=${token}`;
-
-    await sendEmail({
-      to: user.email,
-      subject: 'Password Reset Request',
-      text: `You requested a password reset. Please go to this link to reset your password: ${resetLink}`,
-      html: `<p>You requested a password reset.</p><p><a href="${resetLink}">Click here to reset your password</a></p>`
-    });
+    // Email sending removed. Normally we'd email resetLink here.
   }
 
   static async resetPassword(token: string, newPasswordPlain: string) {

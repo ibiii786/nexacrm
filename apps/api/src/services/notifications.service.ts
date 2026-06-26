@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { sendEmail } from '../utils/email';
+
 import { logger } from '../config/logger';
 import { settingsService } from './settings.service';
 
@@ -56,30 +56,7 @@ export class NotificationsService {
       },
     });
 
-    if (data.sendEmailNotification) {
-      // Check master toggle first
-      const globalEmailEnabled = await settingsService.getSettingByKey('emailNotificationsEnabled', 'true');
-      
-      if (globalEmailEnabled === 'true') {
-        // Look up user's email
-        const user = await prisma.user.findUnique({
-          where: { id: data.userId },
-          select: { email: true, name: true }
-        });
 
-        if (user && user.email) {
-          // Send email in background
-          sendEmail({
-            to: user.email,
-            subject: data.title,
-            text: `${data.body || ''}\n\nView details: ${data.link || ''}`,
-            html: `<p>Hello ${user.name},</p><p>${data.body || ''}</p><a href="${data.link || ''}">View details</a>`
-          }).catch(err => {
-            logger.error('Failed to send email notification', { error: err, notificationId: notification.id });
-          });
-        }
-      }
-    }
 
     return notification;
   }
