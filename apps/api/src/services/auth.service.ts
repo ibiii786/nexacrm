@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { env } from '../config/env';
 import prisma from '../config/database';
-import redis from '../config/redis';
+
 import { logger } from '../config/logger';
 import { sendEmail } from '../utils/email';
 
@@ -64,35 +64,20 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
     
-    // Also clear permission cache
-    await redis.del(`user:${userId}:permissions`);
+    // No Redis permission cache to clear anymore
   }
 
-  // Login
-  static async login(email: string, passwordPlain: string, ipAddress?: string, userAgent?: string) {
-    const lockoutKey = `lockout:${email}`;
-    const attempts = await redis.get(lockoutKey);
-    
-    if (attempts && parseInt(attempts, 10) >= 5) {
-      throw new Error('ACCOUNT_LOCKED');
-    }
-
-    const user = await prisma.user.findUnique({ where: { email } });
+  static async login(email: string, passwordPlain: string, ipAddress?: string, userAgent?: string) {    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.isActive || user.deletedAt) {
-      await this.incrementLoginAttempts(email);
       throw new Error('INVALID_CREDENTIALS');
     }
 
     const isValidPassword = await argon2.verify(user.passwordHash, passwordPlain);
 
     if (!isValidPassword) {
-      await this.incrementLoginAttempts(email);
       throw new Error('INVALID_CREDENTIALS');
     }
-
-    // Clear lockout on success
-    await redis.del(lockoutKey);
 
     // Update last login (Section 12, Point 16 tracking)
     await prisma.user.update({
@@ -189,14 +174,6 @@ export class AuthService {
     }
   }
 
-  private static async incrementLoginAttempts(email: string) {
-    const key = `lockout:${email}`;
-    const current = await redis.incr(key);
-    if (current === 1) {
-      // 15 minute lockout window
-      await redis.expire(key, 900);
-    }
-  }
 
   static async forgotPassword(email: string) {
     const user = await prisma.user.findUnique({ where: { email } });

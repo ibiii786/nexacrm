@@ -1,28 +1,20 @@
 import app from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';
-import { connectRedis } from './config/redis';
 import prisma from './config/database';
-import { setupAssignmentsWorker } from './workers/assignments.worker';
 
 async function bootstrap() {
   try {
-    // 1. Connect to Redis
-    await connectRedis();
-
-    // 2. Test database connection
+    // Test database connection
     await prisma.$connect();
     logger.info('Database connected successfully');
 
-    // 3. Start Background Workers
-    await setupAssignmentsWorker();
-
-    // 4. Start Express server
+    // Start Express server
     const server = app.listen(env.PORT, () => {
       logger.info(`🚀 Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
     });
 
-    // Graceful shutdown handlers
+    // Graceful shutdown
     const shutdown = async () => {
       logger.info('Shutting down server...');
       server.close();
