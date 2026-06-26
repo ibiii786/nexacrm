@@ -47,7 +47,8 @@ export default function OrderDetailPage() {
       toast.success('File uploaded successfully');
     } catch (error: any) {
       console.error('File upload failed', error);
-      toast.error(error.response?.data?.error?.message || 'Failed to upload file');
+      const message = error.response?.data?.error?.message || 'File upload failed. Please try again.';
+      toast.error(message);
     }
   };
 
