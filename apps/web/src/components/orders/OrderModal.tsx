@@ -70,8 +70,19 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
                }
              });
              setCustomFields(mapped);
-          } else if (!order || order.statusId !== statusId) {
-             setCustomFields({}); // clear custom fields if changing status
+          } else {
+             // Retain existing form values when changing status, and populate any overlapping fields from the original order
+             setCustomFields((prev: any) => {
+               const next = { ...prev };
+               if (order && order.customFields) {
+                 res.data.data.forEach((f: any) => {
+                   if (next[f.id] === undefined && order.customFields[f.name] !== undefined) {
+                     next[f.id] = order.customFields[f.name];
+                   }
+                 });
+               }
+               return next;
+             });
           }
         })
         .catch((err: any) => console.error('Failed to load status fields', err));
