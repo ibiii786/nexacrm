@@ -124,7 +124,7 @@ export const STANDARD_FIELDS: StandardField[] = [
   },
   {
     name: 'finalPaidAmount',
-    label: 'Final Paid Amount',
+    label: 'Final Paid Price',
     type: FieldType.NUMBER,
     isRequired: false,
     isSystem: false,

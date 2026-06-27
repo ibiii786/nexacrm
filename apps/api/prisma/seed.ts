@@ -173,10 +173,15 @@ async function main() {
     const isCopyable = field.name !== 'createdBy';
 
     if (existing) {
-      if (existing.isCopyable !== isCopyable) {
+      const updates: any = {};
+      if (existing.isCopyable !== isCopyable) updates.isCopyable = isCopyable;
+      if (existing.copyPosition !== field.position) updates.copyPosition = field.position;
+      if (existing.label !== field.label) updates.label = field.label;
+
+      if (Object.keys(updates).length > 0) {
         await prisma.field.update({
           where: { id: existing.id },
-          data: { isCopyable, copyPosition: field.position },
+          data: updates,
         });
       }
     } else {
@@ -192,7 +197,7 @@ async function main() {
           isCopyable: isCopyable,
           copyPosition: field.position,
           addedBy: superAdmin.id,
-          options: field.options || null,
+          options: field.options ? field.options : undefined,
         },
       });
     }
