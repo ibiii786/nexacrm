@@ -215,9 +215,9 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
   const canDelete = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || (user as any)?.effectivePermissions?.includes('orders:delete_own') || (user as any)?.effectivePermissions?.includes('orders:delete_any');
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden h-full flex flex-col">
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col h-full">
       {selectedIds.size > 0 && (
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800 p-3 flex items-center justify-between">
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800 p-3 flex items-center justify-between rounded-t-lg">
           <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
             {selectedIds.size} order(s) selected
           </span>
@@ -237,7 +237,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
       )}
       
       {/* Task 4 & 5: Layout Options & Hide Fields */}
-      <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+      <div className={`px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30 ${selectedIds.size === 0 ? 'rounded-t-lg' : ''}`}>
         <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">
           Layout Options
         </div>
