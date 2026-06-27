@@ -22,6 +22,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
   const [deliveryDate, setDeliveryDate] = useState('');
   const [customFields, setCustomFields] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
+  const [finalPaidAmount, setFinalPaidAmount] = useState('');
   
   // Parsed Data State
   const [unknownFields, setUnknownFields] = useState<Array<{candidateName: string, candidateValue: string}>>([]);
@@ -72,6 +73,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
     setCustomFields({});
     setDeliveryDate('');
     setNotes('');
+    setFinalPaidAmount('');
     setUnknownFields([]);
     setSelectedUnknowns(new Set());
     setError('');
@@ -88,6 +90,9 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
       
       setCustomFields(parsed.mappedFields);
       setNotes(parsed.notes);
+      if (parsed.mappedFields['finalPaidAmount']) {
+        setFinalPaidAmount(parsed.mappedFields['finalPaidAmount']);
+      }
       setUnknownFields(parsed.unknownFields);
       setSelectedUnknowns(new Set(parsed.unknownFields.map((u: any) => u.candidateName)));
       
@@ -146,7 +151,8 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
         deliveryDate: parseZonedDateInput(deliveryDate),
         notes,
         customFields: finalCustomFields,
-        parsedRawText: rawText
+        parsedRawText: rawText,
+        finalPaidAmount: finalPaidAmount ? parseFloat(finalPaidAmount) : undefined
       });
 
       onOrderCreated();
@@ -266,7 +272,7 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
               {/* Dynamic Fields for the selected status */}
               {[...statusFields]
                 .sort((a, b) => a.position - b.position)
-                .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
+                .filter(field => !['orderStatus', 'deliveryDate', 'notes', 'finalPaidAmount'].includes(field.name))
                 .map(field => {
                   const standardDef = STANDARD_FIELDS.find(sf => sf.name === field.name);
                   const isSystem = standardDef?.isSystem;
@@ -310,6 +316,16 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Final Paid Price</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={finalPaidAmount}
+                  onChange={e => setFinalPaidAmount(e.target.value)}
+                  className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
                 />
               </div>
             </form>

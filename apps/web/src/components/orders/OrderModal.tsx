@@ -24,6 +24,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
   const [deliveryDate, setDeliveryDate] = useState('');
   const [customFields, setCustomFields] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
+  const [finalPaidAmount, setFinalPaidAmount] = useState('');
   
   // Confirmation Dialog State
   const [showPriceConfirm, setShowPriceConfirm] = useState(false);
@@ -45,6 +46,11 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
           setDeliveryDate('');
         }
         setNotes(order.notes || '');
+        if (order.finalPaidAmount) {
+          setFinalPaidAmount(order.finalPaidAmount.toString());
+        } else {
+          setFinalPaidAmount('');
+        }
         // For custom fields, map existing keys to field IDs if possible, or just pass them as is.
         // Actually, order.customFields uses field NAMES.
         // We'll populate it below once statusFields are loaded.
@@ -107,6 +113,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
     setCustomFields({});
     setDeliveryDate('');
     setNotes('');
+    setFinalPaidAmount('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,22 +121,19 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
     setIsSubmitting(true);
 
     try {
-      const finalPaidAmountField = statusFields.find(f => f.name === 'finalPaidAmount');
-      const currentFinalPaidAmount = finalPaidAmountField ? customFields[finalPaidAmountField.id] : undefined;
-
       const payload = {
         statusId,
         deliveryDate: parseZonedDateInput(deliveryDate),
         notes: notes !== undefined ? notes : undefined,
         customFields: { ...(order?.customFields || {}), ...customFields },
-        finalPaidAmount: currentFinalPaidAmount ? parseFloat(currentFinalPaidAmount) : undefined,
+        finalPaidAmount: finalPaidAmount ? parseFloat(finalPaidAmount) : undefined,
       };
 
       const priceField = statusFields.find(f => f.name === 'price');
-      if (priceField && currentFinalPaidAmount) {
+      if (priceField && finalPaidAmount) {
         const oldFinalPaid = order?.finalPaidAmount?.toString();
         
-        if (currentFinalPaidAmount !== oldFinalPaid) {
+        if (finalPaidAmount !== oldFinalPaid) {
           setPendingPayload(payload);
           setShowPriceConfirm(true);
           return;
@@ -230,7 +234,7 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
             {/* Dynamic Fields for the selected status */}
             {[...statusFields]
               .sort((a, b) => a.position - b.position)
-              .filter(field => !['orderStatus', 'deliveryDate', 'notes'].includes(field.name))
+              .filter(field => !['orderStatus', 'deliveryDate', 'notes', 'finalPaidAmount'].includes(field.name))
               .map(field => {
                 const standardDef = STANDARD_FIELDS.find(sf => sf.name === field.name);
                 const isSystem = standardDef?.isSystem;
@@ -279,6 +283,17 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Final Paid Price</label>
+              <input
+                type="number"
+                step="0.01"
+                value={finalPaidAmount}
+                onChange={e => setFinalPaidAmount(e.target.value)}
+                className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
               />
             </div>
 
