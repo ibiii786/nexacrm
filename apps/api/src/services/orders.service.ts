@@ -148,9 +148,20 @@ export class OrdersService {
   static async getOrderParsedText(id: string): Promise<string | null> {
     const order = await prisma.order.findUnique({
       where: { id },
-      select: { parsedRawText: true },
+      select: { parsedRawText: true, notes: true },
     });
-    return order?.parsedRawText ?? null;
+    
+    if (!order) return null;
+    
+    let text = order.parsedRawText || '';
+    if (order.notes && order.notes.trim() !== '') {
+      const plainTextNotes = order.notes.replace(/<[^>]*>?/gm, '').trim();
+      if (plainTextNotes) {
+        text += (text ? '\n\n' : '') + `Notes: ${plainTextNotes}`;
+      }
+    }
+    
+    return text || null;
   }
 
   static async getOrderCopyText(id: string) {
