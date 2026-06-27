@@ -291,7 +291,23 @@ export default function OrdersPage() {
         {viewMode === 'list' && (
           <>
             <div className="flex-1 min-h-0">
-              <OrdersTable orders={orders} statuses={statuses} fields={fields} onOrderUpdated={fetchOrders} />
+              {orders.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="text-slate-400 mb-2">
+                    <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">No orders found</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm text-center max-w-sm">
+                    {filterMode === 'createdToday' || filterMode === 'deliveryToday' 
+                      ? "No orders found for today." 
+                      : "No orders match your current filters or search terms."}
+                  </p>
+                </div>
+              ) : (
+                <OrdersTable orders={orders} statuses={statuses} fields={fields} onOrderUpdated={fetchOrders} />
+              )}
             </div>
             {(page > 1 || page < totalPages) && (
               <div className="p-4 flex justify-between items-center bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0">

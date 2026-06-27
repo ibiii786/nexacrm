@@ -96,10 +96,11 @@ export class OrdersService {
       where[field] = {};
       if (params?.startDate) where[field].gte = new Date(params.startDate);
       if (params?.endDate) {
-        // Treat endDate as inclusive of the full day
-        const end = new Date(params.endDate);
-        end.setHours(23, 59, 59, 999);
-        where[field].lte = end;
+        let endStr = params.endDate;
+        if (!endStr.includes('T')) {
+          endStr = `${endStr}T23:59:59.999Z`;
+        }
+        where[field].lte = new Date(endStr);
       }
     }
 
