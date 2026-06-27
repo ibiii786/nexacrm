@@ -157,8 +157,16 @@ export class OrdersController {
         }
       }
 
+      let finalStatusId = statusId;
+      if (statusId !== undefined) {
+        const isAdminOrSuper = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+        if (!isAdminOrSuper) {
+          return sendError(res, 'FORBIDDEN', 'Only Admin and Super Admin can change order status', 403);
+        }
+      }
+
       const order = await OrdersService.updateOrder((req.params.id as string), {
-        statusId: statusId !== undefined ? statusId : undefined,
+        statusId: finalStatusId !== undefined ? finalStatusId : undefined,
         deliveryDate: deliveryDate !== undefined ? (deliveryDate ? new Date(deliveryDate) : null) : undefined,
         customFields: customFields !== undefined ? customFields : undefined,
         notes: notes !== undefined ? notes : undefined,
@@ -187,10 +195,7 @@ export class OrdersController {
 
       const isAdminOrSuper = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
       if (!isAdminOrSuper) {
-        const permissions = await PermissionsService.getEffectivePermissions(user.id);
-        if (!permissions.includes('orders:manage_status')) {
-          return sendError(res, 'FORBIDDEN', 'You do not have permission to change order status', 403);
-        }
+        return sendError(res, 'FORBIDDEN', 'Only Admin and Super Admin can change order status', 403);
       }
 
       const order = await OrdersService.updateOrder((req.params.id as string), {
@@ -233,6 +238,11 @@ export class OrdersController {
       }
       if (!statusId) {
         return sendError(res, 'VALIDATION_ERROR', 'statusId is required');
+      }
+
+      const isAdminOrSuper = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+      if (!isAdminOrSuper) {
+        return sendError(res, 'FORBIDDEN', 'Only Admin and Super Admin can change order status', 403);
       }
 
       const results = await OrdersService.bulkUpdateStatus(ids, statusId, user.id, user.role);
