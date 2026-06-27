@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { getFieldValue } from '../../utils/formatters';
 
 interface NewEntriesWidgetProps {
   entries: any[];
@@ -27,6 +28,7 @@ export function NewEntriesWidget({ entries }: NewEntriesWidgetProps) {
               <tr>
                 <th className="px-6 py-3 font-medium">Order #</th>
                 <th className="px-6 py-3 font-medium">Customer</th>
+                <th className="px-6 py-3 font-medium hidden lg:table-cell">Product</th>
                 <th className="px-6 py-3 font-medium">Status</th>
                 <th className="px-6 py-3 font-medium hidden md:table-cell">Created By</th>
                 <th className="px-6 py-3 font-medium text-right">Created At</th>
@@ -41,7 +43,10 @@ export function NewEntriesWidget({ entries }: NewEntriesWidgetProps) {
                     </Link>
                   </td>
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                    {order.customFields?.['Customer Name'] || 'Unknown'}
+                    {getFieldValue(order, 'customerName') || 'Unknown'}
+                  </td>
+                  <td className="px-6 py-4 hidden lg:table-cell text-slate-600 dark:text-slate-400">
+                    {getFieldValue(order, 'product') || '-'}
                   </td>
                   <td className="px-6 py-4">
                     <Badge style={{ backgroundColor: order.status.color, color: '#fff' }}>

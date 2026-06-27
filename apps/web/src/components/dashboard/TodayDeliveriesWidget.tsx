@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/badge';
+import { getFieldValue } from '../../utils/formatters';
 
 interface TodayDeliveriesWidgetProps {
   deliveries: any[];
@@ -32,12 +33,15 @@ export function TodayDeliveriesWidget({ deliveries }: TodayDeliveriesWidgetProps
                   <Link to={`/orders?search=${order.orderNumber}`} className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
                     {order.orderNumber}
                   </Link>
-                  <p className="text-sm text-slate-900 dark:text-white mt-1">
-                    {order.customFields?.['Customer Name'] || 'Unknown'}
+                  <p className="text-sm text-slate-900 dark:text-white mt-1 font-medium">
+                    {getFieldValue(order, 'customerName') || 'Unknown'}
                   </p>
-                  {order.customFields?.['Delivery Address'] && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate max-w-[200px]" title={order.customFields['Delivery Address']}>
-                      {order.customFields['Delivery Address']}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {getFieldValue(order, 'product') || 'No product specified'}
+                  </p>
+                  {getFieldValue(order, 'deliveryAddress') && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate max-w-[200px]" title={getFieldValue(order, 'deliveryAddress')}>
+                      {getFieldValue(order, 'deliveryAddress')}
                     </p>
                   )}
                 </div>
