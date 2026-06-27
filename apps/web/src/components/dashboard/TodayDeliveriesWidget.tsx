@@ -37,7 +37,7 @@ export function TodayDeliveriesWidget({ deliveries }: TodayDeliveriesWidgetProps
                     {getFieldValue(order, 'customerName') || 'Unknown'}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    {getFieldValue(order, 'product') || 'No product specified'}
+                    {getFieldValue(order, 'productsOrdered') || 'No product specified'}
                   </p>
                   {getFieldValue(order, 'deliveryAddress') && (
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate max-w-[200px]" title={getFieldValue(order, 'deliveryAddress')}>

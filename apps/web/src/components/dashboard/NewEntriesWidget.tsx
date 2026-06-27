@@ -46,7 +46,7 @@ export function NewEntriesWidget({ entries }: NewEntriesWidgetProps) {
                     {getFieldValue(order, 'customerName') || 'Unknown'}
                   </td>
                   <td className="px-6 py-4 hidden lg:table-cell text-slate-600 dark:text-slate-400">
-                    {getFieldValue(order, 'product') || '-'}
+                    {getFieldValue(order, 'productsOrdered') || '-'}
                   </td>
                   <td className="px-6 py-4">
                     <Badge style={{ backgroundColor: order.status.color, color: '#fff' }}>
