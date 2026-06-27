@@ -12,7 +12,7 @@ export class OrdersController {
   static async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { statusId, search, startDate, endDate, page, limit } = req.query;
+      const { statusId, search, startDate, endDate, dateFilterType, page, limit } = req.query;
 
       let canViewAll = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
       if (!canViewAll) {
@@ -25,6 +25,7 @@ export class OrdersController {
         search: search as string,
         startDate: startDate as string,
         endDate: endDate as string,
+        dateFilterType: dateFilterType as any,
         page: page ? parseInt(page as string, 10) : undefined,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         viewingUserId: user.id,
@@ -39,7 +40,7 @@ export class OrdersController {
   static async exportOrdersExcel(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { statusId, search, startDate, endDate } = req.query;
+      const { statusId, search, startDate, endDate, dateFilterType } = req.query;
 
       let canViewAll = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
       if (!canViewAll) {
@@ -52,6 +53,7 @@ export class OrdersController {
         search: search as string,
         startDate: startDate as string,
         endDate: endDate as string,
+        dateFilterType: dateFilterType as any,
         // No pagination for export to export all matching records
         limit: 10000,
         viewingUserId: user.id,

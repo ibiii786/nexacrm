@@ -77,6 +77,7 @@ export class OrdersService {
     limit?: number;
     viewingUserId?: string;
     canViewAll?: boolean;
+    dateFilterType?: 'createdAt' | 'deliveryDate';
   }) {
     const where: any = { deletedAt: null };
     
@@ -91,13 +92,14 @@ export class OrdersService {
       ];
     }
     if (params?.startDate || params?.endDate) {
-      where.createdAt = {};
-      if (params?.startDate) where.createdAt.gte = new Date(params.startDate);
+      const field = params?.dateFilterType === 'deliveryDate' ? 'deliveryDate' : 'createdAt';
+      where[field] = {};
+      if (params?.startDate) where[field].gte = new Date(params.startDate);
       if (params?.endDate) {
         // Treat endDate as inclusive of the full day
         const end = new Date(params.endDate);
         end.setHours(23, 59, 59, 999);
-        where.createdAt.lte = end;
+        where[field].lte = end;
       }
     }
 

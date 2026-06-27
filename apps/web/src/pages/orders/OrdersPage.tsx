@@ -16,12 +16,10 @@ export default function OrdersPage() {
   const [statuses, setStatuses] = useState<any[]>([]);
   const [fields, setFields] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('list');
-  const defaultEndDate = getZonedToday().toISOString().split('T')[0];
-  const defaultStartDate = new Date(getZonedToday().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
+  const [filterMode, setFilterMode] = useState<'createdToday' | 'deliveryToday' | 'custom'>('createdToday');
   const [search, setSearch] = useState('');
-  const [startDate, setStartDate] = useState(defaultStartDate);
-  const [endDate, setEndDate] = useState(defaultEndDate);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isParserOpen, setIsParserOpen] = useState(false);
@@ -49,14 +47,31 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [search, startDate, endDate, page, viewMode, calendarDate]);
+  }, [search, startDate, endDate, filterMode, page, viewMode, calendarDate]);
 
   const fetchOrders = async () => {
     try {
-      let currentStartDate = startDate ? getZonedStartOfDayISO(startDate) : undefined;
-      let currentEndDate = endDate ? getZonedEndOfDayISO(endDate) : undefined;
+      let currentStartDate: string | undefined;
+      let currentEndDate: string | undefined;
+      let dateFilterType: 'createdAt' | 'deliveryDate' = 'createdAt';
       let currentLimit = 50;
       let currentPage = page;
+
+      const todayIso = getZonedToday().toISOString().split('T')[0];
+
+      if (filterMode === 'createdToday') {
+        currentStartDate = getZonedStartOfDayISO(todayIso);
+        currentEndDate = getZonedEndOfDayISO(todayIso);
+        dateFilterType = 'createdAt';
+      } else if (filterMode === 'deliveryToday') {
+        currentStartDate = getZonedStartOfDayISO(todayIso);
+        currentEndDate = getZonedEndOfDayISO(todayIso);
+        dateFilterType = 'deliveryDate';
+      } else {
+        currentStartDate = startDate ? getZonedStartOfDayISO(startDate) : undefined;
+        currentEndDate = endDate ? getZonedEndOfDayISO(endDate) : undefined;
+        dateFilterType = 'createdAt';
+      }
 
       if (viewMode === 'calendar') {
         const monthStart = startOfMonth(calendarDate);
@@ -75,6 +90,7 @@ export default function OrdersPage() {
           search, 
           startDate: currentStartDate, 
           endDate: currentEndDate, 
+          dateFilterType,
           page: currentPage, 
           limit: currentLimit 
         } 
@@ -91,9 +107,28 @@ export default function OrdersPage() {
   const handleExport = () => {
     // Generate URL and trigger download
     const params = new URLSearchParams();
+    const todayIso = getZonedToday().toISOString().split('T')[0];
+    
     if (search) params.append('search', search);
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
+
+    if (filterMode === 'createdToday' || filterMode === 'deliveryToday') {
+      const isDelivery = filterMode === 'deliveryToday';
+      const start = getZonedStartOfDayISO(todayIso);
+      const end = getZonedEndOfDayISO(todayIso);
+      if (start) params.append('startDate', start);
+      if (end) params.append('endDate', end);
+      params.append('dateFilterType', isDelivery ? 'deliveryDate' : 'createdAt');
+    } else {
+      if (startDate) {
+        const start = getZonedStartOfDayISO(startDate);
+        if (start) params.append('startDate', start);
+      }
+      if (endDate) {
+        const end = getZonedEndOfDayISO(endDate);
+        if (end) params.append('endDate', end);
+      }
+      params.append('dateFilterType', 'createdAt');
+    }
     
     // In a real app, you might want to use a token if needed, but since it's a direct download URL,
     // often cookies are used or a short-lived token. For now, we will just open the URL.
@@ -154,22 +189,61 @@ export default function OrdersPage() {
             />
           </div>
 
-          <div className="flex gap-2 items-center">
-            <input 
-              type="date"
-              data-testid="orders-start-date"
-              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
-            />
-            <span className="text-slate-400 text-sm">to</span>
-            <input 
-              type="date"
-              data-testid="orders-end-date"
-              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
-            />
+          <div className="flex flex-col gap-2 items-end">
+            <div className="flex gap-4 items-center mr-1">
+              <label className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 font-medium cursor-pointer select-none">
+                <input 
+                  type="radio" 
+                  name="filterMode" 
+                  checked={filterMode === 'createdToday'} 
+                  onChange={() => {
+                    setFilterMode('createdToday');
+                    setStartDate('');
+                    setEndDate('');
+                  }}
+                  className="text-primary focus:ring-primary h-4 w-4"
+                />
+                Created Today
+              </label>
+              <label className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 font-medium cursor-pointer select-none">
+                <input 
+                  type="radio" 
+                  name="filterMode" 
+                  checked={filterMode === 'deliveryToday'} 
+                  onChange={() => {
+                    setFilterMode('deliveryToday');
+                    setStartDate('');
+                    setEndDate('');
+                  }}
+                  className="text-primary focus:ring-primary h-4 w-4"
+                />
+                Delivery Today
+              </label>
+            </div>
+
+            <div className="flex gap-2 items-center">
+              <input 
+                type="date"
+                data-testid="orders-start-date"
+                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                value={startDate}
+                onChange={e => {
+                  setFilterMode('custom');
+                  setStartDate(e.target.value);
+                }}
+              />
+              <span className="text-slate-400 text-sm">to</span>
+              <input 
+                type="date"
+                data-testid="orders-end-date"
+                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                value={endDate}
+                onChange={e => {
+                  setFilterMode('custom');
+                  setEndDate(e.target.value);
+                }}
+              />
+            </div>
           </div>
 
           <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-md">
