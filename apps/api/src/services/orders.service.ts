@@ -191,7 +191,10 @@ export class OrdersService {
     }
 
     if (order.notes && order.notes.trim() !== '') {
-      lines.push(`Notes: ${order.notes.trim()}`);
+      const plainTextNotes = order.notes.replace(/<[^>]*>?/gm, '').trim();
+      if (plainTextNotes) {
+        lines.push(`Notes: ${plainTextNotes}`);
+      }
     }
 
     return lines.join('\n');

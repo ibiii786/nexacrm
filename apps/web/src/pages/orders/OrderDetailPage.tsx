@@ -67,11 +67,27 @@ export default function OrderDetailPage() {
     }
   };
 
+  async function copyToClipboard(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+  }
+
   const handleCopyParsedText = async () => {
     try {
       const { data } = await api.get(`/orders/${id}/parsed-text`, { responseType: 'text' });
       const textToCopy = typeof data === 'string' ? data : data.data || data;
-      await navigator.clipboard.writeText(textToCopy);
+      await copyToClipboard(textToCopy);
       toast.success('Original order details copied');
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -86,9 +102,8 @@ export default function OrderDetailPage() {
   const handleCopyOrder = async () => {
     try {
       const { data } = await api.get(`/orders/${id}/copy-text`);
-      // It returns plain text, so data might just be the string, depending on axios response
       const textToCopy = typeof data === 'string' ? data : data.data || data;
-      await navigator.clipboard.writeText(textToCopy);
+      await copyToClipboard(textToCopy);
       toast.success('Order details copied to clipboard');
     } catch (error) {
       console.error('Failed to copy order text', error);
