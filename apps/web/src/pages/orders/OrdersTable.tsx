@@ -21,6 +21,52 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Task 5: Hide Fields Control
+  const [hiddenFields, setHiddenFields] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('orders_hidden_fields') || '[]'));
+    } catch { return new Set(); }
+  });
+  const [isHideFieldsOpen, setIsHideFieldsOpen] = useState(false);
+  const [tempHiddenFields, setTempHiddenFields] = useState<Set<string>>(new Set(hiddenFields));
+  const hideFieldsDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isHideFieldsOpen) {
+      setTempHiddenFields(new Set(hiddenFields));
+    }
+  }, [hiddenFields, isHideFieldsOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (hideFieldsDropdownRef.current && !hideFieldsDropdownRef.current.contains(event.target as Node)) {
+        setIsHideFieldsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleConfirmHideFields = () => {
+    setHiddenFields(new Set(tempHiddenFields));
+    localStorage.setItem('orders_hidden_fields', JSON.stringify(Array.from(tempHiddenFields)));
+    setIsHideFieldsOpen(false);
+  };
+
+  const handleResetHideFields = () => {
+    setHiddenFields(new Set());
+    localStorage.setItem('orders_hidden_fields', JSON.stringify([]));
+    setIsHideFieldsOpen(false);
+  };
+
+  const availableColumns = [
+    { id: 'orderNumber', label: 'Order #' },
+    ...fields.map(f => ({ id: `field_${f.id}`, label: f.label })),
+    { id: 'status', label: 'Status' },
+    { id: 'createdBy', label: 'Created By' },
+    { id: 'createdAt', label: 'Created At' }
+  ];
+
   // Task 4: Row Height Control
   const [rowHeight, setRowHeight] = useState<'compact' | 'default' | 'comfortable'>(() => {
     return (localStorage.getItem('orders_row_height') as any) || 'default';
@@ -190,12 +236,60 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
         </div>
       )}
       
-      {/* Task 4: Row Height Control Segmented Button */}
+      {/* Task 4 & 5: Layout Options & Hide Fields */}
       <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
         <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">
           Layout Options
         </div>
-        <div className="flex bg-slate-200 dark:bg-slate-700 p-0.5 rounded-lg">
+        <div className="flex items-center gap-4">
+          <div className="relative" ref={hideFieldsDropdownRef}>
+            <button 
+              onClick={() => setIsHideFieldsOpen(!isHideFieldsOpen)}
+              className="px-3 py-1.5 text-xs font-medium bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors shadow-sm"
+            >
+              Hide Fields
+            </button>
+            
+            {isHideFieldsOpen && (
+              <div className="absolute right-0 top-full mt-1 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 p-3">
+                <div className="text-sm font-semibold mb-2 text-slate-800 dark:text-white">Select fields to hide</div>
+                <div className="max-h-60 overflow-y-auto space-y-2 mb-3 pr-2">
+                  {availableColumns.map(col => (
+                    <label key={col.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input 
+                        type="checkbox"
+                        checked={tempHiddenFields.has(col.id)}
+                        onChange={(e) => {
+                          const next = new Set(tempHiddenFields);
+                          if (e.target.checked) next.add(col.id);
+                          else next.delete(col.id);
+                          setTempHiddenFields(next);
+                        }}
+                        className="rounded border-slate-300 text-primary focus:ring-primary"
+                      />
+                      {col.label}
+                    </label>
+                  ))}
+                </div>
+                <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                  <button 
+                    onClick={handleConfirmHideFields}
+                    className="flex-1 bg-primary text-white text-xs py-1.5 rounded-md hover:bg-primary/90 font-medium transition-colors"
+                  >
+                    Confirm
+                  </button>
+                  <button 
+                    onClick={handleResetHideFields}
+                    className="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs py-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 font-medium transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex bg-slate-200 dark:bg-slate-700 p-0.5 rounded-lg">
           <button 
             onClick={() => handleRowHeightChange('compact')} 
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${rowHeight === 'compact' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
@@ -215,6 +309,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
             Comfortable
           </button>
         </div>
+        </div>
       </div>
       <div ref={parentRef} className="overflow-auto flex-1">
         <table className="w-full text-left text-sm relative">
@@ -228,11 +323,12 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                   className="rounded border-slate-300 text-primary focus:ring-primary"
                 />
               </th>
-              {renderHeader('orderNumber', 'Order #', 120)}
-              {fields.map(f => renderHeader(`field_${f.id}`, f.label, 150))}
-              {renderHeader('status', 'Status', 120)}
-              {renderHeader('createdBy', 'Created By', 150)}
-              {renderHeader('createdAt', 'Created At', 150)}
+              {/* Task 5: Conditionally render headers */}
+              {!hiddenFields.has('orderNumber') && renderHeader('orderNumber', 'Order #', 120)}
+              {fields.map(f => !hiddenFields.has(`field_${f.id}`) && renderHeader(`field_${f.id}`, f.label, 150))}
+              {!hiddenFields.has('status') && renderHeader('status', 'Status', 120)}
+              {!hiddenFields.has('createdBy') && renderHeader('createdBy', 'Created By', 150)}
+              {!hiddenFields.has('createdAt') && renderHeader('createdAt', 'Created At', 150)}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -258,12 +354,15 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                       className="rounded border-slate-300 text-primary focus:ring-primary"
                     />
                   </td>
-                  <td className={`${paddingClass} font-medium truncate`} style={{ maxWidth: getColWidth('orderNumber', 120) }}>
-                    <Link to={`/orders/${order.id}`} data-testid={`order-link-${order.orderNumber}`} className="text-primary hover:underline">
-                      {order.orderNumber}
-                    </Link>
-                  </td>
+                  {!hiddenFields.has('orderNumber') && (
+                    <td className={`${paddingClass} font-medium truncate`} style={{ maxWidth: getColWidth('orderNumber', 120) }}>
+                      <Link to={`/orders/${order.id}`} data-testid={`order-link-${order.orderNumber}`} className="text-primary hover:underline">
+                        {order.orderNumber}
+                      </Link>
+                    </td>
+                  )}
                   {fields.map(f => {
+                    if (hiddenFields.has(`field_${f.id}`)) return null;
                     const val = getFieldValue(order, f.name);
                     const cellW = getColWidth(`field_${f.id}`, 150);
                     return (
@@ -274,7 +373,8 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                       </td>
                     );
                   })}
-                  <td className={`${paddingClass} truncate`} style={{ maxWidth: getColWidth('status', 120) }}>
+                  {!hiddenFields.has('status') && (
+                    <td className={`${paddingClass} truncate`} style={{ maxWidth: getColWidth('status', 120) }}>
                     {canEdit ? (
                       <select
                         value={order.statusId}
@@ -296,10 +396,15 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                       </span>
                     )}
                   </td>
-                  <td className={`${paddingClass} text-slate-600 dark:text-slate-400 truncate`} style={{ maxWidth: getColWidth('createdBy', 150) }}>{order.creator?.name}</td>
-                  <td className={`${paddingClass} text-slate-500 dark:text-slate-400 truncate`} style={{ maxWidth: getColWidth('createdAt', 150) }}>
-                    {formatZonedDateTime(order.createdAt, 'MMM d, yyyy h:mm a')}
-                  </td>
+                  )}
+                  {!hiddenFields.has('createdBy') && (
+                    <td className={`${paddingClass} text-slate-600 dark:text-slate-400 truncate`} style={{ maxWidth: getColWidth('createdBy', 150) }}>{order.creator?.name}</td>
+                  )}
+                  {!hiddenFields.has('createdAt') && (
+                    <td className={`${paddingClass} text-slate-500 dark:text-slate-400 truncate`} style={{ maxWidth: getColWidth('createdAt', 150) }}>
+                      {formatZonedDateTime(order.createdAt, 'MMM d, yyyy h:mm a')}
+                    </td>
+                  )}
                 </tr>
               );
             })}
