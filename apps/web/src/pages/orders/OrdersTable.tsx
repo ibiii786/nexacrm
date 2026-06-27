@@ -73,21 +73,14 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
     }
   };
 
-  const handleBulkStatusChange = async (statusId: string) => {
+  const handleStatusChange = async (orderId: string, statusId: string) => {
     setIsProcessing(true);
     try {
-      const res = await api.put('/orders/bulk/status', { ids: Array.from(selectedIds), statusId });
-      const data = res.data.data;
-      if (data.successful.length > 0) {
-        toast.success(`Updated ${data.successful.length} orders`);
-      }
-      if (data.failed.length > 0) {
-        toast.error(`Failed to update ${data.failed.length} orders due to required fields or edit window limit`);
-      }
-      setSelectedIds(new Set());
+      await api.patch(`/orders/${orderId}/status`, { statusId });
+      toast.success('Status updated');
       if (onOrderUpdated) onOrderUpdated();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Failed to update orders');
+      toast.error(err.response?.data?.error?.message || 'Failed to update status');
     } finally {
       setIsProcessing(false);
     }
@@ -104,23 +97,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
             {selectedIds.size} order(s) selected
           </span>
           <div className="flex gap-2 items-center">
-            {canEdit && (
-              <select
-                onChange={(e) => {
-                  if (e.target.value) {
-                    handleBulkStatusChange(e.target.value);
-                    e.target.value = '';
-                  }
-                }}
-                disabled={isProcessing}
-                className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-              >
-                <option value="">Move to status...</option>
-                {statuses.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            )}
+
             {canDelete && (
               <button
                 onClick={handleBulkDelete}
@@ -193,12 +170,26 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                     );
                   })}
                   <td className="px-6 py-4">
-                    <span 
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: `${order.status?.color}20`, color: order.status?.color }}
-                    >
-                      {order.status?.name}
-                    </span>
+                    {canEdit ? (
+                      <select
+                        value={order.statusId}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        disabled={isProcessing}
+                        className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                        style={{ backgroundColor: `${order.status?.color}20`, color: order.status?.color }}
+                      >
+                        {statuses.map(s => (
+                          <option key={s.id} value={s.id} style={{ color: 'initial' }}>{s.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span 
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        style={{ backgroundColor: `${order.status?.color}20`, color: order.status?.color }}
+                      >
+                        {order.status?.name}
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{order.creator?.name}</td>
                   <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
