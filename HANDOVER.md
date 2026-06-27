@@ -1,16 +1,21 @@
 # NexaCRM — Handover State
 
 ## Last Updated
-[current date] — Optimization Mandate COMPLETE
+2026-06-27 — Round 2 Tasks COMPLETE
 
 ## What Was Just Completed
-Stage 10:
-- Ran full TypeScript compilation (`npx tsc --noEmit`) on both `apps/api/` and `apps/web/` — 0 errors.
-- Ran full test suite (`npm run test`) in `apps/api/`. Fixed broken Redis mocks (leftover from Stage 2) and updated `pasteParser` and `export` tests. Test suite is now 100% green (8 test suites, 45 tests passed).
-- Deleted `apps/api/.env.example` as required by the mandate to ensure `apps/api/src/config/env.ts` is the single source of truth.
-- Committed all final changes.
+Round 2 optimizations and bug fixes based on `NexaCRM_Tasks_Round2.md`:
+- **Task 1**: Made order modal unclickable outside, set min-height 600px, improved scrollbar styling, made form wider (max-w-4xl), disabled default status fields, and moved save buttons to footer.
+- **Task 2**: Swapped row selection checkbox with a per-row status update dropdown, removed the bulk actions bar entirely.
+- **Task 3**: Fixed the "Copy Full Details" button formatting (line breaks, trailing spaces) and ensured notes are parsed properly.
+- **Task 4**: Implemented resizable columns using localStorage persistence and added compact/normal row height control.
+- **Task 5**: Added a global always-visible "Hide Fields" button to the orders table toolbar that persists user preferences in localStorage.
+- **Task 6**: Fixed User dashboard showing "Unknown" by ensuring customer name, product, and delivery date fields are pulled and rendered dynamically via `getFieldValue`.
+- **Task 7**: Hid Payroll and FB Accounts modules completely from the User role in the Sidebar and API endpoints.
+- **Task 8**: Restored the "Final Paid Price" field schema, enforced its rendering natively in forms, and highlighted it in bright red text in the orders table and detail view.
+- **Task 9**: Added "Created Today" (default) and "Delivery Today" radio button filters on the orders table that intelligently override the custom date range inputs.
 
 ## What Is Next
-- Pushed to GitHub. Vercel will deploy this final version.
-- **The entire NexaCRM Optimization Mandate (Stages 1 through 10) is fully complete!**
-- Awaiting user's final validation on the production Vercel URL.
+- All Round 2 tasks have been verified with `npx tsc --noEmit` to have zero errors.
+- Code has been pushed to GitHub.
+- **The project is fully complete and ready for further testing or the Hostinger migration!**
