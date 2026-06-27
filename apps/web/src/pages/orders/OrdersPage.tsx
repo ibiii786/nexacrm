@@ -189,54 +189,48 @@ export default function OrdersPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-2 items-end">
-            <div className="flex gap-4 items-center mr-1">
-              <label className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 font-medium cursor-pointer select-none">
-                <input 
-                  type="radio" 
-                  name="filterMode" 
-                  checked={filterMode === 'createdToday'} 
-                  onChange={() => {
-                    setFilterMode('createdToday');
-                    setStartDate('');
-                    setEndDate('');
-                  }}
-                  className="text-primary focus:ring-primary h-4 w-4"
-                />
+          <div className="flex items-center gap-3 mr-2 bg-slate-50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700/50">
+            <div className="flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-md">
+              <button
+                onClick={() => {
+                  setFilterMode('createdToday');
+                  setStartDate('');
+                  setEndDate('');
+                }}
+                className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${filterMode === 'createdToday' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+              >
                 Created Today
-              </label>
-              <label className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 font-medium cursor-pointer select-none">
-                <input 
-                  type="radio" 
-                  name="filterMode" 
-                  checked={filterMode === 'deliveryToday'} 
-                  onChange={() => {
-                    setFilterMode('deliveryToday');
-                    setStartDate('');
-                    setEndDate('');
-                  }}
-                  className="text-primary focus:ring-primary h-4 w-4"
-                />
+              </button>
+              <button
+                onClick={() => {
+                  setFilterMode('deliveryToday');
+                  setStartDate('');
+                  setEndDate('');
+                }}
+                className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${filterMode === 'deliveryToday' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+              >
                 Delivery Today
-              </label>
+              </button>
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="hidden sm:block w-px h-6 bg-slate-300 dark:bg-slate-700"></div>
+
+            <div className="flex gap-2 items-center pr-2">
               <input 
                 type="date"
                 data-testid="orders-start-date"
-                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                className={`px-3 py-1.5 bg-white dark:bg-slate-800 border ${filterMode === 'custom' ? 'border-primary dark:border-primary' : 'border-slate-200 dark:border-slate-700'} rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-colors`}
                 value={startDate}
                 onChange={e => {
                   setFilterMode('custom');
                   setStartDate(e.target.value);
                 }}
               />
-              <span className="text-slate-400 text-sm">to</span>
+              <span className="text-slate-400 text-sm font-medium">to</span>
               <input 
                 type="date"
                 data-testid="orders-end-date"
-                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                className={`px-3 py-1.5 bg-white dark:bg-slate-800 border ${filterMode === 'custom' ? 'border-primary dark:border-primary' : 'border-slate-200 dark:border-slate-700'} rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-colors`}
                 value={endDate}
                 onChange={e => {
                   setFilterMode('custom');

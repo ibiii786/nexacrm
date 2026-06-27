@@ -90,8 +90,12 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
       
       setCustomFields(parsed.mappedFields);
       setNotes(parsed.notes);
-      if (parsed.mappedFields['finalPaidAmount']) {
-        setFinalPaidAmount(parsed.mappedFields['finalPaidAmount']);
+      
+      if (parsed.nativeFields?.finalPaidAmount) {
+        setFinalPaidAmount(parsed.nativeFields.finalPaidAmount);
+      }
+      if (parsed.nativeFields?.deliveryDate) {
+        setDeliveryDate(parsed.nativeFields.deliveryDate);
       }
       setUnknownFields(parsed.unknownFields);
       setSelectedUnknowns(new Set(parsed.unknownFields.map((u: any) => u.candidateName)));

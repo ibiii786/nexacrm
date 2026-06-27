@@ -27,6 +27,7 @@ export interface FieldDefinition {
 
 export interface ParseResult {
   mappedFields: Record<string, string>;
+  nativeFields: Record<string, string>;
   unknownFields: Array<{ candidateName: string; candidateValue: string }>;
   notes: string;
 }
@@ -307,22 +308,34 @@ export function parsePasteText(rawText: string, fields: FieldDefinition[]): Pars
       mappedFields[matchedField.id].push(normalizeValue(parsed.value, matchedField.type));
       lastMatchedFieldId = matchedField.id;
     } else {
-      unknownFields.push({
-        candidateName: parsed.key,
-        candidateValue: parsed.value,
-      });
+      if (SYNONYMS.notes.some(keyword => parsed.key.toLowerCase().includes(keyword))) {
+        noteLines.push(`${parsed.key}: ${parsed.value}`);
+      } else {
+        unknownFields.push({
+          candidateName: parsed.key,
+          candidateValue: parsed.value,
+        });
+      }
       lastMatchedFieldId = null;
     }
   }
 
   // Convert arrays to strings: join multiple values with ' | '
   const finalMappedFields: Record<string, string> = {};
+  const finalNativeFields: Record<string, string> = {};
+  
   for (const [fieldId, values] of Object.entries(mappedFields)) {
-    finalMappedFields[fieldId] = values.join(' | ');
+    const field = fields.find(f => f.id === fieldId);
+    if (field && ['finalPaidAmount', 'deliveryDate'].includes(field.name)) {
+      finalNativeFields[field.name] = values.join(' | ');
+    } else {
+      finalMappedFields[fieldId] = values.join(' | ');
+    }
   }
 
   return {
     mappedFields: finalMappedFields,
+    nativeFields: finalNativeFields,
     unknownFields,
     notes: noteLines.join('\n'),
   };
