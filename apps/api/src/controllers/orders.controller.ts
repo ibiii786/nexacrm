@@ -158,14 +158,14 @@ export class OrdersController {
       }
 
       const order = await OrdersService.updateOrder((req.params.id as string), {
-        statusId,
-        deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
-        customFields,
-        notes,
+        statusId: statusId !== undefined ? statusId : undefined,
+        deliveryDate: deliveryDate !== undefined ? (deliveryDate ? new Date(deliveryDate) : null) : undefined,
+        customFields: customFields !== undefined ? customFields : undefined,
+        notes: notes !== undefined ? notes : undefined,
         updatedBy: user.id,
         userRole: user.role,
-        finalPaidAmount: (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? finalPaidAmount : undefined,
-        finalPaidNote: (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? finalPaidNote : undefined,
+        finalPaidAmount: (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? (finalPaidAmount !== undefined ? finalPaidAmount : undefined) : undefined,
+        finalPaidNote: (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? (finalPaidNote !== undefined ? finalPaidNote : undefined) : undefined,
       });
 
       return sendSuccess(res, order);

@@ -109,8 +109,8 @@ export function OrderModal({ isOpen, onClose, onOrderCreated, order }: OrderModa
       const payload = {
         statusId,
         deliveryDate: parseZonedDateInput(deliveryDate),
-        notes,
-        customFields,
+        notes: notes !== undefined ? notes : undefined,
+        customFields: { ...(order?.customFields || {}), ...customFields },
         finalPaidAmount: currentFinalPaidAmount ? parseFloat(currentFinalPaidAmount) : undefined,
       };
 

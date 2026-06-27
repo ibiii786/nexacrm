@@ -306,13 +306,13 @@ export class OrdersService {
 
   static async updateOrder(id: string, data: {
     statusId?: string;
-    deliveryDate?: Date;
+    deliveryDate?: Date | null;
     customFields?: any;
-    notes?: string;
+    notes?: string | null;
     updatedBy: string;
     userRole: string;
-    finalPaidAmount?: number;
-    finalPaidNote?: string;
+    finalPaidAmount?: number | null;
+    finalPaidNote?: string | null;
   }) {
     const existingOrder = await prisma.order.findUnique({
       where: { id },
@@ -350,20 +350,25 @@ export class OrdersService {
       }
     }
 
-    // Check delivery date
-    if (data.deliveryDate !== undefined && data.deliveryDate?.getTime() !== existingOrder.deliveryDate?.getTime()) {
-      updateData.deliveryDate = data.deliveryDate;
-      auditLogs.push({
-        action: 'DELIVERY_DATE_CHANGED',
-        fieldName: 'deliveryDate',
-        oldValue: existingOrder.deliveryDate?.toISOString(),
-        newValue: data.deliveryDate?.toISOString()
-      });
+    // Check deliveryDate explicitly vs undefined
+    if (data.deliveryDate !== undefined) {
+      if (data.deliveryDate === null || data.deliveryDate?.getTime() !== existingOrder.deliveryDate?.getTime()) {
+        updateData.deliveryDate = data.deliveryDate;
+        auditLogs.push({
+          action: 'DELIVERY_DATE_CHANGED',
+          fieldName: 'deliveryDate',
+          oldValue: existingOrder.deliveryDate?.toISOString() || null,
+          newValue: data.deliveryDate?.toISOString() || null
+        });
+      }
     }
 
-    // Handle notes
+    // Handle notes explicitly vs undefined
     if (data.notes !== undefined) {
-      updateData.notes = data.notes ? sanitizeHtml(data.notes) : null;
+      const newNotes = data.notes ? sanitizeHtml(data.notes) : null;
+      if (existingOrder.notes !== newNotes) {
+        updateData.notes = newNotes;
+      }
     }
 
     if (data.finalPaidAmount !== undefined) {
