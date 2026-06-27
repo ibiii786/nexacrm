@@ -61,6 +61,12 @@ router.get(
   OrdersController.getParsedText
 );
 
+router.patch(
+  '/:id/status',
+  authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),
+  OrdersController.updateOrderStatus
+);
+
 router.put(
   '/:id',
   authorize([PERMISSIONS.ORDERS_EDIT_OWN, PERMISSIONS.ORDERS_EDIT_ANY]),

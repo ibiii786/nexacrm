@@ -178,6 +178,37 @@ export class OrdersController {
     }
   }
 
+  static async updateOrderStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const { statusId } = req.body;
+
+      if (!statusId) return sendError(res, 'VALIDATION_ERROR', 'statusId is required');
+
+      const isAdminOrSuper = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+      if (!isAdminOrSuper) {
+        const permissions = await PermissionsService.getEffectivePermissions(user.id);
+        if (!permissions.includes('orders:manage_status')) {
+          return sendError(res, 'FORBIDDEN', 'You do not have permission to change order status', 403);
+        }
+      }
+
+      const order = await OrdersService.updateOrder((req.params.id as string), {
+        statusId,
+        updatedBy: user.id,
+        userRole: user.role,
+      });
+
+      return sendSuccess(res, order);
+    } catch (error: any) {
+      if (error instanceof EditWindowExpiredError) {
+        return sendError(res, 'EDIT_WINDOW_EXPIRED', error.message, 403);
+      }
+      if (error.message === 'Order not found') return sendError(res, 'NOT_FOUND', error.message, 404);
+      next(error);
+    }
+  }
+
   static async deleteOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
