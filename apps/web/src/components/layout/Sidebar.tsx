@@ -44,10 +44,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     ...(user?.role === 'SUPER_ADMIN' ? [{ name: 'Audit Log', path: '/admin/audit-log', icon: ShieldAlert }] : []),
   ];
 
-  const optionalModules = [
+  const optionalModules = isAdmin ? [
     { name: 'Payroll', path: '/payroll', icon: CreditCard },
     { name: 'FB Accounts', path: '/fb-accounts', icon: Facebook }
-  ];
+  ] : [];
 
   const NavItem = ({ item }: { item: any }) => (
     <NavLink
