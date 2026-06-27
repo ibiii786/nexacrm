@@ -285,30 +285,57 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
                   }
 
                   return (
-                    <div key={field.id}>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        {field.label} {field.isRequired && !isSystem && '*'}
-                      </label>
-                      <input
-                        type="text"
-                        data-testid={`order-custom-field-${field.id}`}
-                        value={displayValue}
-                        onChange={e => {
-                          if (!isSystem) {
-                            setCustomFields({ ...customFields, [field.id]: e.target.value });
-                          }
-                        }}
-                        required={field.isRequired && !isSystem}
-                        disabled={isSystem}
-                        className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white ${
-                          isSystem 
-                            ? 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 cursor-not-allowed'
-                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-                        }`}
-                      />
-                    </div>
+                    <React.Fragment key={field.id}>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                          {field.label} {field.isRequired && !isSystem && '*'}
+                        </label>
+                        <input
+                          type="text"
+                          data-testid={`order-custom-field-${field.id}`}
+                          value={displayValue}
+                          onChange={e => {
+                            if (!isSystem) {
+                              setCustomFields({ ...customFields, [field.id]: e.target.value });
+                            }
+                          }}
+                          required={field.isRequired && !isSystem}
+                          disabled={isSystem}
+                          className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white ${
+                            isSystem 
+                              ? 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 cursor-not-allowed'
+                              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                          }`}
+                        />
+                      </div>
+                      {field.name === 'price' && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-red-600 dark:text-red-400">Final Paid Price</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={finalPaidAmount}
+                            onChange={e => setFinalPaidAmount(e.target.value)}
+                            className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                          />
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
+
+              {!statusFields.some(f => f.name === 'price') && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-red-600 dark:text-red-400">Final Paid Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={finalPaidAmount}
+                    onChange={e => setFinalPaidAmount(e.target.value)}
+                    className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
@@ -316,16 +343,6 @@ export function OrderPasteParser({ isOpen, onClose, onOrderCreated }: OrderPaste
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Final Paid Price</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={finalPaidAmount}
-                  onChange={e => setFinalPaidAmount(e.target.value)}
-                  className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
                 />
               </div>
             </form>

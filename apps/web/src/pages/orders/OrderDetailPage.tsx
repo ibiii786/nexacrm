@@ -190,11 +190,11 @@ export default function OrderDetailPage() {
                 <p className="text-sm text-slate-500 col-span-2">No custom fields defined for this order.</p>
               )}
               {order.finalPaidAmount !== undefined && order.finalPaidAmount !== null && (
-                <div className="col-span-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <dt className="text-sm font-bold text-green-700 dark:text-green-400">Final Paid Amount</dt>
-                  <dd className="mt-1 text-lg text-green-900 dark:text-green-300 font-bold">{formatCustomField('finalPaidAmount', order.finalPaidAmount)}</dd>
+                <div className="col-span-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <dt className="text-sm font-bold text-red-700 dark:text-red-400">Final Paid Price</dt>
+                  <dd className="mt-1 text-lg text-red-500 font-medium">{formatCustomField('finalPaidAmount', order.finalPaidAmount)}</dd>
                   {order.finalPaidNote && (
-                    <dd className="mt-1 text-sm text-green-800 dark:text-green-500 italic">Note: {order.finalPaidNote}</dd>
+                    <dd className="mt-1 text-sm text-red-800 dark:text-red-500 italic">Note: {order.finalPaidNote}</dd>
                   )}
                 </div>
               )}

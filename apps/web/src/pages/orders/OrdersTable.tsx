@@ -367,7 +367,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                     const cellW = getColWidth(`field_${f.id}`, 150);
                     return (
                       <td key={f.id} className={`${paddingClass} text-slate-600 dark:text-slate-400`} style={{ maxWidth: cellW }}>
-                        <div className="truncate" title={String(val || '')}>
+                        <div className={`truncate ${f.name === 'finalPaidAmount' ? 'text-red-500 font-medium' : ''}`} title={String(val || '')}>
                           {formatCustomField(f.name, val)}
                         </div>
                       </td>
