@@ -174,10 +174,9 @@ export class OrdersService {
       let value: any = undefined;
 
       // Same pattern as createOrder
-      if (['orderStatus', 'deliveryDate', 'notes', 'orderNumber', 'orderDate', 'createdBy'].includes(field.name)) {
+      if (['orderStatus', 'deliveryDate', 'orderNumber', 'orderDate', 'createdBy'].includes(field.name)) {
         if (field.name === 'orderStatus') value = order.status?.name;
         if (field.name === 'deliveryDate') value = order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : undefined;
-        if (field.name === 'notes') value = order.notes;
         if (field.name === 'orderNumber') value = order.orderNumber;
         if (field.name === 'orderDate') value = new Date(order.createdAt).toLocaleDateString();
         if (field.name === 'createdBy') value = order.creator?.name;
@@ -189,6 +188,10 @@ export class OrdersService {
       if (value !== undefined && value !== null && value !== '') {
         lines.push(`${field.label}: ${value}`);
       }
+    }
+
+    if (order.notes && order.notes.trim() !== '') {
+      lines.push(`Notes: ${order.notes.trim()}`);
     }
 
     return lines.join('\n');
