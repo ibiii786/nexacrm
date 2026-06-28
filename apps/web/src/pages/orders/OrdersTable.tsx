@@ -311,7 +311,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
         </div>
         </div>
       </div>
-      <div ref={parentRef} className="overflow-auto flex-1">
+      <div ref={parentRef} className="overflow-auto h-[calc(100vh-280px)]">
         <table className="w-full text-left text-sm relative">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 sticky top-0 z-10 shadow-sm select-none">
             <tr>

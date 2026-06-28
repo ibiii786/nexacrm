@@ -169,14 +169,14 @@ export default function OrdersPage() {
 
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto h-[calc(100vh-64px)] flex flex-col">
-      <div className="flex justify-between items-center mb-6 shrink-0">
+    <div className="p-8 w-full max-w-[1600px] mx-auto h-[calc(100vh-64px)] flex flex-col overflow-hidden">
+      <div className="w-full flex flex-wrap justify-between items-center mb-6 shrink-0 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Orders</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Manage all production orders and pipelines.</p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="w-full flex flex-wrap items-center gap-2">
           <div className="relative">
             <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
@@ -189,8 +189,8 @@ export default function OrdersPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3 mr-2 bg-slate-50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700/50">
-            <div className="flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-md">
+          <div className="flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700/50">
+            <div className="flex flex-wrap gap-1 bg-slate-200/50 dark:bg-slate-800 p-1 rounded-md">
               <button
                 onClick={() => {
                   setFilterMode('createdToday');
@@ -215,7 +215,7 @@ export default function OrdersPage() {
 
             <div className="hidden sm:block w-px h-6 bg-slate-300 dark:bg-slate-700"></div>
 
-            <div className="flex gap-2 items-center pr-2">
+            <div className="flex flex-wrap gap-2 items-center pr-2">
               <input 
                 type="date"
                 data-testid="orders-start-date"
@@ -275,7 +275,6 @@ export default function OrdersPage() {
             <DownloadIcon size={16} />
             <span>Export</span>
           </button>
-
           <button 
             data-testid="orders-new-order-button"
             onClick={() => setIsParserOpen(true)}
