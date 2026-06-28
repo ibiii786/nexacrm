@@ -1,5 +1,5 @@
 import { formatInTimeZone, toZonedTime, fromZonedTime } from 'date-fns-tz';
-import { isSameDay as dateFnsIsSameDay } from 'date-fns';
+import { isSameDay as dateFnsIsSameDay, format as dateFnsFormat } from 'date-fns';
 /**
  * Gets the globally configured timezone from settings, defaulting to local timezone
  */
@@ -8,13 +8,24 @@ export const getGlobalTimezone = (): string => {
   return 'America/Toronto';
 };
 
-/**
- * Formats a given date strictly according to the global CRM timezone.
- */
 export const formatZonedDate = (date: Date | string | number, formatStr: string = 'MMM d, yyyy'): string => {
   if (!date) return '';
   const tz = getGlobalTimezone();
   return formatInTimeZone(new Date(date), tz, formatStr);
+};
+
+/**
+ * Formats a strict calendar date from the database (e.g. deliveryDate) ignoring any timezone shifts.
+ * This prevents a UTC midnight timestamp (2026-06-27T00:00:00Z) from shifting to the previous day in America/Toronto.
+ */
+export const formatPureDate = (date: Date | string | number | null | undefined, formatStr: string = 'MMM d, yyyy'): string => {
+  if (!date) return '-';
+  // Ensure we extract just the YYYY-MM-DD part from the UTC ISO string
+  const iso = typeof date === 'string' && date.includes('T') ? date : new Date(date).toISOString();
+  const [y, m, d] = iso.split('T')[0].split('-');
+  const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+  // dateObj is now instantiated at local midnight of that date, so format() won't shift it
+  return dateFnsFormat(dateObj, formatStr);
 };
 
 /**

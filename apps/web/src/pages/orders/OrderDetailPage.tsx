@@ -6,7 +6,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { OrderModal } from '../../components/orders/OrderModal';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
-import { formatZonedDate, formatZonedDateTime } from '../../utils/dateUtils';
+import { formatZonedDateTime, formatPureDate } from '../../utils/dateUtils';
 import { formatCustomField } from '../../utils/formatters';
 
 export default function OrderDetailPage() {
@@ -105,7 +105,7 @@ export default function OrderDetailPage() {
       const textToCopy = typeof data === 'string' ? data : data.data || data;
       await copyToClipboard(textToCopy);
       toast.success('Order details copied to clipboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to copy order text', error);
       toast.error('Failed to copy order details');
     }
@@ -137,7 +137,7 @@ export default function OrderDetailPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <CalendarIcon size={16} /> 
-              {order.deliveryDate ? `Due ${formatZonedDate(order.deliveryDate)}` : 'No due date'}
+              {order.deliveryDate ? `Due ${formatPureDate(order.deliveryDate)}` : 'No due date'}
             </div>
             <div className="flex items-center gap-1.5">
               <ClockIcon size={16} /> Created {formatZonedDateTime(order.createdAt)}

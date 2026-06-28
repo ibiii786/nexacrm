@@ -5,7 +5,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { TrashIcon } from 'lucide-react';
-import { formatZonedDateTime } from '../../utils/dateUtils';
+import { formatZonedDateTime, formatPureDate } from '../../utils/dateUtils';
 import { formatCustomField, getFieldValue } from '../../utils/formatters';
 
 interface OrdersTableProps {
@@ -364,7 +364,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                   )}
                   {!hiddenFields.has('deliveryDate') && (
                     <td className={`${paddingClass} text-slate-600 dark:text-slate-400 truncate`} style={{ maxWidth: getColWidth('deliveryDate', 150) }}>
-                      {order.deliveryDate ? formatZonedDateTime(order.deliveryDate, 'MMM d, yyyy') : '-'}
+                      {order.deliveryDate ? formatPureDate(order.deliveryDate, 'MMM d, yyyy') : '-'}
                     </td>
                   )}
                   {fields.map(f => {

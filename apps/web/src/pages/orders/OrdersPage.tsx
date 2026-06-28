@@ -64,8 +64,8 @@ export default function OrdersPage() {
         currentEndDate = getZonedEndOfDayISO(todayIso);
         dateFilterType = 'createdAt';
       } else if (filterMode === 'deliveryToday') {
-        currentStartDate = getZonedStartOfDayISO(todayIso);
-        currentEndDate = getZonedEndOfDayISO(todayIso);
+        currentStartDate = todayIso;
+        currentEndDate = todayIso;
         dateFilterType = 'deliveryDate';
       } else {
         currentStartDate = startDate ? getZonedStartOfDayISO(startDate) : undefined;
@@ -113,8 +113,8 @@ export default function OrdersPage() {
 
     if (filterMode === 'createdToday' || filterMode === 'deliveryToday') {
       const isDelivery = filterMode === 'deliveryToday';
-      const start = getZonedStartOfDayISO(todayIso);
-      const end = getZonedEndOfDayISO(todayIso);
+      const start = isDelivery ? todayIso : getZonedStartOfDayISO(todayIso);
+      const end = isDelivery ? todayIso : getZonedEndOfDayISO(todayIso);
       if (start) params.append('startDate', start);
       if (end) params.append('endDate', end);
       params.append('dateFilterType', isDelivery ? 'deliveryDate' : 'createdAt');
