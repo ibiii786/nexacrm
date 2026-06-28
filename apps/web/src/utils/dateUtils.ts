@@ -1,14 +1,11 @@
 import { formatInTimeZone, toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { isSameDay as dateFnsIsSameDay } from 'date-fns';
-import { useAuthStore } from '../stores/authStore';
-
 /**
  * Gets the globally configured timezone from settings, defaulting to local timezone
  */
 export const getGlobalTimezone = (): string => {
-  const settings = useAuthStore.getState().settings;
-  // Default to Canadian Eastern Time (Toronto) instead of local system time
-  return settings?.timezone || 'America/Toronto';
+  // Hardcoded to Canadian Eastern Time (Toronto) as requested
+  return 'America/Toronto';
 };
 
 /**
