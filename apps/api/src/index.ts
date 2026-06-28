@@ -1,3 +1,5 @@
+process.env.TZ = 'America/Toronto';
+
 import app from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';

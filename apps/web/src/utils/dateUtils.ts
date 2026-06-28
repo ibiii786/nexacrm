@@ -7,7 +7,8 @@ import { useAuthStore } from '../stores/authStore';
  */
 export const getGlobalTimezone = (): string => {
   const settings = useAuthStore.getState().settings;
-  return settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // Default to Canadian Eastern Time (Toronto) instead of local system time
+  return settings?.timezone || 'America/Toronto';
 };
 
 /**

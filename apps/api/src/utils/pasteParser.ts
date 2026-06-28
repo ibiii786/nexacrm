@@ -272,13 +272,20 @@ export function parsePasteText(rawText: string, fields: FieldDefinition[]): Pars
 
     if (!parsed.value) continue;
 
+    // Intercept notes before fuzzy matching to prevent "Note" from fuzzy matching to "Name" (distance 2)
+    if (SYNONYMS.notes.some(keyword => parsed.key.toLowerCase().includes(keyword))) {
+      noteLines.push(`${parsed.key}: ${parsed.value}`);
+      lastMatchedFieldId = null;
+      continue;
+    }
+
     const matchedField = matchField(parsed.key, fields);
 
     if (matchedField) {
       // WhatsApp auto-detection logic
       if (matchedField.type === 'PHONE' || matchedField.name === 'customerPhone') {
         const rawValue = parsed.value;
-        const parts = rawValue.split(/[|,\/]/).map(p => p.trim());
+        const parts = rawValue.split(/[|\/]/).map(p => p.trim());
 
         for (const part of parts) {
           const isWhatsApp = /whatsapp/i.test(part);
@@ -308,14 +315,10 @@ export function parsePasteText(rawText: string, fields: FieldDefinition[]): Pars
       mappedFields[matchedField.id].push(normalizeValue(parsed.value, matchedField.type));
       lastMatchedFieldId = matchedField.id;
     } else {
-      if (SYNONYMS.notes.some(keyword => parsed.key.toLowerCase().includes(keyword))) {
-        noteLines.push(`${parsed.key}: ${parsed.value}`);
-      } else {
-        unknownFields.push({
-          candidateName: parsed.key,
-          candidateValue: parsed.value,
-        });
-      }
+      unknownFields.push({
+        candidateName: parsed.key,
+        candidateValue: parsed.value,
+      });
       lastMatchedFieldId = null;
     }
   }
