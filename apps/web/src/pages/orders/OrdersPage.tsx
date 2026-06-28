@@ -7,7 +7,7 @@ import { OrdersTable } from './OrdersTable';
 import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
 import { OrdersKanban } from '../../components/orders/OrdersKanban';
 import { OrdersCalendar } from '../../components/orders/OrdersCalendar';
-import { getZonedToday, getZonedStartOfDayISO, getZonedEndOfDayISO } from '../../utils/dateUtils';
+import { getZonedToday, getZonedStartOfDayISO, getZonedEndOfDayISO, formatZonedDate } from '../../utils/dateUtils';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths } from 'date-fns';
 
 export default function OrdersPage() {
@@ -57,7 +57,7 @@ export default function OrdersPage() {
       let currentLimit = 50;
       let currentPage = page;
 
-      const todayIso = getZonedToday().toISOString().split('T')[0];
+      const todayIso = formatZonedDate(new Date(), 'yyyy-MM-dd');
 
       if (filterMode === 'createdToday') {
         currentStartDate = getZonedStartOfDayISO(todayIso);
@@ -107,7 +107,7 @@ export default function OrdersPage() {
   const handleExport = () => {
     // Generate URL and trigger download
     const params = new URLSearchParams();
-    const todayIso = getZonedToday().toISOString().split('T')[0];
+    const todayIso = formatZonedDate(new Date(), 'yyyy-MM-dd');
     
     if (search) params.append('search', search);
 

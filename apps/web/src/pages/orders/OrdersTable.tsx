@@ -325,6 +325,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
               </th>
               {/* Task 5: Conditionally render headers */}
               {!hiddenFields.has('orderNumber') && renderHeader('orderNumber', 'Order #', 120)}
+              {!hiddenFields.has('deliveryDate') && renderHeader('deliveryDate', 'Delivery Date', 150)}
               {fields.map(f => !hiddenFields.has(`field_${f.id}`) && renderHeader(`field_${f.id}`, f.label, 150))}
               {!hiddenFields.has('status') && renderHeader('status', 'Status', 120)}
               {!hiddenFields.has('createdBy') && renderHeader('createdBy', 'Created By', 150)}
@@ -359,6 +360,11 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                       <Link to={`/orders/${order.id}`} data-testid={`order-link-${order.orderNumber}`} className="text-primary hover:underline">
                         {order.orderNumber}
                       </Link>
+                    </td>
+                  )}
+                  {!hiddenFields.has('deliveryDate') && (
+                    <td className={`${paddingClass} text-slate-600 dark:text-slate-400 truncate`} style={{ maxWidth: getColWidth('deliveryDate', 150) }}>
+                      {order.deliveryDate ? formatZonedDateTime(order.deliveryDate, 'MMM d, yyyy') : '-'}
                     </td>
                   )}
                   {fields.map(f => {
