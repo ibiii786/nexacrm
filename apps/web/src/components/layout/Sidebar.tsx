@@ -85,7 +85,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         fixed top-0 bottom-0 left-0 z-50 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 
         transition-all duration-300 ease-in-out flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
-        lg:translate-x-0 lg:static
+        lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen
         ${isCollapsed ? 'w-16' : 'w-64'}
       `}>
         {/* Logo/Header */}

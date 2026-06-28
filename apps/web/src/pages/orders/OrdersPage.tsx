@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon, CalendarIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, KanbanIcon, ListIcon, DownloadIcon, CalendarIcon, ArrowUpIcon } from 'lucide-react';
 import { OrdersTable } from './OrdersTable';
 import { OrderPasteParser } from '../../components/orders/OrderPasteParser';
 import { OrdersKanban } from '../../components/orders/OrdersKanban';
@@ -23,7 +23,16 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isParserOpen, setIsParserOpen] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(getZonedToday());
+  const [calendarDate, setCalendarDate] = useState(() => getZonedToday());
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (searchParams.get('create') === 'true') {
@@ -169,8 +178,8 @@ export default function OrdersPage() {
 
 
   return (
-    <div className="p-8 w-full max-w-[1600px] mx-auto h-[calc(100vh-64px)] flex flex-col overflow-hidden">
-      <div className="w-full flex flex-wrap justify-between items-center mb-6 shrink-0 gap-4">
+    <div className="p-8 w-full max-w-[1600px] mx-auto min-h-screen pb-8 flex flex-col">
+      <div className="sticky top-0 z-20 bg-slate-50 dark:bg-slate-900 pt-4 pb-4 -mt-4 border-b border-slate-200 dark:border-slate-800 shadow-sm w-full flex flex-wrap justify-between items-center mb-6 shrink-0 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Orders</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Manage all production orders and pipelines.</p>
@@ -286,10 +295,10 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="w-full flex flex-col">
         {viewMode === 'list' && (
           <>
-            <div className="flex-1 min-h-0">
+            <div className="w-full">
               {orders.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
                   <div className="text-slate-400 mb-2">
@@ -354,6 +363,15 @@ export default function OrdersPage() {
           fetchOrders();
         }} 
       />
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-8 right-8 p-3 bg-slate-800 dark:bg-slate-700 text-white rounded-full shadow-lg hover:bg-slate-700 dark:hover:bg-slate-600 transition-all z-50 animate-in fade-in slide-in-from-bottom-4"
+          aria-label="Scroll to top"
+        >
+          <ArrowUpIcon size={20} />
+        </button>
+      )}
     </div>
   );
 }

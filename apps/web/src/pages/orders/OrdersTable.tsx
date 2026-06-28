@@ -1,7 +1,7 @@
 import { useAuthStore } from '../../stores/authStore';
 import { Link } from 'react-router-dom';
 import { useRef, useState, useEffect } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+
 import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { TrashIcon } from 'lucide-react';
@@ -82,9 +82,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
     rowHeight === 'comfortable' ? 'py-6 px-6' : 
     'py-4 px-6';
 
-  const cellHeight = 
-    rowHeight === 'compact' ? 41 : 
-    rowHeight === 'comfortable' ? 73 : 53;
+
 
   // Task 4: Column Resizing
   const [colWidths, setColWidths] = useState<Record<string, number>>(() => {
@@ -146,21 +144,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
     );
   };
 
-  const rowVirtualizer = useVirtualizer({
-    count: orders.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => cellHeight,
-    overscan: 5,
-  });
 
-  const virtualItems = rowVirtualizer.getVirtualItems();
-  const [before, after] =
-    virtualItems.length > 0
-      ? [
-          virtualItems[0].start,
-          rowVirtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end,
-        ]
-      : [0, 0];
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -311,7 +295,7 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
         </div>
         </div>
       </div>
-      <div ref={parentRef} className="overflow-auto h-[calc(100vh-280px)]">
+      <div ref={parentRef} className="w-full overflow-x-auto">
         <table className="w-full text-left text-sm relative">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 sticky top-0 z-10 shadow-sm select-none">
             <tr>
@@ -333,19 +317,12 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-            {before > 0 && (
-              <tr>
-                <td colSpan={fields.length + 5} style={{ height: `${before}px` }} />
-              </tr>
-            )}
-            {virtualItems.map((virtualRow) => {
-              const order = orders[virtualRow.index];
+            {orders.map((order, index) => {
               return (
                 <tr 
                   key={order.id}
-                  data-index={virtualRow.index}
-                  ref={rowVirtualizer.measureElement}
-                  className={`transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/20 ${selectedIds.has(order.id) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}
+                  data-index={index}
+                  className={`transition-colors group even:bg-slate-50/50 dark:even:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-700/50 ${selectedIds.has(order.id) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}
                 >
                   <td className={`${paddingClass}`} onClick={(e) => e.stopPropagation()}>
                     <input 
@@ -414,11 +391,6 @@ export function OrdersTable({ orders, statuses = [], fields = [], onOrderUpdated
                 </tr>
               );
             })}
-            {after > 0 && (
-              <tr>
-                <td colSpan={fields.length + 5} style={{ height: `${after}px` }} />
-              </tr>
-            )}
             {orders.length === 0 && (
               <tr>
                 <td colSpan={fields.length + 5} className="px-6 py-12 text-center text-slate-500">
